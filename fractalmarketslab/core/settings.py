@@ -49,7 +49,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'fractalmarketslab.urls'
+ROOT_URLCONF = 'fractalmarketslab.core.urls'
 
 TEMPLATES = [
     {
@@ -67,7 +67,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'fractalmarketslab.wsgi.application'
+WSGI_APPLICATION = 'fractalmarketslab.core.wsgi.application'
 
 
 # Database
