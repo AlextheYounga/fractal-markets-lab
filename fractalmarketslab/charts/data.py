@@ -1,4 +1,6 @@
 import csv
+import statistics 
+from .functions import extract_data
 
 
 with open('fractalmarketslab/imports/SPX_volatility.csv', newline='', encoding='utf-8') as csvfile:
@@ -37,4 +39,11 @@ with open('fractalmarketslab/imports/SPX_volatility.csv', newline='', encoding='
         }
 
         # Append value dictionary to data
-        volData[i] = values
+        volData[i] = values        
+
+prices = extract_data(volData, 'close')
+averages = {
+    'trade': statistics.mean(prices[:16]),
+    'trend': statistics.mean(prices[:64]),
+    'tail': statistics.mean(prices[:757]),
+}

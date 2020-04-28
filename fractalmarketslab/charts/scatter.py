@@ -1,11 +1,12 @@
-from .data import volData
+from .data import *
+from .functions import extract_data
 from termcolor import colored, cprint
 from matplotlib import pylab
 from pylab import *
 
 
-
-print(volData)
+# print(prices)
+print(averages)
 
 # x = arange(0, 2*pi, 0.01)
 # s = cos(x)**2
