@@ -22,7 +22,11 @@ with open('fractalmarketslab/imports/SPX_volatility.csv', newline='', encoding='
             'volIndex': row['VIX'] if row['VIX'] else 0,
             'volume': row['Volume'] if row['Volume'] else 0,
             'putCallRatio': row['PutCall'] if row['PutCall'] else 0,
+            
             'stats': {
+                'dayChange': {
+
+                },
                 'trade': {
                     'stdev': row['Trade StDev'] if row['Trade StDev'] else 0,
                     'impliedVol': row['Trade IV'] if row['Trade IV'] else 0,
@@ -39,11 +43,16 @@ with open('fractalmarketslab/imports/SPX_volatility.csv', newline='', encoding='
         }
 
         # Append value dictionary to data
-        volData[i] = values        
+        volData[i] = values
 
 prices = extract_data(volData, 'close')
+volume = extract_data(volData, 'volume')
+vix = extract_data(volData, 'volIndex')
+
 averages = {
     'trade': statistics.mean(prices[:16]),
     'trend': statistics.mean(prices[:64]),
     'tail': statistics.mean(prices[:757]),
 }
+
+
