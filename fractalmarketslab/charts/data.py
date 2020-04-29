@@ -1,6 +1,6 @@
 import csv
 import statistics 
-from .functions import extract_data
+from .functions import *
 
 
 with open('fractalmarketslab/imports/SPX_volatility.csv', newline='', encoding='utf-8') as csvfile:
@@ -54,5 +54,26 @@ averages = {
     'trend': statistics.mean(prices[:64]),
     'tail': statistics.mean(prices[:757]),
 }
+
+for i, value in enumerate(prices):
+    changeData = percentChange(prices, i)
+    volData[i]['stats']['dayChange']['price'] = changeData['dayChange']
+    volData[i]['stats']['trade']['price'] = changeData['trade']
+    volData[i]['stats']['trend']['price'] = changeData['trend']
+    volData[i]['stats']['tail']['price'] = changeData['tail']
+
+for i, value in enumerate(volume):
+    changeData = percentChange(volume, i)
+    volData[i]['stats']['dayChange']['volume'] = changeData['dayChange']
+    volData[i]['stats']['trade']['volume'] = changeData['trade']
+    volData[i]['stats']['trend']['volume'] = changeData['trend']
+    volData[i]['stats']['tail']['volume'] = changeData['tail']
+
+for i, value in enumerate(vix):
+    changeData = percentChange(vix, i)
+    volData[i]['stats']['dayChange']['vix'] = changeData['dayChange']
+    volData[i]['stats']['trade']['vix'] = changeData['trade']
+    volData[i]['stats']['trend']['vix'] = changeData['trend']
+    volData[i]['stats']['tail']['vix'] = changeData['tail']
 
 

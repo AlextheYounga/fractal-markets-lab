@@ -11,9 +11,11 @@ def extract_data(data, key):
 
 def percentChange(list, i):
     change = {
-        'dayChange': list[i + 757] if (list[i] - list[i + 1]) / list[i + 1] else 0,
-        'trade': list[i + 16] if (list[i] - list[i + 16]) / list[1 + 16] else 0,
-        'trend': list[i + 64] if (list[i] - list[i + 64]) / list[i + 64] else 0,
-        'tail': list[i + 757] if (list[i] - list[i + 757])/ list[i + 757] else 0,
+        'dayChange': (list[i] - list[i + 1]) / list[i + 1] if  list[i + 1] else 0,
+        'trade': (list[i] - list[i + 16]) / list[i + 16] if  list[i + 16] else 0,
+        'trend': (list[i] - list[i + 64]) / list[i + 64] if  list[i + 64] else 0,
+        'tail': (list[i] - list[i + 757]) / list[i + 757] if  list[i + 757] else 0,
     }
     return change
+
+    
