@@ -1,5 +1,6 @@
 from .data import *
 from .functions import *
+import json
 
 # for i, value in enumerate(prices):
 #     change = {
@@ -15,5 +16,5 @@ from .functions import *
 #     print(changeData['dayChange'])
 #     break 
 
-print(volData)
+print(json.dumps(volData, indent=1))
 

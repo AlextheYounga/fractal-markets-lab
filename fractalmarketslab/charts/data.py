@@ -3,7 +3,7 @@ import statistics
 from .functions import *
 
 
-with open('fractalmarketslab/imports/SPX_volatility.csv', newline='', encoding='utf-8') as csvfile:
+with open('fractalmarketslab/imports/SPX.csv', newline='', encoding='utf-8') as csvfile:
     volData = {}
     reader = csv.DictReader(csvfile)
 
@@ -24,9 +24,7 @@ with open('fractalmarketslab/imports/SPX_volatility.csv', newline='', encoding='
             'putCallRatio': row['PutCall'] if row['PutCall'] else 0,
             
             'stats': {
-                'dayChange': {
-
-                },
+                'dayChange': {},
                 'trade': {
                     'stdev': row['Trade StDev'] if row['Trade StDev'] else 0,
                     'impliedVol': row['Trade IV'] if row['Trade IV'] else 0,
@@ -48,11 +46,26 @@ with open('fractalmarketslab/imports/SPX_volatility.csv', newline='', encoding='
 prices = extract_data(volData, 'close')
 volume = extract_data(volData, 'volume')
 vix = extract_data(volData, 'volIndex')
+logReturns = extract_data(volData, 'logReturns')
+putCall = extract_data(volData, 'putCallRatio')
+
 
 averages = {
-    'trade': statistics.mean(prices[:16]),
-    'trend': statistics.mean(prices[:64]),
-    'tail': statistics.mean(prices[:757]),
+    'trade': {
+         'prices': statistics.mean(prices[:16]),
+         'volume': statistics.mean(volume[:16]),
+         'vix': statistics.mean(vix[:16]),
+    },
+    'trend': {
+         'prices': statistics.mean(prices[:64]),
+         'volume': statistics.mean(volume[:64]),
+         'vix': statistics.mean(vix[:64]),
+    },
+    'tail': {
+        'prices': statistics.mean(prices[:757]),
+        'volume': statistics.mean(volume[:757]),
+        'vix': statistics.mean(vix[:757]),
+    },
 }
 
 for i, value in enumerate(prices):
