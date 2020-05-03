@@ -1,4 +1,5 @@
 import json
+import statistics 
 # Functions for manipulating data
 
 
@@ -10,21 +11,41 @@ def extract_data(data, key):
 
     return values
 
-def percentChange(list, i):
+def percentChange(lst, i):
     change = {
-        'dayChange': (list[i] - list[i + 1]) / list[i + 1] if  (i + 1 in range(-len(list), len(list)) and list[i + 1] != 0) else 0,
-        'trade': (list[i] - list[i + 16]) / list[i + 16] if  (i + 16 in range(-len(list), len(list)) and list[i + 16] != 0) else 0,
-        'trend': (list[i] - list[i + 64]) / list[i + 64] if  (i + 64 in range(-len(list), len(list)) and list[i + 64] != 0) else 0,
-        'tail': (list[i] - list[i + 757]) / list[i + 757] if  (i + 757 in range(-len(list), len(list)) and list[i + 757] != 0) else 0,
+        'dayChange': (lst[i] - lst[i + 1]) / lst[i + 1] if  (i + 1 in range(-len(lst), len(lst)) and lst[i + 1] != 0) else 0,
+        'trade': (lst[i] - lst[i + 16]) / lst[i + 16] if  (i + 16 in range(-len(lst), len(lst)) and lst[i + 16] != 0) else 0,
+        'trend': (lst[i] - lst[i + 64]) / lst[i + 64] if  (i + 64 in range(-len(lst), len(lst)) and lst[i + 64] != 0) else 0,
+        'tail': (lst[i] - lst[i + 757]) / lst[i + 757] if  (i + 757 in range(-len(lst), len(lst)) and lst[i + 757] != 0) else 0,
     }
     return change
 
-def chunks(list, n):
-    for i in range(0, len(list), n):
-        yield list[i:i + n]
+def chunks(lst, n):
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
 
 
-def chunkedAverages(list, chunk, limit):
+def chunkedAverages(lst, n):
+    chunkedList = list(chunks(lst, n))
+    averages = {}
+    for i, chunk in enumerate(chunkedList):
+        mean = statistics.mean(chunk)
+        formattedMean = format(mean, ".2%")        
+        averages[i] = formattedMean
     
-    return
+    return averages
+
+def chunkedDevs(lst, n):
+    chunkedList = list(chunks(lst, n))
+    stDevs = {}
+    for i, chunk in enumerate(chunkedList):
+        if (len(chunk) > 1):
+            dev = statistics.stdev(chunk)
+            formattedDev = format(dev, ".2%")
+            stDevs[i] = formattedDev
+        else:
+            stDevs[i] = 0
+    
+    return stDevs
+        
     

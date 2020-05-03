@@ -1,12 +1,14 @@
 import csv
-import statistics 
+import statistics
 from .functions import *
 
 with open('fractalmarketslab/imports/RescaleRangeSPX.csv', newline='', encoding='utf-8') as csvfile:
     rangeData = {}
     reader = csv.DictReader(csvfile)
 
+    
     for i, row in enumerate(reader):
+        # Using Risk Range Scales
         values = {
             'date': row['\ufeffDate'] if row['\ufeffDate'] else '',
             'close': row['Close'] if row['Close'] else 0,
@@ -35,30 +37,32 @@ with open('fractalmarketslab/imports/RescaleRangeSPX.csv', newline='', encoding=
         # Append value dictionary to data
         rangeData[i] = values
 
-tradingDays = {
-    'month' : 22,
+scales = {
+    'month': 22,
     'trade': 16,
     'trend': 64,
-    'tail': 756, # Max scale; Omega
+    'tail': 756,  # Max scale; Omega
 }
+
 
 returns = extract_data(rangeData, 'returns')
 
 rangeStats = {
-    'month': {                
+    'month': {
+        'means': chunkedAverages(returns, scales['month']),
+        'stDev': chunkedDevs(returns, scales['month']),
     },
     'trade': {
-        'deviation': row['TradeDev'] if row['TradeDev'] else 0,
-        'runningTotal': row['TradeRT'] if row['TradeRT'] else 0,
+        'means': chunkedAverages(returns, scales['trade']),
+        'stDev': chunkedDevs(returns, scales['trade']),
     },
     'trend': {
-        'deviation': row['TrendDev'] if row['TrendDev'] else 0,
-        'runningTotal': row['TrendRT'] if row['TrendRT'] else 0,
+        'means': chunkedAverages(returns, scales['trend']),
+        'stDev': chunkedDevs(returns, scales['trend']),
     },
     'tail': {
-        'deviation': row['TailDev'] if row['TailDev'] else 0,
-        'runningTotal': row['TailRT'] if row['TailRT'] else 0,
+        'means': chunkedAverages(returns, scales['tail']),
+        'stDev': chunkedDevs(returns, scales['tail']),
     }
 }
-
 
