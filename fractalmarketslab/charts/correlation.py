@@ -1,5 +1,5 @@
-from .data import *
-from .functions import extract_data
+from fractalmarketslab.data.voldata import *
+from fractalmarketslab.data.functions import *
 from termcolor import colored, cprint
 from matplotlib import pylab
 import matplotlib.pyplot as plt

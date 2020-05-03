@@ -1,3 +1,4 @@
+import json
 # Functions for manipulating data
 
 
@@ -18,4 +19,12 @@ def percentChange(list, i):
     }
     return change
 
+def chunks(list, n):
+    for i in range(0, len(list), n):
+        yield list[i:i + n]
+
+
+def chunkedAverages(list, chunk, limit):
+    
+    return
     
