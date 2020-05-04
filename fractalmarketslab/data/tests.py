@@ -4,14 +4,11 @@ from .functions import *
 import json
 
 
+# print(die)
 
-# print(json.dumps(returns, indent=1))
-# print(json.dumps(rangeData, indent=1))
-# tradeChunks = chunkedAverages(returns, 16)
-# print(json.dumps(tradeChunks, indent=1))
+# print(json.dumps(runningTotals, indent=1))
 print(json.dumps(rangeStats, indent=1))
-
-# print(json.dumps(list(chunks(returns, 30)), indent=1))
-# print(list(chunks(returns, 30)))
+# print(json.dumps(rangeData, indent=1))
+# print(type(rangeData[15819]['stats']['32']['runningTotal']))
 
 
