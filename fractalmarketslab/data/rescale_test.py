@@ -55,10 +55,16 @@ for scale, cells in scales.items():
 # Calculating Rescale Range
 for scale, stats in rangeStats.items():
     rangeStats[scale]['rescaleRanges'] = {}
-    # print(json.dumps(stats, indent=1))
 
     for i, value in stats['ranges'].items():
         rescaleRange = (value / stats['stDevs'][i] if (stats['stDevs'][i] != 0) else 0)
         rangeStats[scale]['rescaleRanges'][i] = rescaleRange
 
-die = 'die'
+# Range Analysis
+for scale, stats in rangeStats.items():
+    rangeStats[scale]['analysis'] = {}
+    # print(json.dumps(stats, indent=1))
+    rangeStats[scale]['analysis']['rescaleRangeAvg'] = statistics.mean(stats['rescaleRanges'])
+    rangeStats[scale]['analysis']['size'] = scales[scale]
+    rangeStats[scale]['analysis']['rrAvgLog'] = statistics.mean(stats['rescaleRanges'])
+
