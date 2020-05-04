@@ -3,6 +3,7 @@ import statistics
 import math
 from .functions import *
 
+# Arbitrary fractal scales
 scales = {
     '1': 15821,
     '2': 7911,
@@ -12,6 +13,7 @@ scales = {
     '32': 494,
 }
 
+# Parsing csv data
 with open('fractalmarketslab/imports/RescaleRangeSPXExample.csv', newline='', encoding='utf-8') as csvfile:
     rangeData = {}
     reader = csv.DictReader(csvfile)
@@ -34,12 +36,14 @@ with open('fractalmarketslab/imports/RescaleRangeSPXExample.csv', newline='', en
             rangeData[i]['stats'][scale]['runningTotal'] = float(row['Running Total({})'.format(scale)]) if row['Running Total({})'.format(scale)] else 0
 
 
+# Collecting returns and running totals
 returns = extractData(rangeData, 'returns')
-
 runningTotals = {}
 for scale, cells in scales.items():
     runningTotals[scale] = extractData(rangeData, ['stats', scale, 'runningTotal'])
 
+
+# Calculating statistics of returns and running totals
 rangeStats = {}
 for scale, cells in scales.items():
     rangeStats[scale] = {}
