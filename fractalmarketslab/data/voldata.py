@@ -43,11 +43,11 @@ with open('fractalmarketslab/imports/VolSPX.csv', newline='', encoding='utf-8') 
         # Append value dictionary to data
         volData[i] = values
 
-prices = extract_data(volData, 'close')
-volume = extract_data(volData, 'volume')
-vix = extract_data(volData, 'volIndex')
-logReturns = extract_data(volData, 'logReturns')
-putCall = extract_data(volData, 'putCallRatio')
+prices = extractData(volData, 'close')
+volume = extractData(volData, 'volume')
+vix = extractData(volData, 'volIndex')
+logReturns = extractData(volData, 'logReturns')
+putCall = extractData(volData, 'putCallRatio')
 
 
 averages = {

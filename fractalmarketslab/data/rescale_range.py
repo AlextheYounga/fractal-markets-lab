@@ -45,7 +45,7 @@ scales = {
 }
 
 
-returns = extract_data(rangeData, 'returns')
+returns = extractData(rangeData, 'returns')
 
 rangeStats = {
     'month': {

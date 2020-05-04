@@ -1,5 +1,6 @@
 import csv
 import statistics
+import math
 from .functions import *
 
 scales = {
@@ -29,18 +30,15 @@ with open('fractalmarketslab/imports/RescaleRangeSPXExample.csv', newline='', en
         rangeData[i]['stats'] = {}
         for scale, cells in scales.items():
             rangeData[i]['stats'][scale] = {}
-            rangeData[i]['stats'][scale]['deviation'] = float(
-                row['1to{}'.format(scale)]) if row['1to{}'.format(scale)] else 0
-            rangeData[i]['stats'][scale]['runningTotal'] = float(
-                row['Running Total({})'.format(scale)]) if row['Running Total({})'.format(scale)] else 0
+            rangeData[i]['stats'][scale]['deviation'] = float(row['1to{}'.format(scale)]) if row['1to{}'.format(scale)] else 0
+            rangeData[i]['stats'][scale]['runningTotal'] = float(row['Running Total({})'.format(scale)]) if row['Running Total({})'.format(scale)] else 0
 
 
-returns = extract_data(rangeData, 'returns')
+returns = extractData(rangeData, 'returns')
 
 runningTotals = {}
 for scale, cells in scales.items():
-    runningTotals[scale] = extract_data(
-        rangeData, ['stats', scale, 'runningTotal'])
+    runningTotals[scale] = extractData(rangeData, ['stats', scale, 'runningTotal'])
 
 rangeStats = {}
 for scale, cells in scales.items():
@@ -63,8 +61,9 @@ for scale, stats in rangeStats.items():
 # Range Analysis
 for scale, stats in rangeStats.items():
     rangeStats[scale]['analysis'] = {}
-    # print(json.dumps(stats, indent=1))
-    rangeStats[scale]['analysis']['rescaleRangeAvg'] = statistics.mean(stats['rescaleRanges'])
+    rescaleRanges = extractIndexedData(stats['rescaleRanges'])
+    
+    rangeStats[scale]['analysis']['rescaleRangeAvg'] = statistics.mean(rescaleRanges)
     rangeStats[scale]['analysis']['size'] = scales[scale]
-    rangeStats[scale]['analysis']['rrAvgLog'] = statistics.mean(stats['rescaleRanges'])
-
+    rangeStats[scale]['analysis']['rrAvgLog'] = math.log10(statistics.mean(rescaleRanges)) if (statistics.mean(rescaleRanges) > 0) else 0
+    rangeStats[scale]['analysis']['sizeLog'] = math.log10(scales[scale])

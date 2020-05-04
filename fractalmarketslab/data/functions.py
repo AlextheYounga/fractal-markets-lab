@@ -3,7 +3,7 @@ import statistics
 # Functions for manipulating data
 
 
-def extract_data(data, key):
+def extractData(data, key):
     values = []
     if (type(key) == list):
         if len(key) == 2:
@@ -28,6 +28,11 @@ def extract_data(data, key):
         for i, row in data.items():
             value = float(row[key])
             values.append(value)
+    return values
+
+
+def extractIndexedData(data):
+    values = list(data.values())
     return values
 
 
@@ -84,4 +89,3 @@ def chunkedRange(lst, n):
         chunkRange['range'][i] = (max(chunk) - min(chunk))
 
     return chunkRange
-
