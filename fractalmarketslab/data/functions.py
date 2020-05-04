@@ -53,8 +53,7 @@ def chunkedAverages(lst, n):
     averages = {}
     for i, chunk in enumerate(chunkedList):
         mean = statistics.mean(chunk)
-        formattedMean = format(mean, ".2%")
-        averages[i] = formattedMean
+        averages[i] = mean
 
     return averages
 
@@ -66,9 +65,7 @@ def chunkedDevs(lst, n):
         # Checking if chunk is more than one item; stDev needs more than one.
         if (len(chunk) > 1):
             dev = statistics.stdev(chunk)
-            # formatting to percentage
-            formattedDev = format(dev, ".2%")
-            stDevs[i] = formattedDev
+            stDevs[i] = dev
         else:
             stDevs[i] = 0
 
@@ -82,8 +79,9 @@ def chunkedRange(lst, n):
     chunkRange['maximum'] = {}
     chunkRange['range'] = {}
     for i, chunk in enumerate(chunkedList):
-        chunkRange['minimum'][i] = format(min(chunk), ".2%")
-        chunkRange['maximum'][i] = format(max(chunk), ".2%")
-        chunkRange['range'][i] = format((max(chunk) - min(chunk)), ".2%")
+        chunkRange['minimum'][i] = min(chunk)
+        chunkRange['maximum'][i] = max(chunk)
+        chunkRange['range'][i] = (max(chunk) - min(chunk))
 
     return chunkRange
+

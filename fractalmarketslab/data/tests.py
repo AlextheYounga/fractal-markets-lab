@@ -4,8 +4,6 @@ from .functions import *
 import json
 
 
-# print(die)
-
 # print(json.dumps(runningTotals, indent=1))
 print(json.dumps(rangeStats, indent=1))
 # print(json.dumps(rangeData, indent=1))

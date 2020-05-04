@@ -35,18 +35,30 @@ with open('fractalmarketslab/imports/RescaleRangeSPXExample.csv', newline='', en
                 row['Running Total({})'.format(scale)]) if row['Running Total({})'.format(scale)] else 0
 
 
-
 returns = extract_data(rangeData, 'returns')
 
 runningTotals = {}
 for scale, cells in scales.items():
-    runningTotals[scale] = extract_data(rangeData, ['stats', scale, 'runningTotal'])
+    runningTotals[scale] = extract_data(
+        rangeData, ['stats', scale, 'runningTotal'])
 
 rangeStats = {}
 for scale, cells in scales.items():
     rangeStats[scale] = {}
     rangeStats[scale]['means'] = chunkedAverages(returns, cells)
-    rangeStats[scale]['stDev'] = chunkedDevs(returns, cells)
-    rangeStats[scale]['minimum'] = chunkedRange(runningTotals[scale], cells)['minimum']
-    rangeStats[scale]['maximum'] = chunkedRange(runningTotals[scale], cells)['maximum']
-    rangeStats[scale]['range'] = chunkedRange(runningTotals[scale], cells)['range']
+    rangeStats[scale]['stDevs'] = chunkedDevs(returns, cells)
+    rangeStats[scale]['minimums'] = chunkedRange(runningTotals[scale], cells)['minimum']
+    rangeStats[scale]['maximums'] = chunkedRange(runningTotals[scale], cells)['maximum']
+    rangeStats[scale]['ranges'] = chunkedRange(runningTotals[scale], cells)['range']
+
+
+# Calculating Rescale Range
+for scale, stats in rangeStats.items():
+    rangeStats[scale]['rescaleRanges'] = {}
+    # print(json.dumps(stats, indent=1))
+
+    for i, value in stats['ranges'].items():
+        rescaleRange = (value / stats['stDevs'][i] if (stats['stDevs'][i] != 0) else 0)
+        rangeStats[scale]['rescaleRanges'][i] = rescaleRange
+
+die = 'die'
