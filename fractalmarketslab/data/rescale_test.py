@@ -37,22 +37,19 @@ with open('fractalmarketslab/imports/RescaleRangeSPXExample.csv', newline='', en
             rangeData[i]['stats'][scale]['runningTotal'] = float(row['Running Total({})'.format(scale)]) if row['Running Total({})'.format(scale)] else 0
 
 
-# Collecting returns and running totals
+# Collecting all returns
 returns = extractData(rangeData, 'returns')
-runningTotals = {}
-for scale, cells in scales.items():
-    runningTotals[scale] = extractData(rangeData, ['stats', scale, 'runningTotal'])
-
 
 # Calculating statistics of returns and running totals
 rangeStats = {}
 for scale, cells in scales.items():
+    runningTotals = extractData(rangeData, ['stats', scale, 'runningTotal'])
     rangeStats[scale] = {}
     rangeStats[scale]['means'] = chunkedAverages(returns, cells)
     rangeStats[scale]['stDevs'] = chunkedDevs(returns, cells)
-    rangeStats[scale]['minimums'] = chunkedRange(runningTotals[scale], cells)['minimum']
-    rangeStats[scale]['maximums'] = chunkedRange(runningTotals[scale], cells)['maximum']
-    rangeStats[scale]['ranges'] = chunkedRange(runningTotals[scale], cells)['range']
+    rangeStats[scale]['minimums'] = chunkedRange(runningTotals, cells)['minimum']
+    rangeStats[scale]['maximums'] = chunkedRange(runningTotals, cells)['maximum']
+    rangeStats[scale]['ranges'] = chunkedRange(runningTotals, cells)['range']
 
 
 # Calculating Rescale Range
@@ -61,6 +58,7 @@ for scale, values in rangeStats.items():
 
     for i, value in values['ranges'].items():
         rescaleRange = (value / values['stDevs'][i] if (values['stDevs'][i] != 0) else 0)
+
         rangeStats[scale]['rescaleRanges'][i] = rescaleRange
 
 # Range Analysis
@@ -74,16 +72,20 @@ for scale, values in rangeStats.items():
     rangeStats[scale]['analysis']['sizeLog'] = math.log10(scales[scale])
 
 # Hurst Exponent Calculations
-# for scale, cells in scales.items():
-    # rrLogs = extractIndexedData(rangeStats[scale]['analysis']['rrLog'])
-    # sizeLog = extractIndexedData(rangeStats[scale]['analysis']['sizeLog'])
+fractalStats = {}
+fractalStats['rescaleRange'] = {}
+# Adding rescale ranges to final data
+for scale, cells in scales.items():    
+    fractalStats['rescaleRange'][scale] = rangeStats[scale]['analysis']['rescaleRangeAvg']
 
-fractalStats = {
+# Calculating line regression of rescale range logs
+rrLogs = collectScaledData(scales, rangeStats, ['analysis', 'rrLog'])
+sizeLogs = collectScaledData(scales, rangeStats, ['analysis', 'sizeLog'])
+lineRegression = calculateLineRegression(rrLogs, sizeLogs)
 
-}
-# for scale, values in rangeStats.items(): 
-    # fractalStats['rescaleRange'] = values['analysis']['rescaleRangeAvg']
-    # fractalStats['hurstExponent'] = stats.linregress(values['analysis']['rrLog'], values['analysis']['sizeLog'])   
-    # fractalStats['fractalDimension'] = ''
-    # fractalStats['r-squared'] = ''
-    # fractalStats['intercept'] = ''
+# Final results
+fractalStats['hurstExponent'] = lineRegression['slope']
+fractalStats['fractalDimension'] = 2 - lineRegression['slope']
+fractalStats['r-squared'] = lineRegression['r-value']**2
+fractalStats['intercept'] = lineRegression['intercept']
+

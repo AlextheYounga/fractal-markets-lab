@@ -1,5 +1,6 @@
 import json
 import statistics
+from scipy import stats
 # Functions for manipulating data
 
 
@@ -33,6 +34,30 @@ def extractData(data, key):
 
 def extractIndexedData(data):
     values = list(data.values())
+    return values
+
+
+def collectScaledData(scales, data, key):
+    values = []
+    if (type(key) == list):
+        if len(key) == 2:
+            for scale, cells in scales.items():
+                value = float(data[scale][key[0]][key[1]])
+                values.append(value)
+        if len(key) == 3:
+            for scale, cells in scales.items():
+                value = float(data[scale][key[0]][key[1]][key[2]])
+                values.append(value)
+        if len(key) == 4:
+            for scale, cells in scales.items():
+                value = float(data[scale][key[0]][key[1]][key[2]][key[3]])
+                values.append(value)
+        if len(key) > 4:
+            return 'Nest level too deep to retrieve via function.'
+    else:
+        for scale, cells in scales.items():
+            value = float(data[scale][key])
+            values.append(value)
     return values
 
 
@@ -89,3 +114,14 @@ def chunkedRange(lst, n):
         chunkRange['range'][i] = (max(chunk) - min(chunk))
 
     return chunkRange
+
+def calculateLineRegression(x, y):    
+    line = stats.linregress(x, y)
+    results = {
+        'slope': line[0],
+        'intercept': line[1],
+        'r-value': line[2],
+        'p-value': line[3],
+        'standardError': line[4],
+    }
+    return results
