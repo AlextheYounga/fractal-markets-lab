@@ -44,9 +44,6 @@ returns = extractData(rangeData, 'returns')
 rangeStats = {}
 for scale, cells in scales.items():
     runningTotals = extractData(rangeData, ['stats', scale, 'runningTotal'])
-    if (scale == '4'):
-        print(json.dumps(chunkedAverages(returns, cells), indent=1))
-        break
     rangeStats[scale] = {}
     rangeStats[scale]['means'] = chunkedAverages(returns, cells)
     rangeStats[scale]['stDevs'] = chunkedDevs(returns, cells)
@@ -57,51 +54,42 @@ for scale, cells in scales.items():
 
 # Calculating Rescale Range
 for scale, values in rangeStats.items():
-    rangeStats[scale]['rescaleRanges'] = {}
 
     for i, value in values['ranges'].items():
         rescaleRange = (value / values['stDevs'][i] if (values['stDevs'][i] != 0) else 0)
 
-        rangeStats[scale]['rescaleRanges'][i] = rescaleRange
+        rangeStats[scale] = {
+            'rescaleRanges': {
+                i: rescaleRange,
+            }
+        }
 
 # Range Analysis
 for scale, values in rangeStats.items():
     rangeStats[scale]['analysis'] = {}
     rescaleRanges = extractIndexedData(values['rescaleRanges'])
-    
     rangeStats[scale]['analysis']['rescaleRangeAvg'] = statistics.mean(rescaleRanges)
     rangeStats[scale]['analysis']['size'] = scales[scale]
     rangeStats[scale]['analysis']['rrLog'] = math.log10(statistics.mean(rescaleRanges)) if (statistics.mean(rescaleRanges) > 0) else 0
     rangeStats[scale]['analysis']['sizeLog'] = math.log10(scales[scale])
 
 # Hurst Exponent Calculations
+
 fractalStats = {}
-fractalStats['rescaleRange'] = {}
 # Adding rescale ranges to final data
-for scale, cells in scales.items():    
-    fractalStats['rescaleRange'][scale] = rangeStats[scale]['analysis']['rescaleRangeAvg']
+for scale, cells in scales.items():
+    fractalStats['rescaleRange'] = {
+        scale: rangeStats[scale]['analysis']['rescaleRangeAvg'],
+    }
 
 # Calculating linear regression of rescale range logs
 logRR = scaledDataCollector(scales, rangeStats, ['analysis', 'rrLog'])
 logScales = scaledDataCollector(scales, rangeStats, ['analysis', 'sizeLog'])
-scaledLogData = fractalScaleChunksTest(logRR, logScales)
+slope, intercept, r_value, p_value, std_err = stats.linregress(logScales, logRR)
 
-fractalStats['regressionResults'] = {}
-fractalStats['regressionResults']['intercept'] = {
-    'fullSeries': {
-        'hurstExponent': calculateLinearRegression(logRR, logScales)['slope'],
-        'fractalDimension': 2 - float(calculateLinearRegression(logRR, logScales)['slope']),
-    }
-}
-# lineRegression = calculateLinearRegression(logRR, logScales)
+# Results
+fractalStats['regressionResults'] = fractalCalculator(logScales, logRR)
+done = True
 
 
-
-
-
-# Final results
-# fractalStats['hurstExponent'] = lineRegression['slope']
-# fractalStats['fractalDimension'] = 2 - lineRegression['slope']
-# fractalStats['r-squared'] = lineRegression['r-value']**2
-# fractalStats['intercept'] = lineRegression['intercept']
 

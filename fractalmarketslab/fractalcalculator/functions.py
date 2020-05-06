@@ -80,10 +80,11 @@ def chunks(lst, n):
 
 def chunkedAverages(lst, n):
     chunkedList = list(chunks(lst, n))
-    # if (len(chunkedList[-1]) < len(chunkedList[-2])):
+    if (len(chunkedList[-1]) == 1):
+        del chunkedList[-1]
     averages = {}
     for i, chunk in enumerate(chunkedList):
-        mean = statistics.mean(chunk)        
+        mean = statistics.mean(chunk)
         averages[i] = mean
 
     return averages
@@ -91,6 +92,8 @@ def chunkedAverages(lst, n):
 
 def chunkedDevs(lst, n):
     chunkedList = list(chunks(lst, n))
+    if (len(chunkedList[-1]) == 1):
+        del chunkedList[-1]
     stDevs = {}
     for i, chunk in enumerate(chunkedList):
         # Checking if chunk is more than one item; stDev needs more than one.
@@ -105,6 +108,8 @@ def chunkedDevs(lst, n):
 
 def chunkedRange(lst, n):
     chunkedList = list(chunks(lst, n))
+    if (len(chunkedList[-1]) == 1):
+        del chunkedList[-1]
     chunkRange = {}
     chunkRange['minimum'] = {}
     chunkRange['maximum'] = {}
@@ -116,50 +121,60 @@ def chunkedRange(lst, n):
 
     return chunkRange
 
-def calculateLinearRegression(x, y):    
-    line = stats.linregress(x, y)
-    results = {
-        'slope': line[0],
-        'intercept': line[1],
-        'r-value': line[2],
-        'p-value': line[3],
-        'standardError': line[4],
-    }
-    return results
 
 # Test Function
-def fractalScaleChunksTest(x, y):
+def fractalSections(x, y):
     if len(x) != len(y):
-        return "X and Y values contain disproportionate counts" 
+        return "X and Y values contain disproportionate counts"
 
     half = int(len(x) / 2)
     third = int(len(x) / 3)
 
-    xHalfChunked = list(chunks(x, half))
-    yHalfChunked = list(chunks(y, half))
-    xThirdChunked = list(chunks(x, third))
-    yThirdChunked = list(chunks(y, third))
-    
     fractalScales = {
         'pastHalfSeries': {
-            'x': xHalfChunked[0],
-            'y': yHalfChunked[0]
+            'x': list(chunks(x, half))[0],
+            'y': list(chunks(y, half))[0]
         },
         'currentHalfSeries': {
-            'x': xHalfChunked[1],
-            'y': yHalfChunked[1]
+            'x': list(chunks(x, half))[1],
+            'y': list(chunks(y, half))[1]
         },
         'pastThirdSeries': {
-            'x': xThirdChunked[0],
-            'y': yThirdChunked[0]
+            'x': list(chunks(x, third))[0],
+            'y': list(chunks(y, third))[0]
         },
         'middleThirdSeries': {
-            'x': xThirdChunked[1],
-            'y': yThirdChunked[1]
+            'x': list(chunks(x, third))[1],
+            'y': list(chunks(y, third))[1]
         },
         'currentThirdSeries': {
-            'x': xThirdChunked[2],
-            'y': yThirdChunked[2]
+            'x': list(chunks(x, third))[2],
+            'y': list(chunks(y, third))[2]
         },
     }
     return fractalScales
+
+
+def fractalCalculator(x, y):
+    sections = fractalSections(x, y)
+    slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
+    results = {
+        'fullSeries': {
+            'hurstExponent': slope,
+            'fractalDimension': 2 - slope,
+            'r-squared': r_value**2,
+            'p-value': p_value,
+            'standardError': std_err
+        },
+    }
+
+    for i, section in sections.items():
+        slope, intercept, r_value, p_value, std_err = stats.linregress(section['x'], section['y'])
+        results[i] = {
+            'hurstExponent': slope,
+            'fractalDimension': 2 - slope,
+            'r-squared': r_value**2,
+            'p-value': p_value,
+            'standardError': std_err
+        }
+    return results
