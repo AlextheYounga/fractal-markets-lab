@@ -44,6 +44,9 @@ returns = extractData(rangeData, 'returns')
 rangeStats = {}
 for scale, cells in scales.items():
     runningTotals = extractData(rangeData, ['stats', scale, 'runningTotal'])
+    if (scale == '4'):
+        print(json.dumps(chunkedAverages(returns, cells), indent=1))
+        break
     rangeStats[scale] = {}
     rangeStats[scale]['means'] = chunkedAverages(returns, cells)
     rangeStats[scale]['stDevs'] = chunkedDevs(returns, cells)
@@ -78,14 +81,27 @@ fractalStats['rescaleRange'] = {}
 for scale, cells in scales.items():    
     fractalStats['rescaleRange'][scale] = rangeStats[scale]['analysis']['rescaleRangeAvg']
 
-# Calculating line regression of rescale range logs
-rrLogs = collectScaledData(scales, rangeStats, ['analysis', 'rrLog'])
-sizeLogs = collectScaledData(scales, rangeStats, ['analysis', 'sizeLog'])
-lineRegression = calculateLineRegression(rrLogs, sizeLogs)
+# Calculating linear regression of rescale range logs
+logRR = scaledDataCollector(scales, rangeStats, ['analysis', 'rrLog'])
+logScales = scaledDataCollector(scales, rangeStats, ['analysis', 'sizeLog'])
+scaledLogData = fractalScaleChunksTest(logRR, logScales)
+
+fractalStats['regressionResults'] = {}
+fractalStats['regressionResults']['intercept'] = {
+    'fullSeries': {
+        'hurstExponent': calculateLinearRegression(logRR, logScales)['slope'],
+        'fractalDimension': 2 - float(calculateLinearRegression(logRR, logScales)['slope']),
+    }
+}
+# lineRegression = calculateLinearRegression(logRR, logScales)
+
+
+
+
 
 # Final results
-fractalStats['hurstExponent'] = lineRegression['slope']
-fractalStats['fractalDimension'] = 2 - lineRegression['slope']
-fractalStats['r-squared'] = lineRegression['r-value']**2
-fractalStats['intercept'] = lineRegression['intercept']
+# fractalStats['hurstExponent'] = lineRegression['slope']
+# fractalStats['fractalDimension'] = 2 - lineRegression['slope']
+# fractalStats['r-squared'] = lineRegression['r-value']**2
+# fractalStats['intercept'] = lineRegression['intercept']
 

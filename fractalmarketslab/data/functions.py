@@ -37,7 +37,7 @@ def extractIndexedData(data):
     return values
 
 
-def collectScaledData(scales, data, key):
+def scaledDataCollector(scales, data, key):
     values = []
     if (type(key) == list):
         if len(key) == 2:
@@ -80,9 +80,10 @@ def chunks(lst, n):
 
 def chunkedAverages(lst, n):
     chunkedList = list(chunks(lst, n))
+         
     averages = {}
     for i, chunk in enumerate(chunkedList):
-        mean = statistics.mean(chunk)
+        mean = statistics.mean(chunk)        
         averages[i] = mean
 
     return averages
@@ -115,7 +116,7 @@ def chunkedRange(lst, n):
 
     return chunkRange
 
-def calculateLineRegression(x, y):    
+def calculateLinearRegression(x, y):    
     line = stats.linregress(x, y)
     results = {
         'slope': line[0],
@@ -125,3 +126,40 @@ def calculateLineRegression(x, y):
         'standardError': line[4],
     }
     return results
+
+# Test Function
+def fractalScaleChunksTest(x, y):
+    if len(x) != len(y):
+        return "X and Y values contain disproportionate counts" 
+
+    half = int(len(x) / 2)
+    third = int(len(x) / 3)
+
+    xHalfChunked = list(chunks(x, half))
+    yHalfChunked = list(chunks(y, half))
+    xThirdChunked = list(chunks(x, third))
+    yThirdChunked = list(chunks(y, third))
+    
+    fractalScales = {
+        'pastHalfSeries': {
+            'x': xHalfChunked[0],
+            'y': yHalfChunked[0]
+        },
+        'currentHalfSeries': {
+            'x': xHalfChunked[1],
+            'y': yHalfChunked[1]
+        },
+        'pastThirdSeries': {
+            'x': xThirdChunked[0],
+            'y': yThirdChunked[0]
+        },
+        'middleThirdSeries': {
+            'x': xThirdChunked[1],
+            'y': yThirdChunked[1]
+        },
+        'currentThirdSeries': {
+            'x': xThirdChunked[2],
+            'y': yThirdChunked[2]
+        },
+    }
+    return fractalScales

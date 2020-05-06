@@ -7,9 +7,11 @@ import json
 # print(die)
 
 # print(json.dumps(rescaleRanges, indent=1))
-print(json.dumps(fractalStats, indent=1))
-# print(json.dumps(rrLogs, indent=1))
-# print(json.dumps(rangeStats, indent=1))
+# print(json.dumps(fractalStats, indent=1))
+# print(json.dumps((logRR, logScales), indent=1))
+
+# print(json.dumps(logRR, indent=1))
+# print(json.dumps(rangeStats['4'], indent=1))
 
 # print(json.dumps(rangeStats['4']['analysis']['rescaleRangeAvg'], indent=1))
 # print(json.dumps(rangeData, indent=1))
