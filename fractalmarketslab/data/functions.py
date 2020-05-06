@@ -80,7 +80,7 @@ def chunks(lst, n):
 
 def chunkedAverages(lst, n):
     chunkedList = list(chunks(lst, n))
-         
+    # if (len(chunkedList[-1]) < len(chunkedList[-2])):
     averages = {}
     for i, chunk in enumerate(chunkedList):
         mean = statistics.mean(chunk)        
