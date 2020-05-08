@@ -6,12 +6,16 @@ from timeit import default_timer as timer
 
 start = timer()
 
-# print(die)
-print(json.dumps(fractalStats, indent=1))
+print(die)
+# for i, section in fractalStats['regressionResults'].items():
+#     print(section['fractalDimension'])
+# print(json.dumps(fractalStats, indent=1))
+# print(json.dumps(rangeStats, indent=1))
+
 
 if (done == True):
     end = timer()
-    print("Done")
+    print("\n" + "Done")
     print("Time elapsed:", end - start, "seconds")
 
 

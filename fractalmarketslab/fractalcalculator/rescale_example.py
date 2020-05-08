@@ -3,6 +3,7 @@ import statistics
 from scipy import stats
 import math
 from .functions import *
+import sys
 
 # Arbitrary fractal scales
 scales = {
@@ -23,22 +24,20 @@ with open('fractalmarketslab/imports/RescaleRangeSPXExample.csv', newline='', en
         # Using powers of 2
         rows = {
             'date': row['\ufeffDate'] if row['\ufeffDate'] else '',
-            'close': row['Close'] if row['Close'] else 0,
-            'returns': row['Returns'] if row['Returns'] else 0,
+            'close': row['Close'] if row['Close'] else 0
         }
         # Append value dictionary to data
         rangeData[i] = rows
 
         # Loop through scales and append scale values to data
-        rangeData[i]['stats'] = {}
-        for scale, cells in scales.items():
-            rangeData[i]['stats'][scale] = {}
-            rangeData[i]['stats'][scale]['deviation'] = float(row['1to{}'.format(scale)]) if row['1to{}'.format(scale)] else 0
-            rangeData[i]['stats'][scale]['runningTotal'] = float(row['Running Total({})'.format(scale)]) if row['Running Total({})'.format(scale)] else 0
+        # rangeData[i]['stats'] = {}
+        # for scale, cells in scales.items():
+        #     rangeData[i]['stats'][scale] = {}
+        #     rangeData[i]['stats'][scale]['deviation'] = float(row['1to{}'.format(scale)]) if row['1to{}'.format(scale)] else 0
+        #     rangeData[i]['stats'][scale]['runningTotal'] = float(row['Running Total({})'.format(scale)]) if row['Running Total({})'.format(scale)] else 0
 
-
-# Collecting all returns
-returns = extractData(rangeData, 'returns')
+prices = extractData(rangeData, 'close')
+returns = returnsCalculator(prices)
 
 # Calculating statistics of returns and running totals
 rangeStats = {}
@@ -54,15 +53,11 @@ for scale, cells in scales.items():
 
 # Calculating Rescale Range
 for scale, values in rangeStats.items():
-
+    rangeStats[scale]['rescaleRanges'] = {}
     for i, value in values['ranges'].items():
         rescaleRange = (value / values['stDevs'][i] if (values['stDevs'][i] != 0) else 0)
 
-        rangeStats[scale] = {
-            'rescaleRanges': {
-                i: rescaleRange,
-            }
-        }
+        rangeStats[scale]['rescaleRanges'][i] = rescaleRange
 
 # Range Analysis
 for scale, values in rangeStats.items():
@@ -75,12 +70,12 @@ for scale, values in rangeStats.items():
 
 # Hurst Exponent Calculations
 
-fractalStats = {}
+fractalStats = {
+    'rescaleRange': {}
+}
 # Adding rescale ranges to final data
 for scale, cells in scales.items():
-    fractalStats['rescaleRange'] = {
-        scale: rangeStats[scale]['analysis']['rescaleRangeAvg'],
-    }
+    fractalStats['rescaleRange'][scale] = rangeStats[scale]['analysis']['rescaleRangeAvg']
 
 # Calculating linear regression of rescale range logs
 logRR = scaledDataCollector(scales, rangeStats, ['analysis', 'rrLog'])
@@ -90,6 +85,4 @@ slope, intercept, r_value, p_value, std_err = stats.linregress(logScales, logRR)
 # Results
 fractalStats['regressionResults'] = fractalCalculator(logScales, logRR)
 done = True
-
-
 

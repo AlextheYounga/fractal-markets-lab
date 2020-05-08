@@ -70,6 +70,13 @@ def percentChange(lst, i):
     }
     return change
 
+def returnsCalculator(prices):
+    returns = []
+    for i, price in enumerate(prices):
+        return_value = (price / float(prices[i + 1]) - 1) if (i + 1 in range(-len(prices), len(prices)) and float(prices[i + 1]) != 0) else 0
+        returns.append(return_value)
+    return returns
+
 
 def chunks(lst, n):
     for i in range(0, len(lst), n):
@@ -81,6 +88,8 @@ def chunks(lst, n):
 def chunkedAverages(lst, n):
     chunkedList = list(chunks(lst, n))
     if (len(chunkedList[-1]) == 1):
+        remainder = chunkedList[-1].pop(0)
+        chunkedList[-2].append(remainder)        
         del chunkedList[-1]
     averages = {}
     for i, chunk in enumerate(chunkedList):
@@ -93,6 +102,8 @@ def chunkedAverages(lst, n):
 def chunkedDevs(lst, n):
     chunkedList = list(chunks(lst, n))
     if (len(chunkedList[-1]) == 1):
+        remainder = chunkedList[-1].pop(0)
+        chunkedList[-2].append(remainder)        
         del chunkedList[-1]
     stDevs = {}
     for i, chunk in enumerate(chunkedList):
@@ -109,6 +120,8 @@ def chunkedDevs(lst, n):
 def chunkedRange(lst, n):
     chunkedList = list(chunks(lst, n))
     if (len(chunkedList[-1]) == 1):
+        remainder = chunkedList[-1].pop(0)
+        chunkedList[-2].append(remainder)        
         del chunkedList[-1]
     chunkRange = {}
     chunkRange['minimum'] = {}
