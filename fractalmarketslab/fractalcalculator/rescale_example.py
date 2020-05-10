@@ -29,15 +29,11 @@ with open('fractalmarketslab/imports/RescaleRangeSPXExample.csv', newline='', en
         # Append value dictionary to data
         rangeData[i] = rows
 
-        # Loop through scales and append scale values to data
-        # rangeData[i]['stats'] = {}
-        # for scale, cells in scales.items():
-        #     rangeData[i]['stats'][scale] = {}
-        #     rangeData[i]['stats'][scale]['deviation'] = float(row['1to{}'.format(scale)]) if row['1to{}'.format(scale)] else 0
-        #     rangeData[i]['stats'][scale]['runningTotal'] = float(row['Running Total({})'.format(scale)]) if row['Running Total({})'.format(scale)] else 0
 
 prices = extractData(rangeData, 'close')
 returns = returnsCalculator(prices)
+deviations = deviationsCalculator(returns, scales)
+runningTotals = runningTotalsCalculator(deviations, scales)
 
 # Calculating statistics of returns and running totals
 rangeStats = {}
@@ -69,13 +65,12 @@ for scale, values in rangeStats.items():
     rangeStats[scale]['analysis']['sizeLog'] = math.log10(scales[scale])
 
 # Hurst Exponent Calculations
-
-fractalStats = {
+fractalResults = {
     'rescaleRange': {}
 }
 # Adding rescale ranges to final data
 for scale, cells in scales.items():
-    fractalStats['rescaleRange'][scale] = rangeStats[scale]['analysis']['rescaleRangeAvg']
+    fractalResults['rescaleRange'][scale] = rangeStats[scale]['analysis']['rescaleRangeAvg']
 
 # Calculating linear regression of rescale range logs
 logRR = scaledDataCollector(scales, rangeStats, ['analysis', 'rrLog'])
@@ -83,6 +78,5 @@ logScales = scaledDataCollector(scales, rangeStats, ['analysis', 'sizeLog'])
 slope, intercept, r_value, p_value, std_err = stats.linregress(logScales, logRR)
 
 # Results
-fractalStats['regressionResults'] = fractalCalculator(logScales, logRR)
+fractalResults['regressionResults'] = fractalCalculator(logScales, logRR)
 done = True
-

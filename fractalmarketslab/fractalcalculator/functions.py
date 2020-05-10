@@ -70,6 +70,7 @@ def percentChange(lst, i):
     }
     return change
 
+
 def returnsCalculator(prices):
     returns = []
     for i, price in enumerate(prices):
@@ -87,10 +88,10 @@ def chunks(lst, n):
 
 def chunkedAverages(lst, n):
     chunkedList = list(chunks(lst, n))
-    if (len(chunkedList[-1]) == 1):
-        remainder = chunkedList[-1].pop(0)
-        chunkedList[-2].append(remainder)        
-        del chunkedList[-1]
+    # if (len(chunkedList[-1]) == 1):
+    #     remainder = chunkedList[-1].pop(0)
+    #     chunkedList[-2].append(remainder)
+    #     del chunkedList[-1]
     averages = {}
     for i, chunk in enumerate(chunkedList):
         mean = statistics.mean(chunk)
@@ -99,12 +100,38 @@ def chunkedAverages(lst, n):
     return averages
 
 
+def deviationsCalculator(returns, scales):
+    deviations = {}
+    for scale, cells in scales.items():
+        deviations[scale] = []
+        chunkedReturns = chunks(returns, cells)
+        chunkedMeans = chunkedAverages(returns, cells)
+        for index, chunk in enumerate(chunkedReturns):
+            for i, value in enumerate(chunk):
+                deviation = float(value) - float(chunkedMeans[index])
+                deviations[scale].append(deviation)
+    return deviations
+
+
+def runningTotalsCalculator(deviations, scales):
+    runningTotals = {}
+    for scale, cells in scales.items():
+        runningTotals[scale] = []
+        for i, value in enumerate(deviations[scale]):
+            if (i == 0):
+                runningTotals[scale].append(value)
+                continue
+            rt = value + runningTotals[scale][i - 1]
+            runningTotals[scale].append(rt)
+    return runningTotals
+
+
 def chunkedDevs(lst, n):
     chunkedList = list(chunks(lst, n))
-    if (len(chunkedList[-1]) == 1):
-        remainder = chunkedList[-1].pop(0)
-        chunkedList[-2].append(remainder)        
-        del chunkedList[-1]
+    # if (len(chunkedList[-1]) == 1):
+    #     remainder = chunkedList[-1].pop(0)
+    #     chunkedList[-2].append(remainder)
+    #     del chunkedList[-1]
     stDevs = {}
     for i, chunk in enumerate(chunkedList):
         # Checking if chunk is more than one item; stDev needs more than one.
@@ -121,7 +148,7 @@ def chunkedRange(lst, n):
     chunkedList = list(chunks(lst, n))
     if (len(chunkedList[-1]) == 1):
         remainder = chunkedList[-1].pop(0)
-        chunkedList[-2].append(remainder)        
+        chunkedList[-2].append(remainder)
         del chunkedList[-1]
     chunkRange = {}
     chunkRange['minimum'] = {}

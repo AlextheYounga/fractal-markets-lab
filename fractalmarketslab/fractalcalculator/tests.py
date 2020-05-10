@@ -7,9 +7,9 @@ from timeit import default_timer as timer
 start = timer()
 
 print(die)
-# for i, section in fractalStats['regressionResults'].items():
+# for i, section in fractalResults['regressionResults'].items():
 #     print(section['fractalDimension'])
-# print(json.dumps(fractalStats, indent=1))
+# print(json.dumps(fractalResults, indent=1))
 # print(json.dumps(rangeStats, indent=1))
 
 
@@ -20,7 +20,7 @@ if (done == True):
 
 
 # print(json.dumps(rescaleRanges, indent=1))
-# print(json.dumps(fractalStats, indent=1))
+# print(json.dumps(fractalResults, indent=1))
 # print(json.dumps((logRR, logScales), indent=1))
 # print(json.dumps(logRR, indent=1))
 # print(json.dumps(rangeStats, indent=1))
