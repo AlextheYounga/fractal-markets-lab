@@ -69,6 +69,12 @@ def chunks(lst, n):
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
 
+def backwardChunks(lst, n):
+    start = 0
+    for end in range(len(lst)%n, len(lst)+1, n):
+        yield lst[start:end]
+        start = end
+
 
 # Formulas for chunking data into the different scales (i.e. 1:1, 1:2, 1:4, ... 1:32)
 def chunkedAverages(lst, n):

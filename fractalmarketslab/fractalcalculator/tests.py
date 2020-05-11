@@ -1,5 +1,5 @@
 # from .rescale_range import *
-from .rescale_example import *
+from .calculator import *
 from .functions import *
 import json
 from timeit import default_timer as timer
