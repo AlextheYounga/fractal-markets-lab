@@ -4,6 +4,7 @@ from scipy import stats
 # Functions for manipulating data
 
 
+# Returns a list of items from a nested object.
 def extractData(data, key):
     values = []
     if (type(key) == list):
@@ -31,12 +32,7 @@ def extractData(data, key):
             values.append(value)
     return values
 
-
-def extractIndexedData(data):
-    values = list(data.values())
-    return values
-
-
+# Returns a list of data from a nested object that contains specific scales
 def scaledDataCollector(scales, data, key):
     values = []
     if (type(key) == list):
@@ -60,17 +56,7 @@ def scaledDataCollector(scales, data, key):
             values.append(value)
     return values
 
-
-def percentChange(lst, i):
-    change = {
-        'dayChange': (lst[i] - lst[i + 1]) / lst[i + 1] if (i + 1 in range(-len(lst), len(lst)) and lst[i + 1] != 0) else 0,
-        'trade': (lst[i] - lst[i + 16]) / lst[i + 16] if (i + 16 in range(-len(lst), len(lst)) and lst[i + 16] != 0) else 0,
-        'trend': (lst[i] - lst[i + 64]) / lst[i + 64] if (i + 64 in range(-len(lst), len(lst)) and lst[i + 64] != 0) else 0,
-        'tail': (lst[i] - lst[i + 757]) / lst[i + 757] if (i + 757 in range(-len(lst), len(lst)) and lst[i + 757] != 0) else 0,
-    }
-    return change
-
-
+# Creates a list of returns from a list of prices.
 def returnsCalculator(prices):
     returns = []
     for i, price in enumerate(prices):
@@ -78,14 +64,13 @@ def returnsCalculator(prices):
         returns.append(return_value)
     return returns
 
-
+# Returns chunked lists
 def chunks(lst, n):
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
 
 
 # Formulas for chunking data into the different scales (i.e. 1:1, 1:2, 1:4, ... 1:32)
-
 def chunkedAverages(lst, n):
     chunkedList = list(chunks(lst, n))
     # if (len(chunkedList[-1]) == 1):
@@ -160,61 +145,3 @@ def chunkedRange(lst, n):
         chunkRange['range'][i] = (max(chunk) - min(chunk))
 
     return chunkRange
-
-
-# Test Function
-def fractalSections(x, y):
-    if len(x) != len(y):
-        return "X and Y values contain disproportionate counts"
-
-    half = int(len(x) / 2)
-    third = int(len(x) / 3)
-
-    fractalScales = {
-        'pastHalfSeries': {
-            'x': list(chunks(x, half))[0],
-            'y': list(chunks(y, half))[0]
-        },
-        'currentHalfSeries': {
-            'x': list(chunks(x, half))[1],
-            'y': list(chunks(y, half))[1]
-        },
-        'pastThirdSeries': {
-            'x': list(chunks(x, third))[0],
-            'y': list(chunks(y, third))[0]
-        },
-        'middleThirdSeries': {
-            'x': list(chunks(x, third))[1],
-            'y': list(chunks(y, third))[1]
-        },
-        'currentThirdSeries': {
-            'x': list(chunks(x, third))[2],
-            'y': list(chunks(y, third))[2]
-        },
-    }
-    return fractalScales
-
-
-def fractalCalculator(x, y):
-    sections = fractalSections(x, y)
-    slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
-    results = {
-        'fullSeries': {
-            'hurstExponent': slope,
-            'fractalDimension': 2 - slope,
-            'r-squared': r_value**2,
-            'p-value': p_value,
-            'standardError': std_err
-        },
-    }
-
-    for i, section in sections.items():
-        slope, intercept, r_value, p_value, std_err = stats.linregress(section['x'], section['y'])
-        results[i] = {
-            'hurstExponent': slope,
-            'fractalDimension': 2 - slope,
-            'r-squared': r_value**2,
-            'p-value': p_value,
-            'standardError': std_err
-        }
-    return results

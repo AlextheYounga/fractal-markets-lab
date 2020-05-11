@@ -6,11 +6,8 @@ from timeit import default_timer as timer
 
 start = timer()
 
-print(die)
-# for i, section in fractalResults['regressionResults'].items():
-#     print(section['fractalDimension'])
-# print(json.dumps(fractalResults, indent=1))
-# print(json.dumps(rangeStats, indent=1))
+print(json.dumps(fractalResults, indent=1))
+
 
 
 if (done == True):

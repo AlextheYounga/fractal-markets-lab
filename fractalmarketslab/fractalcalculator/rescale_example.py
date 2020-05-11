@@ -17,7 +17,7 @@ scales = {
 
 # Parsing csv data
 with open('fractalmarketslab/imports/RescaleRangeSPXExample.csv', newline='', encoding='utf-8') as csvfile:
-    rangeData = {}
+    assetData = {}
     reader = csv.DictReader(csvfile)
 
     for i, row in enumerate(reader):
@@ -27,24 +27,23 @@ with open('fractalmarketslab/imports/RescaleRangeSPXExample.csv', newline='', en
             'close': row['Close'] if row['Close'] else 0
         }
         # Append value dictionary to data
-        rangeData[i] = rows
+        assetData[i] = rows
 
 
-prices = extractData(rangeData, 'close')
+prices = extractData(assetData, 'close')
 returns = returnsCalculator(prices)
 deviations = deviationsCalculator(returns, scales)
 runningTotals = runningTotalsCalculator(deviations, scales)
 
 # Calculating statistics of returns and running totals
 rangeStats = {}
-for scale, cells in scales.items():
-    runningTotals = extractData(rangeData, ['stats', scale, 'runningTotal'])
+for scale, cells in scales.items():    
     rangeStats[scale] = {}
     rangeStats[scale]['means'] = chunkedAverages(returns, cells)
     rangeStats[scale]['stDevs'] = chunkedDevs(returns, cells)
-    rangeStats[scale]['minimums'] = chunkedRange(runningTotals, cells)['minimum']
-    rangeStats[scale]['maximums'] = chunkedRange(runningTotals, cells)['maximum']
-    rangeStats[scale]['ranges'] = chunkedRange(runningTotals, cells)['range']
+    rangeStats[scale]['minimums'] = chunkedRange(runningTotals[scale], cells)['minimum']
+    rangeStats[scale]['maximums'] = chunkedRange(runningTotals[scale], cells)['maximum']
+    rangeStats[scale]['ranges'] = chunkedRange(runningTotals[scale], cells)['range']
 
 
 # Calculating Rescale Range
@@ -55,14 +54,14 @@ for scale, values in rangeStats.items():
 
         rangeStats[scale]['rescaleRanges'][i] = rescaleRange
 
-# Range Analysis
+# Key stats for fractal calculations
 for scale, values in rangeStats.items():
-    rangeStats[scale]['analysis'] = {}
-    rescaleRanges = extractIndexedData(values['rescaleRanges'])
-    rangeStats[scale]['analysis']['rescaleRangeAvg'] = statistics.mean(rescaleRanges)
-    rangeStats[scale]['analysis']['size'] = scales[scale]
-    rangeStats[scale]['analysis']['rrLog'] = math.log10(statistics.mean(rescaleRanges)) if (statistics.mean(rescaleRanges) > 0) else 0
-    rangeStats[scale]['analysis']['sizeLog'] = math.log10(scales[scale])
+    rangeStats[scale]['keyStats'] = {}
+    rescaleRanges = list(values['rescaleRanges'].values())
+    rangeStats[scale]['keyStats']['rescaleRangeAvg'] = statistics.mean(rescaleRanges)
+    rangeStats[scale]['keyStats']['size'] = scales[scale]
+    rangeStats[scale]['keyStats']['logRR'] = math.log10(statistics.mean(rescaleRanges)) if (statistics.mean(rescaleRanges) > 0) else 0
+    rangeStats[scale]['keyStats']['logScale'] = math.log10(scales[scale])
 
 # Hurst Exponent Calculations
 fractalResults = {
@@ -70,13 +69,69 @@ fractalResults = {
 }
 # Adding rescale ranges to final data
 for scale, cells in scales.items():
-    fractalResults['rescaleRange'][scale] = rangeStats[scale]['analysis']['rescaleRangeAvg']
+    fractalResults['rescaleRange'][scale] = rangeStats[scale]['keyStats']['rescaleRangeAvg']
 
 # Calculating linear regression of rescale range logs
-logRR = scaledDataCollector(scales, rangeStats, ['analysis', 'rrLog'])
-logScales = scaledDataCollector(scales, rangeStats, ['analysis', 'sizeLog'])
-slope, intercept, r_value, p_value, std_err = stats.linregress(logScales, logRR)
+logRRs = scaledDataCollector(scales, rangeStats, ['keyStats', 'logRR'])
+logScales = scaledDataCollector(scales, rangeStats, ['keyStats', 'logScale'])
+slope, intercept, r_value, p_value, std_err = stats.linregress(logScales, logRRs)
+
+# Calculator
+def fractalSections(x, y):
+    if len(x) != len(y):
+        return "X and Y values contain disproportionate counts"
+
+    half = int(len(x) / 2)
+    third = int(len(x) / 3)
+
+    fractalScales = {
+        'pastHalfSeries': {
+            'x': list(chunks(x, half))[0],
+            'y': list(chunks(y, half))[0]
+        },
+        'currentHalfSeries': {
+            'x': list(chunks(x, half))[1],
+            'y': list(chunks(y, half))[1]
+        },
+        'pastThirdSeries': {
+            'x': list(chunks(x, third))[0],
+            'y': list(chunks(y, third))[0]
+        },
+        'middleThirdSeries': {
+            'x': list(chunks(x, third))[1],
+            'y': list(chunks(y, third))[1]
+        },
+        'currentThirdSeries': {
+            'x': list(chunks(x, third))[2],
+            'y': list(chunks(y, third))[2]
+        },
+    }
+    return fractalScales
+
+def fractalCalculator(x, y):
+    sections = fractalSections(x, y)
+    slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
+    results = {
+        'fullSeries': {
+            'hurstExponent': slope,
+            'fractalDimension': 2 - slope,
+            'r-squared': r_value**2,
+            'p-value': p_value,
+            'standardError': std_err
+        },
+    }
+
+    for i, section in sections.items():
+        slope, intercept, r_value, p_value, std_err = stats.linregress(section['x'], section['y'])
+        results[i] = {
+            'hurstExponent': slope,
+            'fractalDimension': 2 - slope,
+            'r-squared': r_value**2,
+            'p-value': p_value,
+            'standardError': std_err
+        }
+    return results
 
 # Results
-fractalResults['regressionResults'] = fractalCalculator(logScales, logRR)
+fractalResults['regressionResults'] = fractalCalculator(logScales, logRRs)
 done = True
