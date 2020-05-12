@@ -6,7 +6,7 @@ from timeit import default_timer as timer
 
 start = timer()
 
-print(json.dumps(fractalResults, indent=1))
+# print(json.dumps(fractalResults, indent=1))
 
 
 

@@ -3,6 +3,7 @@ import statistics
 from scipy import stats
 import math
 from .functions import *
+from .export import exportFractal
 import sys
 
 
@@ -133,5 +134,7 @@ def fractalCalculator(x, y):
 
 # Results
 fractalResults['regressionResults'] = fractalCalculator(logScales, logRRs)
-print(json.dumps(fractalResults, indent=1))
-done = True
+# print(json.dumps(fractalResults, indent=1))
+
+# Export to CSV
+exportFractal(fractalResults)
