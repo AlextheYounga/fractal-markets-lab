@@ -12,8 +12,9 @@ def exportFractal(fractalResults):
     if os.path.exists(output_file):
         os.remove(output_file)
 
-    with open(output_file, mode='w') as regressionfile:
-        write_regression = csv.writer(regressionfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    with open(output_file, mode='w') as resultsfile:
+        write_results = csv.writer(resultsfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        write_results.writerow(['Fractal Statistics:'])
 
         results_scales = []
         headers = []
@@ -31,10 +32,19 @@ def exportFractal(fractalResults):
         # Zipping all lists into row
         rows = zip(results_scales, hurstExponents, fractalDimensions, rSquared, pValues, standardErrors)
 
-        # Headers
+        # Writing Headers
         headers.insert(0, '')
-        write_regression.writerow(headers)
+        write_results.writerow(headers)
 
-        # Columns
+        # Writing Data Columns
         for row in rows:
-            write_regression.writerow(row)
+            write_results.writerow(row)
+
+        # Rescale Range
+        write_results.writerow('')
+        write_results.writerow(['Rescale Range:'])
+        write_results.writerow(['Scale', 'RescaleRange'])
+        for scale, rr in fractalResults['rescaleRange'].items():
+            write_results.writerow(['fullSeries / {}'.format(scale), rr])
+
+

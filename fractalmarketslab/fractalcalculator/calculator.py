@@ -112,29 +112,29 @@ def fractalCalculator(x, y):
     slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
     results = {
         'fullSeries': {
-            'hurstExponent': slope,
-            'fractalDimension': 2 - slope,
-            'r-squared': r_value**2,
-            'p-value': p_value,
-            'standardError': std_err
+            'hurstExponent': round(slope, 2),
+            'fractalDimension': round((2 - slope), 2),
+            'r-squared': round(r_value**2, 2),
+            'p-value': round(p_value, 2),
+            'standardError': round(std_err, 2)
         },
     }
 
     for i, section in sections.items():
         slope, intercept, r_value, p_value, std_err = stats.linregress(section['x'], section['y'])
         results[i] = {
-            'hurstExponent': slope,
-            'fractalDimension': 2 - slope,
-            'r-squared': r_value**2,
-            'p-value': p_value,
-            'standardError': std_err
+            'hurstExponent': round(slope, 2),
+            'fractalDimension': round((2 - slope), 2),
+            'r-squared': round(r_value**2, 2),
+            'p-value': round(p_value, 2),
+            'standardError': round(std_err, 2)
         }
     return results
 
 
 # Results
 fractalResults['regressionResults'] = fractalCalculator(logScales, logRRs)
-# print(json.dumps(fractalResults, indent=1))
+print(json.dumps(fractalResults, indent=1))
 
 # Export to CSV
 exportFractal(fractalResults)
