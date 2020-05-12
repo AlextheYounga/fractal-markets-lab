@@ -7,7 +7,7 @@ from datetime import datetime
 def exportFractal(fractalResults):
     now = datetime.now()
     datenow = now.strftime("%m%d%Y%H%M%S")
-    output_file = 'fractalmarketslab/exports/regression/regression_results.csv'
+    output_file = 'fractalmarketslab/exports/fractal_results.csv'
 
     if os.path.exists(output_file):
         os.remove(output_file)

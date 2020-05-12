@@ -27,13 +27,14 @@ prices = extractData(assetData, 'close')
 count = len(prices)
 scales = {
     '1': count,
-    '2': int(count / 2),
-    '3': int(count / 3.5),
-    '12': int(count / 12.25),
-    '43': int(count / 43),
-    '150': int(count / 150),
-    '525': int(count / 525),
+    '7': int(count / 7),
+    '14': int(count / 14),
+    '21': int(count / 21),
+    '28': int(count / 28),
+    '35': int(count / 35),
+    '42': int(count / 42),
 }
+print(json.dumps(scales, indent=1))
 
 returns = returnsCalculator(prices)
 deviations = deviationsCalculator(returns, scales)
@@ -134,7 +135,7 @@ def fractalCalculator(x, y):
 
 # Results
 fractalResults['regressionResults'] = fractalCalculator(logScales, logRRs)
-print(json.dumps(fractalResults, indent=1))
+# print(json.dumps(fractalResults, indent=1))
 
 # Export to CSV
 exportFractal(fractalResults)
