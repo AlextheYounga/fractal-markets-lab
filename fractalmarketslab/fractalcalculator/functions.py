@@ -104,10 +104,6 @@ def backwardChunks(lst, n):
 # Formulas for chunking data into the different scales (i.e. 1:1, 1:2, 1:4, ... 1:32)
 def chunkedAverages(lst, n):
     chunkedList = list(chunks(lst, n))
-    # if (len(chunkedList[-1]) == 1):
-    #     remainder = chunkedList[-1].pop(0)
-    #     chunkedList[-2].append(remainder)
-    #     del chunkedList[-1]
     averages = {}
     for i, chunk in enumerate(chunkedList):
         mean = statistics.mean(chunk)
@@ -144,10 +140,6 @@ def runningTotalsCalculator(deviations, scales):
 
 def chunkedDevs(lst, n):
     chunkedList = list(chunks(lst, n))
-    # if (len(chunkedList[-1]) == 1):
-    #     remainder = chunkedList[-1].pop(0)
-    #     chunkedList[-2].append(remainder)
-    #     del chunkedList[-1]
     stDevs = {}
     for i, chunk in enumerate(chunkedList):
         # Checking if chunk is more than one item; stDev needs more than one.

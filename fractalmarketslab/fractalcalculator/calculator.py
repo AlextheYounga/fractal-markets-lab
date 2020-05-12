@@ -73,7 +73,7 @@ fractalResults = {
 }
 # Adding rescale ranges to final data
 for scale, cells in scales.items():
-    fractalResults['rescaleRange'][scale] = rangeStats[scale]['keyStats']['rescaleRangeAvg']
+    fractalResults['rescaleRange'][scale] = round(rangeStats[scale]['keyStats']['rescaleRangeAvg'], 2)
 
 
 # Calculating linear regression of rescale range logs
