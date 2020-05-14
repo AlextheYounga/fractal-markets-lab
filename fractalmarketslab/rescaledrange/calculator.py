@@ -25,15 +25,9 @@ prices = extractData(assetData, 'close')
 
 # Arbitrary fractal scales
 count = len(prices)
-scales = {
-    '1': count,
-    '7': int(count / 7),
-    '14': int(count / 14),
-    '21': int(count / 21),
-    '28': int(count / 28),
-    '35': int(count / 35),
-    '42': int(count / 42),
-}
+
+scales = exponentialScales(count, 3, 6)
+
 print(json.dumps(scales, indent=1))
 
 returns = returnsCalculator(prices)
@@ -42,13 +36,13 @@ runningTotals = runningTotalsCalculator(deviations, scales)
 
 # Calculating statistics of returns and running totals
 rangeStats = {}
-for scale, cells in scales.items():
+for scale, days in scales.items():
     rangeStats[scale] = {}
-    rangeStats[scale]['means'] = chunkedAverages(returns, cells)
-    rangeStats[scale]['stDevs'] = chunkedDevs(returns, cells)
-    rangeStats[scale]['minimums'] = chunkedRange(runningTotals[scale], cells)['minimum']
-    rangeStats[scale]['maximums'] = chunkedRange(runningTotals[scale], cells)['maximum']
-    rangeStats[scale]['ranges'] = chunkedRange(runningTotals[scale], cells)['range']
+    rangeStats[scale]['means'] = chunkedAverages(returns, days)
+    rangeStats[scale]['stDevs'] = chunkedDevs(returns, days)
+    rangeStats[scale]['minimums'] = chunkedRange(runningTotals[scale], days)['minimum']
+    rangeStats[scale]['maximums'] = chunkedRange(runningTotals[scale], days)['maximum']
+    rangeStats[scale]['ranges'] = chunkedRange(runningTotals[scale], days)['range']
 
 
 # Calculating Rescale Range
@@ -73,7 +67,7 @@ fractalResults = {
     'rescaleRange': {}
 }
 # Adding rescale ranges to final data
-for scale, cells in scales.items():
+for scale, days in scales.items():
     fractalResults['rescaleRange'][scale] = round(rangeStats[scale]['keyStats']['rescaleRangeAvg'], 2)
 
 
@@ -110,17 +104,7 @@ def fractalSections(x, y):
 
 def fractalCalculator(x, y):
     sections = fractalSections(x, y)
-    slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
-    results = {
-        'fullSeries': {
-            'hurstExponent': round(slope, 2),
-            'fractalDimension': round((2 - slope), 2),
-            'r-squared': round(r_value**2, 2),
-            'p-value': round(p_value, 2),
-            'standardError': round(std_err, 2)
-        },
-    }
-
+    results = {}
     for i, section in sections.items():
         slope, intercept, r_value, p_value, std_err = stats.linregress(section['x'], section['y'])
         results[i] = {
@@ -130,6 +114,14 @@ def fractalCalculator(x, y):
             'p-value': round(p_value, 2),
             'standardError': round(std_err, 2)
         }
+    slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
+    results['fullSeries'] = {
+        'hurstExponent': round(slope, 2),
+        'fractalDimension': round((2 - slope), 2),
+        'r-squared': round(r_value**2, 2),
+        'p-value': round(p_value, 2),
+        'standardError': round(std_err, 2)
+    }
     return results
 
 
@@ -138,4 +130,4 @@ fractalResults['regressionResults'] = fractalCalculator(logScales, logRRs)
 # print(json.dumps(fractalResults, indent=1))
 
 # Export to CSV
-exportFractal(fractalResults)
+exportFractal(fractalResults, scales)

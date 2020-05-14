@@ -59,26 +59,59 @@ def scaledDataCollector(scales, data, key):
     else:
         if (type(key) == list):
             if len(key) == 2:
-                for scale, cells in scales.items():
+                for scale, days in scales.items():
                     value = float(data[scale][key[0]][key[1]])
                     values.append(value)
             if len(key) == 3:
-                for scale, cells in scales.items():
+                for scale, days in scales.items():
                     value = float(data[scale][key[0]][key[1]][key[2]])
                     values.append(value)
             if len(key) == 4:
-                for scale, cells in scales.items():
+                for scale, days in scales.items():
                     value = float(data[scale][key[0]][key[1]][key[2]][key[3]])
                     values.append(value)
             if len(key) > 4:
                 return 'Nest level too deep to retrieve via function.'
         else:
-            for scale, cells in scales.items():
+            for scale, days in scales.items():
                 value = float(data[scale][key])
                 values.append(value)
         
     return values
 
+
+# Scale Calculators
+# The function will create exponential scales, multiplying the denominator by a multiple each loop.
+# The limit param will define how many loops the function runs, for how many scales the user wants.
+def exponentialScales(count, multiple, limit):
+    m = multiple
+    itr = []
+    scales = {}
+    for i in range(limit):
+        if (i == 0):
+            scales[i + 1] = count
+            itr.append(i + 1)
+        else:    
+            scales[(itr[i - 1] * m)] = int(count / (itr[i - 1] * m))
+            itr.append(itr[i - 1] * m)
+
+    return scales
+
+# The function will create linear scales, adding a number on each loop.
+# The limit param will define how many loops the function runs.
+def linearScales(count, add, limit):
+    x = add
+    itr = []
+    scales = {}
+    for i in range(limit):
+        if (i == 0):
+            scales[i + 1] = count
+            itr.append(i + 1)
+        else:    
+            scales[(itr[i - 1] + x)] = int(count / (itr[i - 1] + x))
+            itr.append(itr[i - 1] + x)
+
+    return scales
     
 
 # Creates a list of returns from a list of prices.
@@ -114,10 +147,10 @@ def chunkedAverages(lst, n):
 
 def deviationsCalculator(returns, scales):
     deviations = {}
-    for scale, cells in scales.items():
+    for scale, days in scales.items():
         deviations[scale] = []
-        chunkedReturns = chunks(returns, cells)
-        chunkedMeans = chunkedAverages(returns, cells)
+        chunkedReturns = chunks(returns, days)
+        chunkedMeans = chunkedAverages(returns, days)
         for index, chunk in enumerate(chunkedReturns):
             for i, value in enumerate(chunk):
                 deviation = float(value) - float(chunkedMeans[index])
@@ -127,7 +160,7 @@ def deviationsCalculator(returns, scales):
 
 def runningTotalsCalculator(deviations, scales):
     runningTotals = {}
-    for scale, cells in scales.items():
+    for scale, days in scales.items():
         runningTotals[scale] = []
         for i, value in enumerate(deviations[scale]):
             if (i == 0):

@@ -24,8 +24,11 @@ with open('fractalmarketslab/imports/donchian.csv', newline='', encoding='utf-8'
 prices = extractData(asset_data, 'close')
 
 scales = {
+    'week': 5,
     'trade': 16,
     'month': 22,
     'trend': 64,
     'tail': 756
 }
+
+# =IF($K8<>"",MAX(OFFSET($K8,-MIN($A8,$M$1),0):$K8),"")
