@@ -3,7 +3,7 @@ import os
 from .functions import *
 from datetime import datetime
 
-def exportFractal(fractalResults, refScales):
+def exportFractal(fractal_results, refScales):
     output_file = 'fractalmarketslab/exports/fractal_results.csv'
     now = datetime.now()
     datenow = now.strftime("%m-%d-%Y %H:%M:%S")
@@ -19,17 +19,17 @@ def exportFractal(fractalResults, refScales):
 
             results_scales = []
             headers = []
-            for scale, stats in fractalResults['regressionResults'].items():
+            for scale, stats in fractal_results['regressionResults'].items():
                 results_scales.append(scale)
-            for header, value in fractalResults['regressionResults'][results_scales[0]].items():
+            for header, value in fractal_results['regressionResults'][results_scales[0]].items():
                 headers.append(header)
             
             # Making lists from each set of data
-            hurstExponents = scaledDataCollector(results_scales, fractalResults['regressionResults'],'hurstExponent')
-            fractalDimensions = scaledDataCollector(results_scales, fractalResults['regressionResults'],'fractalDimension')
-            rSquared = scaledDataCollector(results_scales, fractalResults['regressionResults'],'r-squared')
-            pValues = scaledDataCollector(results_scales, fractalResults['regressionResults'],'p-value')
-            standardErrors = scaledDataCollector(results_scales, fractalResults['regressionResults'],'standardError')
+            hurstExponents = scaledDataCollector(results_scales, fractal_results['regressionResults'],'hurstExponent')
+            fractalDimensions = scaledDataCollector(results_scales, fractal_results['regressionResults'],'fractalDimension')
+            rSquared = scaledDataCollector(results_scales, fractal_results['regressionResults'],'r-squared')
+            pValues = scaledDataCollector(results_scales, fractal_results['regressionResults'],'p-value')
+            standardErrors = scaledDataCollector(results_scales, fractal_results['regressionResults'],'standardError')
             # Zipping all lists into row
             rows = zip(results_scales, hurstExponents, fractalDimensions, rSquared, pValues, standardErrors)
 
@@ -45,7 +45,7 @@ def exportFractal(fractalResults, refScales):
             write_results.writerow('')
             write_results.writerow(['Rescale Range:'])
             write_results.writerow(['Scale', 'RescaleRange'])
-            for scale, rr in fractalResults['rescaleRange'].items():
+            for scale, rr in fractal_results['rescaleRange'].items():
                 write_results.writerow(['fullSeries / {} : {} day chunks'.format(scale, refScales[scale]), rr])
 
     else:
@@ -55,17 +55,17 @@ def exportFractal(fractalResults, refScales):
 
             results_scales = []
             headers = []
-            for scale, stats in fractalResults['regressionResults'].items():
+            for scale, stats in fractal_results['regressionResults'].items():
                 results_scales.append(scale)
-            for header, value in fractalResults['regressionResults'][results_scales[0]].items():
+            for header, value in fractal_results['regressionResults'][results_scales[0]].items():
                 headers.append(header)
             
             # Making lists from each set of data
-            hurstExponents = scaledDataCollector(results_scales, fractalResults['regressionResults'],'hurstExponent')
-            fractalDimensions = scaledDataCollector(results_scales, fractalResults['regressionResults'],'fractalDimension')
-            rSquared = scaledDataCollector(results_scales, fractalResults['regressionResults'],'r-squared')
-            pValues = scaledDataCollector(results_scales, fractalResults['regressionResults'],'p-value')
-            standardErrors = scaledDataCollector(results_scales, fractalResults['regressionResults'],'standardError')
+            hurstExponents = scaledDataCollector(results_scales, fractal_results['regressionResults'],'hurstExponent')
+            fractalDimensions = scaledDataCollector(results_scales, fractal_results['regressionResults'],'fractalDimension')
+            rSquared = scaledDataCollector(results_scales, fractal_results['regressionResults'],'r-squared')
+            pValues = scaledDataCollector(results_scales, fractal_results['regressionResults'],'p-value')
+            standardErrors = scaledDataCollector(results_scales, fractal_results['regressionResults'],'standardError')
             # Zipping all lists into row
             rows = zip(results_scales, hurstExponents, fractalDimensions, rSquared, pValues, standardErrors)
 
@@ -81,7 +81,7 @@ def exportFractal(fractalResults, refScales):
             write_results.writerow('')
             write_results.writerow(['Rescale Range:'])
             write_results.writerow(['Scale', 'RescaleRange'])
-            for scale, rr in fractalResults['rescaleRange'].items():
+            for scale, rr in fractal_results['rescaleRange'].items():
                 write_results.writerow(['fullSeries / {} : {} day chunks'.format(scale, refScales[scale]), rr])
 
 

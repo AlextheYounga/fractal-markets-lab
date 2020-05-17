@@ -136,9 +136,9 @@ def backwardChunks(lst, n):
 
 # Formulas for chunking data into the different scales (i.e. 1:1, 1:2, 1:4, ... 1:32)
 def chunkedAverages(lst, n):
-    chunkedList = list(chunks(lst, n))
+    chunked_list = list(chunks(lst, n))
     averages = {}
-    for i, chunk in enumerate(chunkedList):
+    for i, chunk in enumerate(chunked_list):
         mean = statistics.mean(chunk)
         averages[i] = mean
 
@@ -158,23 +158,23 @@ def deviationsCalculator(returns, scales):
     return deviations
 
 
-def runningTotalsCalculator(deviations, scales):
-    runningTotals = {}
+def running_totalsCalculator(deviations, scales):
+    running_totals = {}
     for scale, days in scales.items():
-        runningTotals[scale] = []
+        running_totals[scale] = []
         for i, value in enumerate(deviations[scale]):
             if (i == 0):
-                runningTotals[scale].append(value)
+                running_totals[scale].append(value)
                 continue
-            rt = value + runningTotals[scale][i - 1]
-            runningTotals[scale].append(rt)
-    return runningTotals
+            rt = value + running_totals[scale][i - 1]
+            running_totals[scale].append(rt)
+    return running_totals
 
 
 def chunkedDevs(lst, n):
-    chunkedList = list(chunks(lst, n))
+    chunked_list = list(chunks(lst, n))
     stDevs = {}
-    for i, chunk in enumerate(chunkedList):
+    for i, chunk in enumerate(chunked_list):
         # Checking if chunk is more than one item; stDev needs more than one.
         if (len(chunk) > 1):
             dev = statistics.stdev(chunk)
@@ -186,18 +186,18 @@ def chunkedDevs(lst, n):
 
 
 def chunkedRange(lst, n):
-    chunkedList = list(chunks(lst, n))
-    if (len(chunkedList[-1]) == 1):
-        remainder = chunkedList[-1].pop(0)
-        chunkedList[-2].append(remainder)
-        del chunkedList[-1]
-    chunkRange = {}
-    chunkRange['minimum'] = {}
-    chunkRange['maximum'] = {}
-    chunkRange['range'] = {}
-    for i, chunk in enumerate(chunkedList):
-        chunkRange['minimum'][i] = min(chunk)
-        chunkRange['maximum'][i] = max(chunk)
-        chunkRange['range'][i] = (max(chunk) - min(chunk))
+    chunked_list = list(chunks(lst, n))
+    if (len(chunked_list[-1]) == 1):
+        remainder = chunked_list[-1].pop(0)
+        chunked_list[-2].append(remainder)
+        del chunked_list[-1]
+    chunk_range = {}
+    chunk_range['minimum'] = {}
+    chunk_range['maximum'] = {}
+    chunk_range['range'] = {}
+    for i, chunk in enumerate(chunked_list):
+        chunk_range['minimum'][i] = min(chunk)
+        chunk_range['maximum'][i] = max(chunk)
+        chunk_range['range'][i] = (max(chunk) - min(chunk))
 
-    return chunkRange
+    return chunk_range
