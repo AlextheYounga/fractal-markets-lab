@@ -1,34 +1,25 @@
-import csv
 import statistics
 from scipy import stats
 from .functions import *
+from .imports import *
 import math
 import sys
 
-# Parsing csv data
-with open('fractalmarketslab/imports/donchian.csv', newline='', encoding='utf-8') as csvfile:
-    asset_data = {}
-    reader = csv.DictReader(csvfile)
 
-    for i, row in enumerate(reader):
-        rows = {
-            'date': row['\ufeffDate'] if row['\ufeffDate'] else '',
-            'open': row['Open'] if row['Open'] else 0,
-            'low': row['Low'] if row['Low'] else 0,
-            'high': row['High'] if row['High'] else 0,
-            'close': row['Close'] if row['Close'] else 0,                        
-        }
-        # Append value dictionary to data
-        asset_data[i] = rows
+ticker = "GDX"
+asset_data = getShortApiData(ticker)
 
-prices = extractData(asset_data, 'close')
+prices = list(reversed(extractData(asset_data, 'close')))
+highs = list(reversed(extractData(asset_data, 'high')))
+lows = list(reversed(extractData(asset_data, 'low')))
+dates = list(reversed(extractData(asset_data, 'date')))
 
-scales = {
-    'week': 5,
-    'trade': 16,
-    'month': 22,
-    'trend': 64,
-    'tail': 756
+donchian_stats = {
+    'donchianHigh': max(highs[:16]),
+    'currentPrice': prices[0],
+    'donchianLow': min(lows[:16])
 }
+
+print(json.dumps(donchian_stats, indent=1))
 
 # =IF($K8<>"",MAX(OFFSET($K8,-MIN($A8,$M$1),0):$K8),"")

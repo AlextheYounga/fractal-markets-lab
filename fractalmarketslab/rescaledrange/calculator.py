@@ -8,7 +8,7 @@ import sys
 
 # Fetch historical prices
 ticker = "SP500"
-asset_data = getApiData(ticker)
+asset_data = getLongApiData(ticker)
 
 prices = extractData(asset_data, 'close')
 count = len(prices)
