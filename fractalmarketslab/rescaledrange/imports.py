@@ -2,11 +2,11 @@ from ..key import IEX_TOKEN
 from iexfinance.stocks import get_historical_data
 import json
 import csv
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 def getShortApiData(asset):
-    start = datetime.today() - timedelta(days=90)
+    start = datetime.today() - timedelta(days=30)
     end = datetime.today()
 
     api_response = get_historical_data(asset, start, end, token=IEX_TOKEN)
