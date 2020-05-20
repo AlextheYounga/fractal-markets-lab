@@ -46,8 +46,8 @@ def getLongApiData(asset):
     return asset_data
 
 
-def parseCSV():
-    with open('fractalmarketslab/imports/currentSPX.csv', newline='', encoding='utf-8') as csvfile:
+def parseCSV(file):
+    with open('fractalmarketslab/imports/{}'.format(file), newline='', encoding='utf-8') as csvfile:
         asset_data = {}
         reader = csv.DictReader(csvfile)
 

@@ -201,3 +201,60 @@ def chunkedRange(lst, n):
         chunk_range['range'][i] = (max(chunk) - min(chunk))
 
     return chunk_range
+
+# Fractal Analysis Functions
+def tradingFractalSections(x, y):
+    if len(x) != len(y):
+        return "X and Y values contain disproportionate counts"
+
+    fractal_scales = {
+        'trade': {
+            'x': list(backwardChunks(x, 2))[-1],
+            'y': list(backwardChunks(y, 2))[-1],
+        },
+        'month': {
+            'x': list(backwardChunks(x, 3))[-1],
+            'y': list(backwardChunks(y, 3))[-1],
+        },
+        'trend': {
+            'x': list(backwardChunks(x, 4))[-1],
+            'y': list(backwardChunks(y, 4))[-1],
+        },
+        'tail': {
+            'x': list(backwardChunks(x, 5))[-1],
+            'y': list(backwardChunks(y, 5))[-1],
+        },
+    }
+    return fractal_scales
+
+
+def basicFractalSections(x, y):
+    if len(x) != len(y):
+        return "X and Y values contain disproportionate counts"
+
+    half = int(len(x) / 2)
+    third = int(len(x) / 3)
+
+    fractalScales = {
+        'pastHalfSeries': {
+            'x': list(chunks(x, half))[0],
+            'y': list(chunks(y, half))[0]
+        },
+        'currentHalfSeries': {
+            'x': list(chunks(x, half))[1],
+            'y': list(chunks(y, half))[1]
+        },
+        'pastThirdSeries': {
+            'x': list(chunks(x, third))[0],
+            'y': list(chunks(y, third))[0]
+        },
+        'middleThirdSeries': {
+            'x': list(chunks(x, third))[1],
+            'y': list(chunks(y, third))[1]
+        },
+        'currentThirdSeries': {
+            'x': list(chunks(x, third))[2],
+            'y': list(chunks(y, third))[2]
+        },
+    }
+    return fractalScales

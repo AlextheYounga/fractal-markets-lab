@@ -7,8 +7,9 @@ from .export import exportFractal
 import sys
 
 # Fetch historical prices
-ticker = "SP500"
-asset_data = getLongApiData(ticker)
+# ticker = "SP500"
+# asset_data = getLongApiData(ticker)
+asset_data = parseCSV("SPX.csv")
 
 prices = extractData(asset_data, 'close')
 count = len(prices)
@@ -65,33 +66,8 @@ log_scales = scaledDataCollector(scales, range_stats, ['keyStats', 'logScale'])
 slope, intercept, r_value, p_value, std_err = stats.linregress(log_scales, log_RRs)
 
 # Calculator
-def fractalSections(x, y):
-    if len(x) != len(y):
-        return "X and Y values contain disproportionate counts"
-
-    fractal_scales = {
-        'trade': {
-            'x': list(backwardChunks(x, 2))[-1],
-            'y': list(backwardChunks(y, 2))[-1],
-        },
-        'month': {
-            'x': list(backwardChunks(x, 3))[-1],
-            'y': list(backwardChunks(y, 3))[-1],
-        },
-        'trend': {
-            'x': list(backwardChunks(x, 4))[-1],
-            'y': list(backwardChunks(y, 4))[-1],
-        },
-        'tail': {
-            'x': list(backwardChunks(x, 5))[-1],
-            'y': list(backwardChunks(y, 5))[-1],
-        },
-    }
-    return fractal_scales
-
-
 def fractalCalculator(x, y):
-    sections = fractalSections(x, y)
+    sections = tradingFractalSections(x, y)
     results = {}
     for i, section in sections.items():
         slope, intercept, r_value, p_value, std_err = stats.linregress(section['x'], section['y'])
