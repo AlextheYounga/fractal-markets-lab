@@ -5,6 +5,26 @@ import csv
 from datetime import datetime, timedelta
 
 
+def getCustomApiData(asset, time):
+    start = datetime.today() - timedelta(days=time)
+    end = datetime.today()
+
+    api_response = get_historical_data(asset, start, end, token=IEX_TOKEN)
+    asset_data = {}
+    i = 0
+    for day, quote in api_response.items():
+        asset_data[i] = {
+            'date': day,
+            'open': quote['open'],
+            'close': quote['close'],
+            'high': quote['high'],
+            'low': quote['low'],
+            'volume': quote['volume']
+        }
+        i = i + 1
+
+    return asset_data
+
 def getShortApiData(asset):
     start = datetime.today() - timedelta(days=90)
     end = datetime.today()
