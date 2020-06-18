@@ -1,5 +1,6 @@
 from ..key import IEX_TOKEN
 from iexfinance.stocks import get_historical_data
+from iexfinance.stocks import Stock
 import json
 import csv
 from datetime import datetime, timedelta
@@ -65,6 +66,12 @@ def getLongApiData(asset):
         i = i + 1
 
     return asset_data
+
+def getCurrentPrice(asset):
+    stock = Stock(asset, token=IEX_TOKEN)
+    price = stock.get_price()
+
+    return price
 
 
 def parseCSV():

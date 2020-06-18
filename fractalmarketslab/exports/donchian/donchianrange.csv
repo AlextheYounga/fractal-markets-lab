@@ -96,3 +96,43 @@ donchianHigh,currentPrice,donchianLow
 MSFT Range Generated 06-11-2020 11:55:23
 donchianHigh,currentPrice,donchianLow
 198.52,196.84,176.6
+""
+""
+GDX Range Generated 06-11-2020 12:39:36
+donchianHigh,currentPrice,donchianLow
+37.49,34.53,31.22
+""
+""
+GDX Range Generated 06-11-2020 12:41:56
+donchianHigh,currentPrice,donchianLow
+37.49,34.53,31.22
+""
+""
+SFM Range Generated 06-18-2020 10:15:12
+donchianHigh,currentPrice,donchianLow
+26.05,23.34,22.54
+""
+""
+MKC Range Generated 06-18-2020 10:16:45
+donchianHigh,currentPrice,donchianLow
+177.92,174.14,165.05
+""
+""
+TSLA Range Generated 06-18-2020 10:30:27
+donchianHigh,currentPrice,donchianLow
+1027.48,991.79,785.0
+""
+""
+TSLA Range Generated 06-18-2020 10:30:56
+donchianHigh,currentPrice,donchianLow
+1027.48,991.79,785.0
+""
+""
+TSLA Range Generated 06-18-2020 10:45:05
+donchianHigh,currentPrice,donchianLow
+1027.48,"{'symbol': 'TSLA', 'companyName': 'Tesla, Inc.', 'primaryExchange': 'NASDAQ', 'calculationPrice': 'tops', 'open': None, 'openTime': None, 'openSource': 'official', 'close': None, 'closeTime': None, 'closeSource': 'official', 'high': 1019.2, 'highTime': 1592497804032, 'highSource': '15 minute delayed price', 'low': 994.471, 'lowTime': 1592495972533, 'lowSource': '15 minute delayed price', 'latestPrice': 1000.72, 'latestSource': 'IEX real time price', 'latestTime': '12:44:44 PM', 'latestUpdate': 1592498684651, 'latestVolume': 6225600, 'iexRealtimePrice': 1000.72, 'iexRealtimeSize': 2, 'iexLastUpdated': 1592498684651, 'delayedPrice': None, 'delayedPriceTime': None, 'oddLotDelayedPrice': None, 'oddLotDelayedPriceTime': None, 'extendedPrice': None, 'extendedChange': None, 'extendedChangePercent': None, 'extendedPriceTime': None, 'previousClose': 991.79, 'previousVolume': 9890800, 'change': 8.93, 'changePercent': 0.009, 'volume': 6225600, 'iexMarketPercent': 0.00535402210228733, 'iexVolume': 33332, 'avgTotalVolume': 12461077, 'iexBidPrice': 960, 'iexBidSize': 100, 'iexAskPrice': 0, 'iexAskSize': 0, 'iexOpen': None, 'iexOpenTime': None, 'iexClose': 1000.72, 'iexCloseTime': 1592498684651, 'marketCap': 185609542720, 'peRatio': -1188.79, 'week52High': 1027.48, 'week52Low': 211, 'ytdChange': 1.3140949999999998, 'lastTradeTime': 1592498684651, 'isUSMarketOpen': True}",785.0
+""
+""
+TSLA Range Generated 06-18-2020 10:46:30
+donchianHigh,currentPrice,donchianLow
+1027.48,1000.72,785.0

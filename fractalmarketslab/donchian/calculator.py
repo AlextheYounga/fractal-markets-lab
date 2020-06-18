@@ -21,7 +21,7 @@ def calculate(ticker):
 
     donchian_range = {
         'donchianHigh': max(list(reversed(highs))[:16]),
-        'currentPrice': list(reversed(prices))[0],
+        'currentPrice': getCurrentPrice(ticker),
         'donchianLow': min(list(reversed(lows))[:16])
     }
 
