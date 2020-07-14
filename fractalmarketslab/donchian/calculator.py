@@ -11,7 +11,6 @@ import numpy as np
 
 
 def calculate(ticker):
-    # ticker = "RSP"
     asset_data = getShortApiData(ticker)
     
     prices = extractData(asset_data, 'close')
@@ -19,13 +18,16 @@ def calculate(ticker):
     lows = extractData(asset_data, 'low')
     dates = extractData(asset_data, 'date')
 
+    trend_data = trendAnalysis(list(reversed(prices[:22])))
+
     donchian_range = {
         'donchianHigh': max(list(reversed(highs))[:16]),
         'currentPrice': getCurrentPrice(ticker),
         'donchianLow': min(list(reversed(lows))[:16])
     }
 
-    print(json.dumps(donchian_range, indent=1))
+    print(json.dumps(donchian_range, indent=1))    
+    print(json.dumps(trend_data, indent=1))
     exportDonchian(donchian_range, ticker)
 
     x = dates
