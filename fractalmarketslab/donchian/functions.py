@@ -29,25 +29,32 @@ def extractData(data, key):
             values.append(value)
     return values
 
-def consecutiveUpDays(prices):
+def consecutiveDays(prices):
     upDays = 0
+    downDays = 0
     for i, price in enumerate(prices):
-        percentChange = (price - prices[1 + 1]) / prices[1 + 1]
+        percentChange = (price - prices[i + 1]) / prices[i + 1]
         if percentChange > 0:
             upDays = upDays + 1
         else: 
             break
-    return upDays
+    for i, price in enumerate(prices):
+        percentChange = (price - prices[i + 1]) / prices[i + 1]
+        if percentChange < 0:
+            downDays = downDays + 1
+        else: 
+            break
+    return upDays, downDays
 
 
 def trendAnalysis(prices):
     analysis = {}
-    consecutiveUps = consecutiveUpDays(prices)
+    consecutiveUps, consecutiveDowns = consecutiveDays(prices)
     downDays = []
     upDays = []
     for i, price in enumerate(prices):
         if (i + 1 in range(-len(prices), len(prices))):
-            percentChange = (price - prices[1 + 1]) / prices[1 + 1] 
+            percentChange = (price - prices[i + 1]) / prices[i + 1] 
             if percentChange > 0:
                 upDays.append(percentChange)
             if percentChange <= 0:
@@ -63,6 +70,7 @@ def trendAnalysis(prices):
     
     analysis['downDays'] = { 
         'count': len(downDays),
+        'consecutive': consecutiveDowns,
         'average': "{}%".format(statistics.mean(downDays) * 100)
     }
 
