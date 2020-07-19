@@ -11,14 +11,14 @@ import numpy as np
 
 
 def calculate(ticker):
-    asset_data = getShortApiData(ticker)
-    
+    asset_data = getShortTermPrices(ticker)
+        
     prices = extractData(asset_data, 'close')
     highs = extractData(asset_data, 'high')
     lows = extractData(asset_data, 'low')
     dates = extractData(asset_data, 'date')
 
-    trend_data = trendAnalysis(list(reversed(prices[:22])))
+    trend_data = trendAnalysis(list(reversed(prices))[:22])
 
     donchian_range = {
         'donchianHigh': max(list(reversed(highs))[:16]),

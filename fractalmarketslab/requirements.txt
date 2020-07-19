@@ -1,0 +1,7 @@
+scipy
+iexfinance
+numpy
+matplotlib
+seaborn
+pandas
+tabulate

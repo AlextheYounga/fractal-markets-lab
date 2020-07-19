@@ -8,7 +8,7 @@ import sys
 
 # Fetch historical prices
 # ticker = "SP500"
-# asset_data = getLongApiData(ticker)
+# asset_data = getLongTermPrices(ticker)
 asset_data = parseCSV("SPX.csv")
 
 prices = extractData(asset_data, 'close')

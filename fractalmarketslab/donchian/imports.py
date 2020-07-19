@@ -26,7 +26,7 @@ def getCustomApiData(asset, time):
 
     return asset_data
 
-def getShortApiData(asset):
+def getShortTermPrices(asset):
     start = datetime.today() - timedelta(days=90)
     end = datetime.today()
 
@@ -47,7 +47,7 @@ def getShortApiData(asset):
     return asset_data
     
 
-def getLongApiData(asset):
+def getLongTermPrices(asset):
     start = datetime(2016, 1, 1)
     end = datetime.today()
 
