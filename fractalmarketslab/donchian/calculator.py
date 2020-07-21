@@ -1,13 +1,11 @@
 import statistics
-from scipy import stats
 import json
 from .functions import *
 from .imports import *
 from .export import exportDonchian
-import math
-import sys
 import matplotlib.pyplot as plt
 import numpy as np
+from tabulate import tabulate
 
 
 def calculate(ticker):
@@ -26,8 +24,30 @@ def calculate(ticker):
         'donchianLow': min(list(reversed(lows))[:16])
     }
 
-    print(json.dumps(donchian_range, indent=1))    
-    print(json.dumps(trend_data, indent=1))
+    stdev = statistics.stdev(list(reversed(prices))[:22])
+    
+    print(tabulate([
+        ['Donchian High', donchian_range['donchianHigh']],
+        ['Current Price', donchian_range['currentPrice']],
+        ['Donchian Low', donchian_range['donchianLow']]]))
+
+    print("\n")
+    print(tabulate([['Standard Deviation', stdev]]))
+
+    print("\n")
+    print(tabulate([
+        ['Count', trend_data['upDays']['count']],
+        ['Consecutive', trend_data['upDays']['consecutive']],
+        ['Average', trend_data['upDays']['average']]],
+        headers=['Up Days', '']))
+
+    print("\n")
+    print(tabulate([
+        ['Count', trend_data['downDays']['count']],
+        ['Consecutive', trend_data['downDays']['consecutive']],
+        ['Average', trend_data['downDays']['average']]],
+        headers=['Down Days', '']))
+
     exportDonchian(donchian_range, ticker)
 
     x = dates

@@ -11,7 +11,7 @@ from tabulate import tabulate
 
 
 def variancecovarianceVaR(ticker):
-    asset_data = getLongTermPrices(ticker)
+    asset_data = getShortTermPrices(ticker)
 
     prices = extractData(asset_data, 'close')
     series = pd.Series(prices)
