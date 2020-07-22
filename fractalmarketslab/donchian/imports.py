@@ -6,7 +6,7 @@ import csv
 from datetime import datetime, timedelta
 
 
-def getCustomApiData(asset, time):
+def getCustomTimeRange(asset, time):
     start = datetime.today() - timedelta(days=time)
     end = datetime.today()
 

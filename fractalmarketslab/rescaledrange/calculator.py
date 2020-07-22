@@ -5,6 +5,7 @@ from .functions import *
 from .imports import *
 from .export import exportFractal
 import sys
+from tabulate import tabulate
 
 # Fetch historical prices
 # ticker = "SP500"
@@ -92,6 +93,19 @@ def fractalCalculator(x, y):
 # Results
 fractal_results['regressionResults'] = fractalCalculator(log_scales, log_RRs)
 # print(json.dumps(fractal_results, indent=1))
+# print('The lists are:', *L, sep='\n')
+print(tabulate([
+    ['Count', trend_data['upDays']['count']],
+    ['Consecutive', trend_data['upDays']['consecutive']],
+    ['Average', trend_data['upDays']['average']]],
+    headers=['Up Days', '']))
+
+print(tabulate([
+    ['Trade', trend_data['downDays']['count']],
+    ['Month', trend_data['downDays']['consecutive']],
+    ['Trend', trend_data['downDays']['average']],
+    ['Tail', trend_data['downDays']['average']]],
+    headers=['Scale', 'HurstExponent', 'FractalDimension', 'r-squared', 'p-value', 'StandardError']))
 
 # Export to CSV
 exportFractal(fractal_results, scales)
