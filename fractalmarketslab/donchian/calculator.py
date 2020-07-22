@@ -1,6 +1,7 @@
 import statistics
 import json
 from .functions import *
+from ..shared.functions import *
 from .imports import *
 from .export import exportDonchian
 import matplotlib.pyplot as plt
@@ -17,14 +18,13 @@ def calculate(ticker):
     dates = extractData(asset_data, 'date')
 
     trend_data = trendAnalysis(list(reversed(prices))[:22])
+    upStreak, downStreak = longestStretch(prices)
 
     donchian_range = {
         'donchianHigh': max(list(reversed(highs))[:16]),
         'currentPrice': getCurrentPrice(ticker),
         'donchianLow': min(list(reversed(lows))[:16])
     }
-
-    stdev = statistics.stdev(list(reversed(prices))[:22])
     
     print(tabulate([
         ['Donchian High', donchian_range['donchianHigh']],
@@ -32,12 +32,10 @@ def calculate(ticker):
         ['Donchian Low', donchian_range['donchianLow']]]))
 
     print("\n")
-    print(tabulate([['Standard Deviation', stdev]]))
-
-    print("\n")
     print(tabulate([
         ['Count', trend_data['upDays']['count']],
         ['Consecutive', trend_data['upDays']['consecutive']],
+        ['Longest Stretch', upStreak],
         ['Average', trend_data['upDays']['average']]],
         headers=['Up Days', '']))
 
@@ -45,6 +43,7 @@ def calculate(ticker):
     print(tabulate([
         ['Count', trend_data['downDays']['count']],
         ['Consecutive', trend_data['downDays']['consecutive']],
+        ['Longest Stretch', downStreak],
         ['Average', trend_data['downDays']['average']]],
         headers=['Down Days', '']))
 

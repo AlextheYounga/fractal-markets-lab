@@ -1,6 +1,6 @@
 import json
-from .functions import *
-from ..imports.api import *
+from ..shared.functions import *
+from ..shared.api import *
 import math
 import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab

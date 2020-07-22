@@ -1,7 +1,7 @@
 import statistics
 import json
-from ..imports.api import *
-from .functions import *
+from ..shared.api import *
+from ..shared.functions import *
 from tabulate import tabulate
 
 
