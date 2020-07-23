@@ -10,15 +10,12 @@ def calculate(ticker):
     current_price = getCurrentPrice(ticker)
     prices = extractData(asset_data, 'close')
 
-    trade = statistics.stdev(list(reversed(prices))[:16])
-    month = statistics.stdev(list(reversed(prices))[:22])
-    trend = statistics.stdev(list(reversed(prices))[:64])
-    tail = statistics.stdev(list(reversed(prices))[:757])
-    # fullSeries = statistics.stdev(list(reversed(prices)))
+    trade_stdev = statistics.stdev(list(reversed(prices))[:16])
+    month_stdev = statistics.stdev(list(reversed(prices))[:22])
+    trend_stdev = statistics.stdev(list(reversed(prices))[:64])
 
     print(tabulate([
         ['Trade', trade],
         ['Month', month],
-        ['Trend', trend],
-        ['Tail', tail]],        
+        ['Trend', trend]],           
         headers=['Scale', 'StDev']))

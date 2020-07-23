@@ -7,4 +7,4 @@ python -c 'from fractalmarketslab.VaR.calculator import variancecovarianceVaR; p
 <!-- Volatility -->
 python -c 'from fractalmarketslab.volatility.calculator import calculate; print(calculate("SPY"))'
 <!-- Portfolio -->
-python -m fractalmarketslab.portfolio.donchian
+python -m fractalmarketslab.portfolio.signals

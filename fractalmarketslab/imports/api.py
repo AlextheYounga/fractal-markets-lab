@@ -74,7 +74,7 @@ def testShortTermPrices(asset):
 
 
 def getLongTermPrices(asset):
-    start = datetime.today() - timedelta(days=100)
+    start = datetime.today() - timedelta(days=1265)
     end = datetime.today()
 
     api_response = get_historical_data(asset, start, end, close_only=True, token=IEX_TOKEN)
