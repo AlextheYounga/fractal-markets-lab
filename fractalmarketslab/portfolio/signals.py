@@ -1,29 +1,43 @@
 import statistics
 import math
 import json
+from .export import *
 from ..shared.functions import *
 from ..shared.api import *
 from tabulate import tabulate
 
 portfolio = [
-    'PHYS',
-    'SPY',
-    # 'AUMN',
+    # 'PHYS',
+    # 'F',
+    # 'WPM',
+    'KGC',
+    # 'SPY',
+    # 'AG',
     # 'GDX',
+    # 'AUY',
+    # 'GDXJ',
     # 'GLD',
     # 'GOLD',
+    # 'SPAZF',
+    # 'CNSUF',
+    # 'AUMN',
+    # 'SSVFF',
     # 'HL',
     # 'MUX',
     # 'JPM',
-    'MSFT',
+    # 'MSFT',
+    # 'EGO',
+    # 'NEM',
+    # 'FNV',
     # 'SBSW',
     # 'SLV',
     # 'UBER',
     # 'VXX',
     # 'WKHS',
-    'CVNA'
+    # 'TLT',
+    # 'CVNA'
 ]
-
+signalArray = {}
 for ticker in portfolio:
     asset_data = getLongTermData(ticker)
 
@@ -54,19 +68,19 @@ for ticker in portfolio:
 
     # Signal based on volatility and probability.
     if (upperVol < current_price):
-        signal = 'Vol Sell'
+        signal = 'StDev High'
     if (lowerVol > current_price):
-        signal = 'Vol Buy'
+        signal = 'StDev Low'
     if (lowerVol <= current_price <= upperVol):
-        signal = 'Vol Hold'
+        signal = 'Hold - Within StDev'
     if (lowRange > current_price):
-        signal = 'Buy'
+        signal = 'Buy!'
     if (highRange < current_price):
-        signal = 'Sell'
+        signal = 'Sell Signal'
     if (donchianLow > current_price):
         signal = 'Donchian Low'
     if (donchianHigh < current_price):
-        signal = '3 week high'
+        signal = '3 Week High'
 
     print(tabulate([
         ['DonchianHigh', donchianHigh],
@@ -84,4 +98,26 @@ for ticker in portfolio:
         ['ImpliedVol', impliedVolMean],
         ['VolumeChange', '{}%'.format(volumeChange)]],
         headers=[ticker, signal]))
+
+    signalArray[ticker] = {
+        'currentPrice': current_price,
+        'signal': signal,
+        'donchian': {
+            'low': donchianLow,
+            'high': donchianHigh
+        },
+        'vol': {
+            'upper': upperVol,
+            'lower': lowerVol,
+            'implied': impliedVolMean,
+            'volumeChange': volumeChange,
+        },
+        'range': {
+            'upper': highRange,
+            'lower': lowRange
+        }
+    }
+
     print("\n\n")
+
+# writeCSV(signalArray)
