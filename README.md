@@ -8,3 +8,5 @@ python -c 'from fractalmarketslab.VaR.calculator import variancecovarianceVaR; p
 python -c 'from fractalmarketslab.volatility.calculator import calculate; print(calculate("SPY"))'
 <!-- Portfolio -->
 python -m fractalmarketslab.portfolio.signals
+<!-- Trend -->
+python -c 'from fractalmarketslab.trend.analyze import analyze; print(analyze("SPY"))'

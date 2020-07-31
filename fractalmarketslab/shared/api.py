@@ -29,7 +29,7 @@ def getCustomTimeRange(asset, time):
 
 
 def getShortTermPrices(asset):
-    start = datetime.today() - timedelta(days=30)
+    start = datetime.today() - timedelta(days=10)
     end = datetime.today()
 
     api_response = get_historical_data(asset, start, end, token=IEX_TOKEN)

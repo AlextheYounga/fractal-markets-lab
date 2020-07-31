@@ -1,5 +1,6 @@
 import statistics
 import json
+import sys
 
 
 def consecutiveDays(prices):
@@ -20,28 +21,47 @@ def consecutiveDays(prices):
     return upDays, downDays
 
 
-def longestStretch(prices):
-    upStreaks = []
-    downStreaks = []
+def longestStretch(data):
+    upStreaks = {}
+    downStreaks = {}
+    strkTemp = {}
     streak = 0
-    for i, price in enumerate(prices):
-        if (i + 1 in range(-len(prices), len(prices))):
-            percentChange = (price - prices[i + 1]) / prices[i + 1]
+    index = 0
+    for i, day in data.items():
+        if (i - 1 > 0):
+            percentChange = (day['close'] - data[i - 1]['close']) / data[i - 1]['close']
             if percentChange > 0:
                 streak = streak + 1
+                strkTemp[streak] = day
             else:
-                upStreaks.append(streak)
+                index = index + 1
+                upStreaks[index] = strkTemp
                 streak = 0
-    for i, price in enumerate(prices):
-        if (i + 1 in range(-len(prices), len(prices))):
-            percentChange = (price - prices[i + 1]) / prices[i + 1]
-            if percentChange < 0:
-                streak = streak + 1
-            else:
-                downStreaks.append(streak)
-                streak = 0
+                strkTemp = {}
 
-    return max(upStreaks), max(downStreaks)
+    maxcount = max(len(v) for v in upStreaks.values())
+    longest = [k for k, v in upStreaks.items() if len(v) == maxcount][0]
+    upStreaks = upStreaks[longest]
+    strkTemp = {}
+    streak = 0
+    index = 0
+    for i, day in data.items():
+        if (i - 1 > 0):
+            percentChange = (day['close'] - data[i - 1]['close']) / data[i - 1]['close']
+            if percentChange > 0:
+                streak = streak + 1
+                strkTemp[streak] = day
+            else:
+                index = index + 1
+                downStreaks[index] = strkTemp
+                streak = 0
+                strkTemp = {}
+
+    maxcount = max(len(v) for v in downStreaks.values())
+    longest = [k for k, v in downStreaks.items() if len(v) == maxcount][0]
+    downStreaks = downStreaks[longest]
+
+    return upStreaks, downStreaks
 
 
 def trendAnalysis(prices):

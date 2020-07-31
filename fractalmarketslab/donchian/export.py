@@ -1,6 +1,5 @@
 import csv
 import os
-from .functions import *
 from datetime import datetime
 
 

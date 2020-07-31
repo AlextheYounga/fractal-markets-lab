@@ -7,35 +7,35 @@ from ..shared.api import *
 from tabulate import tabulate
 
 portfolio = [
-    # 'PHYS',
-    # 'F',
-    # 'WPM',
+    'PHYS',
+    'F',
+    'WPM',
     'KGC',
-    # 'SPY',
-    # 'AG',
-    # 'GDX',
-    # 'AUY',
-    # 'GDXJ',
-    # 'GLD',
-    # 'GOLD',
-    # 'SPAZF',
-    # 'CNSUF',
-    # 'AUMN',
-    # 'SSVFF',
-    # 'HL',
-    # 'MUX',
-    # 'JPM',
-    # 'MSFT',
-    # 'EGO',
-    # 'NEM',
-    # 'FNV',
-    # 'SBSW',
-    # 'SLV',
-    # 'UBER',
-    # 'VXX',
-    # 'WKHS',
-    # 'TLT',
-    # 'CVNA'
+    'SPY',
+    'AG',
+    'GDX',
+    'AUY',
+    'GDXJ',
+    'GLD',
+    'GOLD',
+    'SPAZF',
+    'CNSUF',
+    'AUMN',
+    'SSVFF',
+    'HL',
+    'MUX',
+    'JPM',
+    'MSFT',
+    'EGO',
+    'NEM',
+    'FNV',
+    'SBSW',
+    'SLV',
+    'UBER',
+    'VXX',
+    'WKHS',
+    'TLT',
+    'CVNA'
 ]
 signalArray = {}
 for ticker in portfolio:
@@ -120,4 +120,4 @@ for ticker in portfolio:
 
     print("\n\n")
 
-# writeCSV(signalArray)
+writeCSV(signalArray)
