@@ -1,7 +1,7 @@
 import statistics
 import json
 from ..shared.functions import *
-from ..shared.api import *
+from ..shared.imports import *
 from .export import exportDonchian
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,7 +9,7 @@ from tabulate import tabulate
 
 
 def calculate(ticker):
-    asset_data = getShortTermPrices(ticker)
+    asset_data = getShortTermData(ticker)
         
     prices = extractData(asset_data, 'close')
     highs = extractData(asset_data, 'high')

@@ -48,7 +48,7 @@ def longestStretch(data):
     for i, day in data.items():
         if (i - 1 > 0):
             percentChange = (day['close'] - data[i - 1]['close']) / data[i - 1]['close']
-            if percentChange > 0:
+            if percentChange < 0:
                 streak = streak + 1
                 strkTemp[streak] = day
             else:

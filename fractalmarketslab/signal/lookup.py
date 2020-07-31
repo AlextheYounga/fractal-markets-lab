@@ -1,44 +1,12 @@
 import statistics
 import math
 import json
-from .export import *
 from ..shared.functions import *
-from ..shared.api import *
+from ..shared.imports import *
 from tabulate import tabulate
 
-portfolio = [
-    'PHYS',
-    'F',
-    'WPM',
-    'KGC',
-    'SPY',
-    'AG',
-    'GDX',
-    'AUY',
-    'GDXJ',
-    'GLD',
-    'GOLD',
-    'SPAZF',
-    'CNSUF',
-    'AUMN',
-    'SSVFF',
-    'HL',
-    'MUX',
-    'JPM',
-    'MSFT',
-    'EGO',
-    'NEM',
-    'FNV',
-    'SBSW',
-    'SLV',
-    'UBER',
-    'VXX',
-    'WKHS',
-    'TLT',
-    'CVNA'
-]
-signalArray = {}
-for ticker in portfolio:
+def calculate(ticker):
+    signalArray = {}
     asset_data = getLongTermData(ticker)
 
     prices = extractData(asset_data, 'close')
@@ -55,11 +23,11 @@ for ticker in portfolio:
     stdevMonth = statistics.stdev(list(reversed(prices))[:22])
     stdevTrend = statistics.stdev(list(reversed(prices))[:64])
     volumeTrend = list(reversed(volumes))[:64]
-    volumeChange = round(((volumeTrend[0] - volumeTrend[-1]) / volumeTrend[-1])*100, 2)
+    volumeChange = round(((volumeTrend[0] - volumeTrend[-1]) / volumeTrend[-1])*100, 2) if (volumeTrend[0] != 0 and volumeTrend[-1] != 0) else 0
 
-    impliedVolTrade = prices[-1] * (stdevTrade / prices[-1]) * (math.sqrt(1/16))
-    impliedVolMonth = prices[-1] * (stdevMonth / prices[-1]) * (math.sqrt(1/22))
-    impliedVolTrend = prices[-1] * (stdevTrend / prices[-1]) * (math.sqrt(1/64))
+    impliedVolTrade = prices[-1] * (stdevTrade / prices[-1]) * (math.sqrt(1/16)) if (prices[-1] != 0) else 0
+    impliedVolMonth = prices[-1] * (stdevMonth / prices[-1]) * (math.sqrt(1/22)) if (prices[-1] != 0) else 0
+    impliedVolTrend = prices[-1] * (stdevTrend / prices[-1]) * (math.sqrt(1/64)) if (prices[-1] != 0) else 0
     impliedVolMean = round(statistics.mean([impliedVolTrade, impliedVolMonth, impliedVolTrend]), 2)
     upperVol = round((prices[-1] + impliedVolMean), 2)
     lowerVol = round((prices[-1] - impliedVolMean), 2)
@@ -117,7 +85,3 @@ for ticker in portfolio:
             'lower': lowRange
         }
     }
-
-    print("\n\n")
-
-writeCSV(signalArray)
