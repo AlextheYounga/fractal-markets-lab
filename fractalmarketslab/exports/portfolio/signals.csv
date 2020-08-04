@@ -1,2 +1,3 @@
-Ticker,Current Price,DonchianLow,DonchianHigh,UpperVol,LowerVol,ImpliedVol,VolumeChange,UpperRange,LowerRange,Signal
-ISVLF,0.7244,0.53,0.981,0.74,0.7,0.02,194.52,0.96,0.55,Hold - Within StDev
+Ticker,Current Price,DonchianLow,DonchianHigh,UpperVol,LowerVol,ImpliedVol,VolumeChange,UpperRange,LowerRange,PercentDownside,PercentUpside,Signal
+PHYS,15.82,14.25,15.82,15.93,15.71,0.1,-14.47,15.71,14.36,9%,Infinite,Sell Signal
+F,6.69,5.74,7.06,6.77,6.61,0.08,-36.06,6.98,5.82,13%,4%,Hold - Within StDev

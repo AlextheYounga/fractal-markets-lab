@@ -9,8 +9,8 @@ import numpy as np
 import pandas as pd
 from tabulate import tabulate
 
-
-def variancecovarianceVaR(ticker):
+# Variance/Covariance VAR analysis
+def varCovar(ticker):
     asset_data = getShortTermPrices(ticker)
 
     prices = extractData(asset_data, 'close')
