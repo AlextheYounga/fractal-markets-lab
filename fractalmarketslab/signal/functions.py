@@ -6,35 +6,45 @@ from ..shared.imports import *
 from tabulate import tabulate
 
 
+def interday_returns(prices):
+    int_returns = []
+    for i, price in enumerate(prices):
+        ret = (prices[i + 1] / price) - 1 if (i + 1 in range(-len(prices), len(prices)) and float(prices[i + 1]) != 0) else 0
+        int_returns.append(ret)
+
+    return int_returns
+
+
 def calculate_signals(ticker):
     signalArray = {}
-    asset_data = getLongTermData(ticker)
+    assetData = getLongTermData(ticker)
 
-    prices = extractData(asset_data, 'close')
+    prices = removeZeroes(extractData(assetData, 'close'))
     current_price = getCurrentPrice(ticker)
-    highs = extractData(asset_data, 'high')
-    lows = extractData(asset_data, 'low')
-    dates = extractData(asset_data, 'date')
-    volumes = extractData(asset_data, 'volume')
+    highs = removeZeroes(extractData(assetData, 'high'))
+    lows = removeZeroes(extractData(assetData, 'low'))
+    dates = removeZeroes(extractData(assetData, 'date'))
+    volumes = removeZeroes(extractData(assetData, 'volume'))
+    # interdayReturns = interday_returns(list(reversed(prices)))
 
-    donchianHigh = max(list(reversed(highs))[:22])
-    donchianLow = min(list(reversed(lows))[:22])
+    donchianHigh = max(list(reversed(highs))[:7])
+    donchianLow = min(list(reversed(lows))[:7])
 
     stdevTrade = statistics.stdev(list(reversed(prices))[:16])
     stdevMonth = statistics.stdev(list(reversed(prices))[:22])
     stdevTrend = statistics.stdev(list(reversed(prices))[:64])
     volumeTrend = list(reversed(volumes))[:64]
-    volumeChange = round(((volumeTrend[0] - volumeTrend[-1]) / volumeTrend[-1])*100, 2) if (volumeTrend[0] != 0 and volumeTrend[-1] != 0) else 0
+    volumeChange = round(((volumeTrend[0] - volumeTrend[-1]) / volumeTrend[-1])*100, 3) if (volumeTrend[0] != 0 and volumeTrend[-1] != 0) else 0
 
     impliedVolTrade = prices[-1] * (stdevTrade / prices[-1]) * (math.sqrt(1/16)) if (prices[-1] != 0) else 0
     impliedVolMonth = prices[-1] * (stdevMonth / prices[-1]) * (math.sqrt(1/22)) if (prices[-1] != 0) else 0
     impliedVolTrend = prices[-1] * (stdevTrend / prices[-1]) * (math.sqrt(1/64)) if (prices[-1] != 0) else 0
-    impliedVolMean = round(statistics.mean([impliedVolTrade, impliedVolMonth, impliedVolTrend]), 2)
+    impliedVolMean = round(statistics.mean([impliedVolTrade, impliedVolMonth, impliedVolTrend]), 3)
     impliedVolPercent = round((impliedVolMean / current_price) * 100)
-    upperVol = round((prices[-1] + impliedVolMonth), 2)
-    lowerVol = round((prices[-1] - impliedVolMonth), 2)
-    highRange = round((donchianHigh - impliedVolMonth), 2)
-    lowRange = round((donchianLow + impliedVolMonth), 2)
+    upperVol = (prices[-1] + impliedVolMonth)
+    lowerVol = (prices[-1] - impliedVolMonth)
+    highRange = (donchianHigh - impliedVolMonth)
+    lowRange = (donchianLow + impliedVolMonth)
     percentUpside = "{}%".format(round(((highRange - current_price) / current_price) * 100)) if (highRange > current_price) else "Infinite"
     percentDownside = "{}%".format(round(((current_price - lowRange) / current_price) * 100)) if (current_price > lowRange) else "Infinite"
 
@@ -64,7 +74,7 @@ def calculate_signals(ticker):
         'vol': {
             'upper': upperVol,
             'lower': lowerVol,
-            'implied': impliedVolMean,            
+            'implied': impliedVolMean,
             'impliedPercent': impliedVolPercent,
             'volumeChange': volumeChange,
         },

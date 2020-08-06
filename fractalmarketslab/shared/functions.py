@@ -1,3 +1,4 @@
+import sys
 # Returns a list of items from a nested object.
 def extractData(data, key):
     values = []
@@ -25,3 +26,8 @@ def extractData(data, key):
             value = row[key]
             values.append(value)
     return values
+
+def removeZeroes(lst):
+    if 0 in lst: lst.remove(0)
+    if 0.0 in lst: lst.remove(0.0)
+    return lst

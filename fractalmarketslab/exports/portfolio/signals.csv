@@ -1,3 +1,2 @@
 Ticker,Current Price,DonchianLow,DonchianHigh,UpperVol,LowerVol,ImpliedVol,VolumeChange,UpperRange,LowerRange,PercentDownside,PercentUpside,Signal
-PHYS,15.82,14.25,15.82,15.93,15.71,0.1,-14.47,15.71,14.36,9%,Infinite,Sell Signal
-F,6.69,5.74,7.06,6.77,6.61,0.08,-36.06,6.98,5.82,13%,4%,Hold - Within StDev
+CNSUF,0.17,0.0,0.2,0.1765893484493547,0.16341065155064532,0.005,9036.364,0.19341065155064532,0.006589348449354685,96%,14%,Hold - Within StDev
