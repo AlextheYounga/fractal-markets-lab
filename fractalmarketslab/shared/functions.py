@@ -28,6 +28,6 @@ def extractData(data, key):
     return values
 
 def removeZeroes(lst):
-    if 0 in lst: lst.remove(0)
-    if 0.0 in lst: lst.remove(0.0)
+    while 0 in lst: lst.remove(0)
+    while 0.0 in lst: lst.remove(0.0)
     return lst

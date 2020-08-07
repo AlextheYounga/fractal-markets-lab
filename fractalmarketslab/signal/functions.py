@@ -3,16 +3,7 @@ import math
 import json
 from ..shared.functions import *
 from ..shared.imports import *
-from tabulate import tabulate
-
-
-def interday_returns(prices):
-    int_returns = []
-    for i, price in enumerate(prices):
-        ret = (prices[i + 1] / price) - 1 if (i + 1 in range(-len(prices), len(prices)) and float(prices[i + 1]) != 0) else 0
-        int_returns.append(ret)
-
-    return int_returns
+from datetime import datetime 
 
 
 def calculate_signals(ticker):
@@ -45,8 +36,8 @@ def calculate_signals(ticker):
     lowerVol = (prices[-1] - impliedVolMonth)
     highRange = (donchianHigh - impliedVolMonth)
     lowRange = (donchianLow + impliedVolMonth)
-    percentUpside = "{}%".format(round(((highRange - current_price) / current_price) * 100)) if (highRange > current_price) else "Infinite"
-    percentDownside = "{}%".format(round(((current_price - lowRange) / current_price) * 100)) if (current_price > lowRange) else "Infinite"
+    percentUpside = "{}%".format(round(((highRange - current_price) / current_price) * 100)) if (donchianHigh > current_price) else "Infinite"
+    percentDownside = "{}%".format(round(((current_price - lowRange) / current_price) * 100)) if (current_price > donchianLow) else "Infinite"
 
     # Signal based on volatility and probability.
     if (upperVol < current_price):
@@ -62,7 +53,7 @@ def calculate_signals(ticker):
     if (donchianLow > current_price):
         signal = 'Donchian Low'
     if (donchianHigh < current_price):
-        signal = '3 Week High'
+        signal = 'Above Donchian High'
 
     signalArray[ticker] = {
         'currentPrice': current_price,
