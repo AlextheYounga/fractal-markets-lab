@@ -16,10 +16,9 @@ def calculate_signals(ticker):
     lows = removeZeroes(extractData(assetData, 'low'))
     dates = removeZeroes(extractData(assetData, 'date'))
     volumes = removeZeroes(extractData(assetData, 'volume'))
-    # interdayReturns = interday_returns(list(reversed(prices)))
 
-    donchianHigh = max(list(reversed(highs))[:7])
-    donchianLow = min(list(reversed(lows))[:7])
+    donchianHigh = max(list(reversed(highs))[:8])
+    donchianLow = min(list(reversed(lows))[:8])
 
     stdevTrade = statistics.stdev(list(reversed(prices))[:16])
     stdevMonth = statistics.stdev(list(reversed(prices))[:22])
@@ -36,14 +35,14 @@ def calculate_signals(ticker):
     lowerVol = (prices[-1] - impliedVolMonth)
     highRange = (donchianHigh - impliedVolMonth)
     lowRange = (donchianLow + impliedVolMonth)
-    percentUpside = "{}%".format(round(((highRange - current_price) / current_price) * 100)) if (donchianHigh > current_price) else "Infinite"
-    percentDownside = "{}%".format(round(((current_price - lowRange) / current_price) * 100)) if (current_price > donchianLow) else "Infinite"
+    percentUpside = "{}%".format(round(((donchianHigh - current_price) / current_price) * 100)) if (donchianHigh > current_price) else "Infinite"
+    percentDownside = "{}%".format(round(((current_price - donchianLow) / current_price) * 100)) if (current_price > donchianLow) else "Infinite"
 
     # Signal based on volatility and probability.
     if (upperVol < current_price):
-        signal = 'StDev High'
+        signal = '~1 Stdev Higher'
     if (lowerVol > current_price):
-        signal = 'StDev Low'
+        signal = '~1 Stdev Lower'
     if (lowerVol <= current_price <= upperVol):
         signal = 'Hold - Within StDev'
     if (lowRange > current_price):

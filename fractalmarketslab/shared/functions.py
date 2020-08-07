@@ -31,3 +31,10 @@ def removeZeroes(lst):
     while 0 in lst: lst.remove(0)
     while 0.0 in lst: lst.remove(0.0)
     return lst
+
+
+def logReturns(prices):
+    series = pd.Series(prices)
+    log_returns = (np.log(series) - np.log(series.shift(1))).dropna()
+
+    return list(log_returns)

@@ -3,6 +3,7 @@ from datetime import date
 from datetime import datetime
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta
+from ..shared.functions import *
 import pandas as pd
 import numpy as np
 import calendar
@@ -44,10 +45,3 @@ def interdayReturns(prices):
         int_returns.append(ret)
 
     return int_returns
-
-
-def logReturns(prices):
-    series = pd.Series(prices)
-    log_returns = (np.log(series) - np.log(series.shift(1))).dropna()
-
-    return list(log_returns)
