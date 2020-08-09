@@ -24,6 +24,7 @@ DEBUG = env('DEBUG')
 
 # Raises django's ImproperlyConfigured exception if SECRET_KEY not in os.environ
 IEX_TOKEN = env('IEX_TOKEN')
+IEX_SANDBOX_TOKEN = env('IEX_SANDBOX_TOKEN')
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -62,7 +63,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'fractalmarketslab.urls'
+ROOT_URLCONF = 'lab.urls'
 
 TEMPLATES = [
     {
@@ -80,7 +81,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'fractalmarketslab.wsgi.application'
+WSGI_APPLICATION = 'lab.wsgi.application'
 
 
 # Database

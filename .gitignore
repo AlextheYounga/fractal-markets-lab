@@ -1,5 +1,6 @@
 .env
-fractalmarketslab/key.py
-fractalmarketslab/__pycache__
-fractalmarketslab/*/__pycache__
-fractalmarketslab/__pycache__/
+lab/.env
+lab/key.py
+lab/__pycache__
+lab/*/__pycache__
+lab/__pycache__/

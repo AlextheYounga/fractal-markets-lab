@@ -1,5 +1,5 @@
-from fractalmarketslab.data.voldata import *
-from fractalmarketslab.data.functions import *
+from lab.data.voldata import *
+from lab.data.functions import *
 import json
 
 # for i, value in enumerate(prices):

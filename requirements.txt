@@ -5,3 +5,5 @@ matplotlib
 seaborn
 pandas
 tabulate
+requests
+python-dotenv

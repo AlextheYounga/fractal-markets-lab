@@ -1,17 +1,19 @@
-from ..key import *
+# from ..key import *
 from iexfinance.stocks import get_historical_data
 from iexfinance.stocks import Stock
+import requests
 import json
 import csv
 from datetime import datetime, timedelta
 import os
 
 
-def getCustomTimeRange(asset, time):
+def getCustomTimeRange(ticker, time):
     start = datetime.today() - timedelta(days=time)
     end = datetime.today()
 
-    api_response = get_historical_data(asset, start, end, token=IEX_TOKEN)
+    api_response = get_historical_data(ticker, start, end, token=os.environ['IEX_TOKEN'])
+    # api_response = get_historical_data(ticker, 2yr, token=os.environ['IEX_TOKEN'])
     asset_data = {}
     i = 0
     for day, quote in api_response.items():
@@ -28,11 +30,11 @@ def getCustomTimeRange(asset, time):
     return asset_data
 
 
-def getShortTermData(asset):
+def getShortTermData(ticker):
     start = datetime.today() - timedelta(days=30)
     end = datetime.today()
 
-    api_response = get_historical_data(asset, start, end, token=IEX_TOKEN)
+    api_response = get_historical_data(ticker, start, end, token=os.environ['IEX_TOKEN'])
     asset_data = {}
     i = 0
     for day, quote in api_response.items():
@@ -49,11 +51,11 @@ def getShortTermData(asset):
     return asset_data
 
 
-def getShortTermPrices(asset):
+def getShortTermPrices(ticker):
     start = datetime.today() - timedelta(days=30)
     end = datetime.today()
 
-    api_response = get_historical_data(asset, start, end, close_only=True, token=IEX_TOKEN)
+    api_response = get_historical_data(ticker, start, end, close_only=True, token=os.environ['IEX_TOKEN'])
     asset_data = {}
     i = 0
     for day, quote in api_response.items():
@@ -67,11 +69,12 @@ def getShortTermPrices(asset):
     return asset_data
 
 
-def getLongTermData(asset):
+# BEWARE, VERY HIGH MESSAGE USE!
+def getLongTermData(ticker):
     start = datetime.today() - timedelta(days=100)
     end = datetime.today()
 
-    api_response = get_historical_data(asset, start, end, token=IEX_TOKEN)
+    api_response = get_historical_data(ticker, start, end, token=os.environ['IEX_TOKEN'])
     asset_data = {}
     i = 0
     for day, quote in api_response.items():
@@ -88,11 +91,11 @@ def getLongTermData(asset):
     return asset_data
 
 
-def getLongTermPrices(asset):
+def getLongTermPrices(ticker):
     start = datetime.today() - timedelta(days=100)
     end = datetime.today()
 
-    api_response = get_historical_data(asset, start, end, close_only=True, token=IEX_TOKEN)
+    api_response = get_historical_data(ticker, start, end, close_only=True, token=os.environ['IEX_TOKEN'])
     asset_data = {}
     i = 0
     for day, quote in api_response.items():
@@ -106,20 +109,41 @@ def getLongTermPrices(asset):
     return asset_data
 
 
-def getCurrentPrice(asset):
-    stock = Stock(asset, token=IEX_TOKEN)
+def getCurrentPrice(ticker):
+    stock = Stock(ticker, token=os.environ['IEX_TOKEN'])
     price = stock.get_price()
 
     return price
 
 
-def testShortTermPrices(asset):
+def testShortTermPrices(ticker):
     # Set IEX Finance API Token (Test)
     os.environ['IEX_API_VERSION'] = 'iexcloud-sandbox'
     start = datetime.today() - timedelta(days=30)
     end = datetime.today()
 
-    api_response = get_historical_data(asset, start, end, token=IEX_SANDBOX_TOKEN)
+    api_response = get_historical_data(ticker, start, end, token=os.environ['IEX_SANDBOX_TOKEN'])
+    asset_data = {}
+    i = 0
+    for day, quote in api_response.items():
+        asset_data[i] = {
+            'date': day,
+            'open': quote['open'],
+            'close': quote['close'],
+            'high': quote['high'],
+            'low': quote['low'],
+            'volume': quote['volume']
+        }
+        i = i + 1
+    os.environ['IEX_API_VERSION'] = 'v1'
+
+    return asset_data
+
+
+def testLongTermPrices(ticker):
+    api_call =requests.get('https://sandbox.iexapis.com/stable/stock/{}/chart/2y?token={}'.format(ticker, os.environ['IEX_SANDBOX_TOKEN']))
+
+    api_response = get_historical_data(ticker, start, end, token=os.environ['IEX_SANDBOX_TOKEN'])
     asset_data = {}
     i = 0
     for day, quote in api_response.items():

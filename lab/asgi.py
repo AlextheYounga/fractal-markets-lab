@@ -11,6 +11,6 @@ import os
 
 from django.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'fractalmarketslab.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'lab.settings')
 
 application = get_asgi_application()

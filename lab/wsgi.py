@@ -11,6 +11,6 @@ import os
 
 from django.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'fractalmarketslab.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'lab.settings')
 
 application = get_wsgi_application()
