@@ -75,7 +75,7 @@ def getCurrentPrice(asset):
 
 
 def parseCSV():
-    with open('fractalmarketslab/imports/currentSPX.csv', newline='', encoding='utf-8') as csvfile:
+    with open('lab/imports/currentSPX.csv', newline='', encoding='utf-8') as csvfile:
         asset_data = {}
         reader = csv.DictReader(csvfile)
 

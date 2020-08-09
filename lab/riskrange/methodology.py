@@ -6,9 +6,9 @@ from ..shared.imports import *
 from datetime import datetime 
 
 
-def calculate_signals(ticker):
+def rangeRules(ticker):
     signalArray = {}
-    assetData = getLongTermData(ticker)
+    assetData = getShortTermData(ticker)
 
     prices = removeZeroes(extractData(assetData, 'close'))
     current_price = getCurrentPrice(ticker)
@@ -19,18 +19,11 @@ def calculate_signals(ticker):
 
     donchianHigh = max(list(reversed(highs))[:8])
     donchianLow = min(list(reversed(lows))[:8])
-
-    stdevTrade = statistics.stdev(list(reversed(prices))[:16])
-    stdevMonth = statistics.stdev(list(reversed(prices))[:22])
-    stdevTrend = statistics.stdev(list(reversed(prices))[:64])
+    vol = calculateVol(list(reversed(prices)))
+    
     volumeTrend = list(reversed(volumes))[:64]
     volumeChange = round(((volumeTrend[0] - volumeTrend[-1]) / volumeTrend[-1])*100, 3) if (volumeTrend[0] != 0 and volumeTrend[-1] != 0) else 0
-
-    impliedVolTrade = prices[-1] * (stdevTrade / prices[-1]) * (math.sqrt(1/16)) if (prices[-1] != 0) else 0
-    impliedVolMonth = prices[-1] * (stdevMonth / prices[-1]) * (math.sqrt(1/22)) if (prices[-1] != 0) else 0
-    impliedVolTrend = prices[-1] * (stdevTrend / prices[-1]) * (math.sqrt(1/64)) if (prices[-1] != 0) else 0
-    impliedVolMean = round(statistics.mean([impliedVolTrade, impliedVolMonth, impliedVolTrend]), 3)
-    impliedVolPercent = round((impliedVolMean / current_price) * 100)
+    
     upperVol = (prices[-1] + impliedVolMonth)
     lowerVol = (prices[-1] - impliedVolMonth)
     highRange = (donchianHigh - impliedVolMonth)

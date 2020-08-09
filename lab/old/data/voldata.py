@@ -3,7 +3,7 @@ import statistics
 from .functions import *
 
 
-with open('fractalmarketslab/imports/VolSPX.csv', newline='', encoding='utf-8') as csvfile:
+with open('lab/imports/VolSPX.csv', newline='', encoding='utf-8') as csvfile:
     volData = {}
     reader = csv.DictReader(csvfile)
 

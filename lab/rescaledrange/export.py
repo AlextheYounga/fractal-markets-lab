@@ -48,7 +48,7 @@ def writeCSV(fractal_results, refScales, resultsfile, append):
 
 
 def exportFractal(fractal_results, refScales):
-    output_file = 'fractalmarketslab/exports/hurst/fractal_results.csv'
+    output_file = 'lab/exports/hurst/fractal_results.csv'
 
     # If output file does not exist, create new.
     if (not os.path.exists(output_file)):

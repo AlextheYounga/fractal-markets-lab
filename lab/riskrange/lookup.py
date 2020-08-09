@@ -1,13 +1,13 @@
 import statistics
 import math
 import json
-from .functions import *
+from .methodology import *
 from ..shared.functions import *
 from ..shared.imports import *
 from tabulate import tabulate
 
-def lookup_signal(ticker):
-    data = calculate_signals(ticker)
+def rangeLookup(ticker):
+    data = rangeRules(ticker)
 
     print(tabulate([
         ['DonchianHigh', data[ticker]['donchian']['high']],

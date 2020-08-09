@@ -1,19 +1,21 @@
 # from ..key import *
 from iexfinance.stocks import get_historical_data
 from iexfinance.stocks import Stock
+from datetime import datetime, timedelta
+from dotenv import load_dotenv
 import requests
 import json
 import csv
-from datetime import datetime, timedelta
 import os
+load_dotenv()
 
 
 def getCustomTimeRange(ticker, time):
     start = datetime.today() - timedelta(days=time)
     end = datetime.today()
 
-    api_response = get_historical_data(ticker, start, end, token=os.environ['IEX_TOKEN'])
-    # api_response = get_historical_data(ticker, 2yr, token=os.environ['IEX_TOKEN'])
+    api_response = get_historical_data(ticker, start, end, token=os.environ.get("IEX_TOKEN"))
+    # api_response = get_historical_data(ticker, 2yr, token=os.environ.get("IEX_TOKEN"))
     asset_data = {}
     i = 0
     for day, quote in api_response.items():
@@ -31,10 +33,10 @@ def getCustomTimeRange(ticker, time):
 
 
 def getShortTermData(ticker):
-    start = datetime.today() - timedelta(days=30)
+    start = datetime.today() - timedelta(days=64)
     end = datetime.today()
 
-    api_response = get_historical_data(ticker, start, end, token=os.environ['IEX_TOKEN'])
+    api_response = get_historical_data(ticker, start, end, token=os.environ.get("IEX_TOKEN"))
     asset_data = {}
     i = 0
     for day, quote in api_response.items():
@@ -52,10 +54,10 @@ def getShortTermData(ticker):
 
 
 def getShortTermPrices(ticker):
-    start = datetime.today() - timedelta(days=30)
+    start = datetime.today() - timedelta(days=64)
     end = datetime.today()
 
-    api_response = get_historical_data(ticker, start, end, close_only=True, token=os.environ['IEX_TOKEN'])
+    api_response = get_historical_data(ticker, start, end, close_only=True, token=os.environ.get("IEX_TOKEN"))
     asset_data = {}
     i = 0
     for day, quote in api_response.items():
@@ -70,47 +72,42 @@ def getShortTermPrices(ticker):
 
 
 # BEWARE, VERY HIGH MESSAGE USE!
-def getLongTermData(ticker):
-    start = datetime.today() - timedelta(days=100)
-    end = datetime.today()
-
-    api_response = get_historical_data(ticker, start, end, token=os.environ['IEX_TOKEN'])
+def getLongTermPrices(ticker):
+    url = 'https://cloud.iexapis.com//stable/stock/{}/chart/2y?token={}'.format(ticker, param, os.environ.get("IEX_TOKEN"))
+    api_response = requests.get(url).json()
     asset_data = {}
-    i = 0
-    for day, quote in api_response.items():
+
+    for i, day in enumerate(api_response):
         asset_data[i] = {
-            'date': day,
-            'open': quote['open'],
-            'close': quote['close'],
-            'high': quote['high'],
-            'low': quote['low'],
-            'volume': quote['volume']
+            'date': day['date'],
+            'close': day['close'],
+            'open': day['open'],
+            'high': day['high'],
+            'low': day['low'],
+            'volume': day['volume']
         }
-        i = i + 1
 
     return asset_data
 
 
 def getLongTermPrices(ticker):
-    start = datetime.today() - timedelta(days=100)
-    end = datetime.today()
-
-    api_response = get_historical_data(ticker, start, end, close_only=True, token=os.environ['IEX_TOKEN'])
+    param = 'chartCloseOnly=true'
+    url = 'https://cloud.iexapis.com//stable/stock/{}/chart/2y?{}&token={}'.format(ticker, param, os.environ.get("IEX_TOKEN"))
+    api_response = requests.get(url).json()
     asset_data = {}
-    i = 0
-    for day, quote in api_response.items():
+
+    for i, day in enumerate(api_response):
         asset_data[i] = {
-            'date': day,
-            'close': quote['close'],
-            'volume': quote['volume']
+            'date': day['date'],
+            'close': day['close'],
+            'volume': day['volume']
         }
-        i = i + 1
 
     return asset_data
 
 
 def getCurrentPrice(ticker):
-    stock = Stock(ticker, token=os.environ['IEX_TOKEN'])
+    stock = Stock(ticker, token=os.environ.get("IEX_TOKEN"))
     price = stock.get_price()
 
     return price
@@ -119,10 +116,10 @@ def getCurrentPrice(ticker):
 def testShortTermPrices(ticker):
     # Set IEX Finance API Token (Test)
     os.environ['IEX_API_VERSION'] = 'iexcloud-sandbox'
-    start = datetime.today() - timedelta(days=30)
+    start = datetime.today() - timedelta(days=64)
     end = datetime.today()
 
-    api_response = get_historical_data(ticker, start, end, token=os.environ['IEX_SANDBOX_TOKEN'])
+    api_response = get_historical_data(ticker, start, end, token=os.environ.get("IEX_SANDBOX_TOKEN"))
     asset_data = {}
     i = 0
     for day, quote in api_response.items():
@@ -141,28 +138,23 @@ def testShortTermPrices(ticker):
 
 
 def testLongTermPrices(ticker):
-    api_call =requests.get('https://sandbox.iexapis.com/stable/stock/{}/chart/2y?token={}'.format(ticker, os.environ['IEX_SANDBOX_TOKEN']))
-
-    api_response = get_historical_data(ticker, start, end, token=os.environ['IEX_SANDBOX_TOKEN'])
+    param = 'chartCloseOnly=true'
+    url = 'https://sandbox.iexapis.com/stable/stock/{}/chart/2y?{}&token={}'.format(ticker, param, os.environ.get("IEX_SANDBOX_TOKEN"))
+    api_response = requests.get(url).json()
     asset_data = {}
-    i = 0
-    for day, quote in api_response.items():
+
+    for i, day in enumerate(api_response):
         asset_data[i] = {
-            'date': day,
-            'open': quote['open'],
-            'close': quote['close'],
-            'high': quote['high'],
-            'low': quote['low'],
-            'volume': quote['volume']
+            'date': day['date'],
+            'close': day['close'],
+            'volume': day['volume']
         }
-        i = i + 1
-    os.environ['IEX_API_VERSION'] = 'v1'
 
     return asset_data
 
 
 def parseCSV(file):
-    with open('fractalmarketslab/imports/{}'.format(file), newline='', encoding='utf-8') as csvfile:
+    with open('lab/imports/{}'.format(file), newline='', encoding='utf-8') as csvfile:
         asset_data = {}
         reader = csv.DictReader(csvfile)
 

@@ -47,7 +47,7 @@ def getLongTermPrices(asset):
 
 
 def parseCSV(file):
-    with open('fractalmarketslab/imports/{}'.format(file), newline='', encoding='utf-8') as csvfile:
+    with open('lab/imports/{}'.format(file), newline='', encoding='utf-8') as csvfile:
         asset_data = {}
         reader = csv.DictReader(csvfile)
 

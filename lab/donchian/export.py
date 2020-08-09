@@ -20,7 +20,7 @@ def writeCSV(donchian_range, ticker, resultsfile, append):
 
 
 def exportDonchian(donchian_range, ticker):
-    output_file = 'fractalmarketslab/exports/donchian/donchianrange.csv'
+    output_file = 'lab/exports/donchian/donchianrange.csv'
 
 # If output file does not exist, create new.
     if (not os.path.exists(output_file)):

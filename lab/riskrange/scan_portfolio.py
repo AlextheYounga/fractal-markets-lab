@@ -2,7 +2,7 @@ import statistics
 import math
 import json
 from .export import *
-from .functions import *
+from .methodology import *
 from ..shared.functions import *
 from ..shared.imports import *
 from tabulate import tabulate
@@ -40,7 +40,7 @@ portfolio = [
 ]
 signalArray = {}
 for ticker in portfolio:
-    data = calculate_signals(ticker)
+    data = rangeRules(ticker)
     signalArray[ticker] = data[ticker]
 
     print(tabulate([

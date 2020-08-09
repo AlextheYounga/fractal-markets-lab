@@ -5,7 +5,7 @@ from datetime import datetime
 def writeCSV(stats):
     now = datetime.now()
     datenow = now.strftime("%m-%d-%Y %H:%M:%S")
-    output_file = "fractalmarketslab/exports/portfolio/signals.csv"
+    output_file = "lab/exports/portfolio/signals.csv"
     with open(output_file, mode='w') as resultsfile:
         write_results = csv.writer(resultsfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)    
         write_results.writerow([
