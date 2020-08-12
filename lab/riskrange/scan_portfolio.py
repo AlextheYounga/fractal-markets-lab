@@ -7,10 +7,10 @@ from ..shared.functions import *
 from ..shared.imports import *
 from tabulate import tabulate
 
+
 portfolio = [
     'PHYS',
     'F',
-    'WPM',
     'KGC',
     'SPY',
     'AG',
@@ -32,7 +32,6 @@ portfolio = [
     'SBSW',
     'SLV',
     'UBER',
-    'VXX',
     'WKHS',
     'TLT',
     'CVNA',
@@ -44,9 +43,11 @@ for ticker in portfolio:
     signalArray[ticker] = data[ticker]
 
     print(tabulate([
-        ['DonchianHigh', data[ticker]['donchian']['high']],
+        ['technicalHigh', data[ticker]['donchian']['technicalHigh']],
+        ['shortTermDonchianHigh', data[ticker]['donchian']['shortTermHigh']],
         ['Current Price', data[ticker]['currentPrice']],
-        ['DonchianLow', data[ticker]['donchian']['low']],
+        ['shortTermDonchianLow', data[ticker]['donchian']['shortTermLow']],
+        ['technicalLow', data[ticker]['donchian']['technicalLow']],
         ['', ''],
         ['1 Stdev Higher', data[ticker]['vol']['upper']],
         ['Current Price', data[ticker]['currentPrice']],
@@ -61,7 +62,7 @@ for ticker in portfolio:
         ['ImpliedVol', data[ticker]['vol']['implied']],
         ['ImpliedVol%', data[ticker]['vol']['impliedPercent']],
         ['VolumeChange', data[ticker]['vol']['volumeChange']]],
-        headers=[ticker, data[ticker]['signal']]))  
+        headers=[ticker, data[ticker]['signal']]))
 
 
 writeCSV(signalArray)
