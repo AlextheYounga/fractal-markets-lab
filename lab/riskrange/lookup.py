@@ -10,13 +10,15 @@ def rangeLookup(ticker):
     data = rangeRules(ticker)
 
     print(tabulate([
-        ['DonchianHigh', data[ticker]['donchian']['high']],
+        ['technicalHigh', data[ticker]['donchian']['technicalHigh']],
+        ['shortTermDonchianHigh', data[ticker]['donchian']['shortTermHigh']],
         ['Current Price', data[ticker]['currentPrice']],
-        ['DonchianLow', data[ticker]['donchian']['low']],
+        ['shortTermDonchianLow', data[ticker]['donchian']['shortTermLow']],
+        ['technicalLow', data[ticker]['donchian']['technicalLow']],
         ['', ''],
-        ['Vol High', data[ticker]['vol']['upper']],
+        ['1 Stdev Higher', data[ticker]['vol']['upper']],
         ['Current Price', data[ticker]['currentPrice']],
-        ['Vol Low', data[ticker]['vol']['lower']],
+        ['1 Stdev Lower', data[ticker]['vol']['lower']],
         ['', ''],
         ['Upper Range', data[ticker]['range']['upper']],
         ['Current Price', data[ticker]['currentPrice']],
@@ -27,7 +29,7 @@ def rangeLookup(ticker):
         ['ImpliedVol', data[ticker]['vol']['implied']],
         ['ImpliedVol%', data[ticker]['vol']['impliedPercent']],
         ['VolumeChange', data[ticker]['vol']['volumeChange']]],
-        headers=[ticker, data[ticker]['signal']]))    
+        headers=[ticker, data[ticker]['signal']]))   
 
 
 

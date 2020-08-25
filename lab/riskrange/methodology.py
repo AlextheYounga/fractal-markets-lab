@@ -40,7 +40,7 @@ def rangeRules(ticker):
     highRange = (shortDonchianHigh - volMonth)
     lowRange = (shortDonchianLow + volMonth)
     percentUpside = "{}%".format(round(((shortDonchianHigh - current_price) / current_price) * 100)) if (technicalDonchianHigh > current_price) else "Infinite"
-    percentDownside = "{}%".format(round(((current_price - shortDonchianLow) / current_price) * 100)) if (current_price > technicalDonchianLow) else "Infinite"
+    percentDownside = "{}%".format(round(((current_price - shortDonchianLow) / current_price) * 100)) if (current_price > technicalDonchianLow) else "Infinite"    
 
     # Signal based on volatility and probability.
     if (upperVol < current_price):
