@@ -18,10 +18,11 @@ def rangeRules(ticker):
     dates = removeZeroes(extractData(assetData, 'date'))
     volumes = removeZeroes(extractData(assetData, 'volume'))
 
+
     technicalDonchianHigh = max(list(reversed(highs))[:22])
     technicalDonchianLow = min(list(reversed(lows))[:22])    
-    shortDonchianHigh = max(list(reversed(highs))[:8])
-    shortDonchianLow = min(list(reversed(lows))[:8])
+    shortDonchianHigh = max(list(reversed(highs))[:16])
+    shortDonchianLow = min(list(reversed(lows))[:16])
     # vol = calculateVol(list(reversed(prices)))
     stdevTrade = statistics.stdev(prices[:16])
     stdevMonth = statistics.stdev(prices[:22])
