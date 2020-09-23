@@ -10,7 +10,7 @@ def rangeRules(ticker):
     signalArray = {}
     assetData = getShortTermData(ticker)
     
-
+    # Data
     prices = removeZeroes(extractData(assetData, 'close'))
     current_price = getCurrentPrice(ticker)
     highs = removeZeroes(extractData(assetData, 'high'))
@@ -18,29 +18,38 @@ def rangeRules(ticker):
     dates = removeZeroes(extractData(assetData, 'date'))
     volumes = removeZeroes(extractData(assetData, 'volume'))
 
-
+    # Technicals
     technicalDonchianHigh = max(list(reversed(highs))[:22])
     technicalDonchianLow = min(list(reversed(lows))[:22])    
     shortDonchianHigh = max(list(reversed(highs))[:16])
     shortDonchianLow = min(list(reversed(lows))[:16])
-    # vol = calculateVol(list(reversed(prices)))
+
+    # Volatility
     stdevTrade = statistics.stdev(prices[:16])
     stdevMonth = statistics.stdev(prices[:22])
     stdevTrend = statistics.stdev(prices[:64])    
     volTrade = prices[-1] * (stdevTrade / prices[-1]) * (math.sqrt(1/16)) if (prices[-1] != 0) else 0
     volMonth = prices[-1] * (stdevMonth / prices[-1]) * (math.sqrt(1/22)) if (prices[-1] != 0) else 0
     volTrend = prices[-1] * (stdevTrend / prices[-1]) * (math.sqrt(1/64)) if (prices[-1] != 0) else 0    
-    volPercent = "{}%".format(round((volMonth / current_price) * 100, 2))
+    volPercent = (volMonth / current_price) * 100
     
+    # Volume
     volumeTrend = list(reversed(volumes))[:64]
-    volumeChange = "{}%".format(round(((volumeTrend[0] - volumeTrend[-1]) / volumeTrend[-1])*100, 3) if (volumeTrend[0] != 0 and volumeTrend[-1] != 0) else 0)
+    volumeChange = ((volumeTrend[0] - volumeTrend[-1]) / volumeTrend[-1]) * 100 if (volumeTrend[0] != 0 and volumeTrend[-1] != 0) else 0
     
-    upperVol = round((prices[-1] + volMonth), 3)
-    lowerVol = round((prices[-1] - volMonth), 3)
-    highRange = round((shortDonchianHigh - (volMonth * 2)), 3)
-    lowRange = round((shortDonchianLow + (volMonth * 2)), 3)
-    percentUpside = "{}%".format(round(((shortDonchianHigh - current_price) / current_price) * 100)) if (technicalDonchianHigh > current_price) else "Infinite"
-    percentDownside = "{}%".format(round(((current_price - shortDonchianLow) / current_price) * 100)) if (current_price > technicalDonchianLow) else "Infinite"    
+    # Probability Range
+    upperVol = (prices[-1] + volMonth)
+    lowerVol = (prices[-1] - volMonth)
+    highRange = (shortDonchianHigh - (volMonth * 2))
+    lowRange = (shortDonchianLow + (volMonth * 2))
+    percentUpside = ((shortDonchianHigh - current_price) / current_price) * 100 if (technicalDonchianHigh > current_price) else "Infinite"
+    percentDownside = ((current_price - shortDonchianLow) / current_price) * 100 if (current_price > technicalDonchianLow) else "Infinite"    
+
+    # Convert to Percentage Format
+    volPercent = "{}%".format(round(volPercent, 2))
+    volumeChange = "{}%".format(round(volumeChange, 2))
+    percentUpside = "{}%".format(round(percentUpside, 2)) if isinstance(percentUpside, float) else percentUpside
+    percentDownside = "{}%".format(round(percentDownside, 2)) if isinstance(percentDownside, float) else percentDownside
 
     # Signal based on volatility and probability.
     if (upperVol < current_price):
@@ -62,23 +71,23 @@ def rangeRules(ticker):
         'currentPrice': current_price,
         'signal': signal,
         'donchian': {
-            'shortTermLow': shortDonchianLow,
-            'shortTermHigh': shortDonchianHigh,
-            'technicalLow': technicalDonchianLow,
-            'technicalHigh': technicalDonchianHigh
+            'shortTermLow': round(shortDonchianLow, 3),
+            'shortTermHigh': round(shortDonchianHigh, 3),
+            'technicalLow': round(technicalDonchianLow, 3),
+            'technicalHigh': round(technicalDonchianHigh, 3)
         },
         'vol': {
-            'upper': upperVol,
-            'lower': lowerVol,
+            'upper': round(upperVol, 3),
+            'lower': round(lowerVol, 3),
             'implied': round(volMonth, 3),
             'impliedPercent': volPercent,
             'volumeChange': volumeChange,
         },
         'range': {
-            'upper': highRange,
-            'lower': lowRange,
+            'upper': round(highRange, 3),
+            'lower': round(lowRange, 3),
             'downside': percentDownside,
-            'upside': percentUpside
+            'upside': percentUpside,
         }
     }
 
