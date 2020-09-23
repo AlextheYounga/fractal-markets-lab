@@ -1,5 +1,5 @@
 from ..shared.functions import *
-from ..shared.imports import *
+from ..shared.api import *
 
 assetData = getShortTermData(ticker)
 prices = removeZeroes(extractData(assetData, 'close'))

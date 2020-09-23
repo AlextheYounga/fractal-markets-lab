@@ -1,7 +1,7 @@
 import statistics
 import json
 from ..shared.functions import *
-from ..shared.imports import *
+from ..shared.api import *
 from .export import exportDonchian
 import matplotlib.pyplot as plt
 import numpy as np

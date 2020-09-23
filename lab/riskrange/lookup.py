@@ -3,7 +3,7 @@ import math
 import json
 from .methodology import *
 from ..shared.functions import *
-from ..shared.imports import *
+from ..shared.api import *
 from tabulate import tabulate
 
 def rangeLookup(ticker):

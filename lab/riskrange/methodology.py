@@ -2,7 +2,7 @@ import statistics
 import math
 import json
 from ..shared.functions import *
-from ..shared.imports import *
+from ..shared.api import *
 from datetime import datetime 
 
 
@@ -29,9 +29,9 @@ def rangeRules(ticker):
     stdevTrade = statistics.stdev(prices[:16])
     stdevMonth = statistics.stdev(prices[:22])
     stdevTrend = statistics.stdev(prices[:64])    
-    volTrade = prices[-1] * (stdevTrade / prices[-1]) * (math.sqrt(1/16)) if (prices[-1] != 0) else 0
-    volMonth = prices[-1] * (stdevMonth / prices[-1]) * (math.sqrt(1/22)) if (prices[-1] != 0) else 0
-    volTrend = prices[-1] * (stdevTrend / prices[-1]) * (math.sqrt(1/64)) if (prices[-1] != 0) else 0    
+    volTrade = current_price * (stdevTrade / current_price) * (math.sqrt(1/16)) if (current_price != 0) else 0
+    volMonth = current_price * (stdevMonth / current_price) * (math.sqrt(1/22)) if (current_price != 0) else 0
+    volTrend = current_price * (stdevTrend / current_price) * (math.sqrt(1/64)) if (current_price != 0) else 0    
     volPercent = (volMonth / current_price) * 100
     
     # Volume
@@ -39,8 +39,8 @@ def rangeRules(ticker):
     volumeChange = ((volumeTrend[0] - volumeTrend[-1]) / volumeTrend[-1]) * 100 if (volumeTrend[0] != 0 and volumeTrend[-1] != 0) else 0
     
     # Probability Range
-    upperVol = (prices[-1] + volMonth)
-    lowerVol = (prices[-1] - volMonth)
+    upperVol = (current_price + volMonth)
+    lowerVol = (current_price - volMonth)
     highRange = (week3DonchianHigh - (volMonth * 2))
     lowRange = (week3DonchianLow + (volMonth * 2))
     percentUpside = ((week3DonchianHigh - current_price) / current_price) * 100 if (technicalDonchianHigh > current_price) else "Infinite"
