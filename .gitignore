@@ -6,3 +6,4 @@ lab/*/__pycache__
 lab/__pycache__/
 lab/exports/portfolio/
 lab/shared/storage/*
+lab/scrap/*

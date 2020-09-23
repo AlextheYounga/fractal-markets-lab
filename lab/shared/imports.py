@@ -3,7 +3,8 @@ import requests
 import json
 import csv
 
-def parseCSV(file):
+def parseIndexDateClose(file):
+    # TODO: Make this dynamic.
     with open('lab/imports/{}'.format(file), newline='', encoding='utf-8') as csvfile:
         asset_data = {}
         reader = csv.DictReader(csvfile)
@@ -17,3 +18,10 @@ def parseCSV(file):
             # Append value dictionary to data
             asset_data[i] = rows
     return asset_data
+
+def csvDictionary():
+    return
+
+def parseCSV(path):
+    return
+

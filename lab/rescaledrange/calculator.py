@@ -13,7 +13,8 @@ from tabulate import tabulate
 # Fetch historical prices
 # ticker = "SP500"
 # asset_data = getLongTermPrices(ticker)
-asset_data = parseCSV("SPX.csv")
+# TODO: Go back and redo the calculations with what you know now. Errors are popping up.
+asset_data = parseIndexDateClose("SPX.csv")
 
 prices = extractData(asset_data, 'close')
 count = len(prices)
