@@ -25,10 +25,11 @@ def rangeLookup(ticker):
         ['Lower Range', data[ticker]['range']['lower']],
         ['', ''],
         ['PercentUpside', data[ticker]['range']['upside']],
-        ['PercentDownside', data[ticker]['range']['downside']],
+        ['PercentDownside', data[ticker]['range']['downside']],        
         ['stDev', data[ticker]['vol']['stDev']],
         ['stDevPercent%', data[ticker]['vol']['stDevPercent']],
-        ['VolumeChange', data[ticker]['vol']['volumeChange']]],
+        ['VolumeChange', data[ticker]['vol']['volumeChange']],
+        ['3MonthTrend', data[ticker]['trend']]],
         headers=[ticker, data[ticker]['signal']]))   
 
 

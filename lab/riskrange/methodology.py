@@ -23,7 +23,7 @@ def rangeRules(ticker):
     technicalDonchianLow = min(lows[:22])
     week3DonchianHigh = max(highs[:16])
     week3DonchianLow = min(lows[:16])
-    trend = (prices[0] - prices[-1]) / prices[-1]
+    trend = ((prices[0] - prices[-1]) / prices[-1]) * 100 if (prices[0] != 0 and prices[-1] != 0) else 0
 
     # Volatility
     stdevTrade = statistics.stdev(prices[:16])
@@ -51,6 +51,7 @@ def rangeRules(ticker):
     volumeChange = "{}%".format(round(volumeChange, 2))
     percentUpside = "{}%".format(round(percentUpside, 2)) if isinstance(percentUpside, float) else percentUpside
     percentDownside = "{}%".format(round(percentDownside, 2)) if isinstance(percentDownside, float) else percentDownside
+    month3trend = "{}%".format(round(trend, 2))
 
     # Signal based on volatility and probability.
     if (upperVol < current_price):
@@ -71,6 +72,7 @@ def rangeRules(ticker):
     signalArray[ticker] = {
         'currentPrice': current_price,
         'signal': signal,
+        'trend': month3trend,
         'donchian': {
             'week3Low': round(week3DonchianLow, 3),
             'week3High': round(week3DonchianHigh, 3),

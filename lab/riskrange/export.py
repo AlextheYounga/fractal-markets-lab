@@ -29,6 +29,7 @@ def writeCSV(stats):
             'VolumeChange',
             'PercentDownside',
             'PercentUpside',
+            '3MonthTrend',
             'Signal',
         ])
         for ticker, data in stats.items():
@@ -47,5 +48,6 @@ def writeCSV(stats):
                 data['vol']['volumeChange'],
                 data['range']['downside'],
                 data['range']['upside'],
+                data['trend'],
                 data['signal'],
             ])
