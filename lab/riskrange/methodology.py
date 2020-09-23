@@ -29,17 +29,16 @@ def rangeRules(ticker):
     stdevTrend = statistics.stdev(prices[:64])    
     volTrade = prices[-1] * (stdevTrade / prices[-1]) * (math.sqrt(1/16)) if (prices[-1] != 0) else 0
     volMonth = prices[-1] * (stdevMonth / prices[-1]) * (math.sqrt(1/22)) if (prices[-1] != 0) else 0
-    volTrend = prices[-1] * (stdevTrend / prices[-1]) * (math.sqrt(1/64)) if (prices[-1] != 0) else 0
-    volMean = round(statistics.mean([volTrade, volMonth, volTrend]), 3)
-    volPercent = round((volMean / current_price) * 100)
+    volTrend = prices[-1] * (stdevTrend / prices[-1]) * (math.sqrt(1/64)) if (prices[-1] != 0) else 0    
+    volPercent = "{}%".format(round((volMonth / current_price) * 100, 2))
     
     volumeTrend = list(reversed(volumes))[:64]
-    volumeChange = round(((volumeTrend[0] - volumeTrend[-1]) / volumeTrend[-1])*100, 3) if (volumeTrend[0] != 0 and volumeTrend[-1] != 0) else 0
+    volumeChange = "{}%".format(round(((volumeTrend[0] - volumeTrend[-1]) / volumeTrend[-1])*100, 3) if (volumeTrend[0] != 0 and volumeTrend[-1] != 0) else 0)
     
-    upperVol = (prices[-1] + volMonth)
-    lowerVol = (prices[-1] - volMonth)
-    highRange = (shortDonchianHigh - volMonth)
-    lowRange = (shortDonchianLow + volMonth)
+    upperVol = round((prices[-1] + volMonth), 3)
+    lowerVol = round((prices[-1] - volMonth), 3)
+    highRange = round((shortDonchianHigh - (volMonth * 2)), 3)
+    lowRange = round((shortDonchianLow + (volMonth * 2)), 3)
     percentUpside = "{}%".format(round(((shortDonchianHigh - current_price) / current_price) * 100)) if (technicalDonchianHigh > current_price) else "Infinite"
     percentDownside = "{}%".format(round(((current_price - shortDonchianLow) / current_price) * 100)) if (current_price > technicalDonchianLow) else "Infinite"    
 
@@ -71,7 +70,7 @@ def rangeRules(ticker):
         'vol': {
             'upper': upperVol,
             'lower': lowerVol,
-            'implied': volMean,
+            'implied': round(volMonth, 3),
             'impliedPercent': volPercent,
             'volumeChange': volumeChange,
         },

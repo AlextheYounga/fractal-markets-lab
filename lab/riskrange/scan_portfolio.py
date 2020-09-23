@@ -8,34 +8,47 @@ from ..shared.imports import *
 from tabulate import tabulate
 
 
-portfolio = [    
-    'F',
-    'KGC',
-    'PPLT',
-    'CCJ',
-    'UUUU',
-    'UEC',
-    # 'SPY',
+# portfolio = [
+#     'GOLD',
+#     'GDXJ',
+#     'GDX',
+#     'UUUU',
+#     'UEC',
+#     'DBA',
+#     'SILJ',
+#     'SLV',
+#     'SBSW',
+#     'ISVLF',
+#     'KNTNF',
+# ]
+
+portfolio = [
     'AG',
-    'GDX',
-    'AUY',
-    'GDXJ',
-    'GLD',
-    'GOLD',        
-    'HL',
     'MUX',
-    'JPM',
-    'MSFT',
     'EGO',
-    'NEM',
+    'AUY',
     'FNV',
-    'SBSW',
-    'SLV',
-    # 'WKHS',
+    'AAPL',
     'TLT',
-    # 'CVNA',
-    'ISVLF'
+    'ISVLF',
+    'HL',
+    'JPM',
+    'PPLT',
+    'NEM',
+    'MSFT',
+    'UUUU',
+    'SILJ',
+    'GDXJ',
+    'F',
+    'GOLD',
+    'MENEF',
+    'SLV',
+    'SBSW',
+    'GDX',
+    'GLD',
+    'UEC',
 ]
+
 signalArray = {}
 for ticker in portfolio:
     data = rangeRules(ticker)
