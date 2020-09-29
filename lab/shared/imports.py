@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import requests
+import sys
 import json
 import csv
 
@@ -22,6 +23,20 @@ def parseIndexDateClose(file):
 def csvDictionary():
     return
 
-def parseCSV(path):
+def parseCSV(file, headers=True):
+    with open('lab/shared/storage/{}'.format(file), newline='', encoding='utf-8') as csvfile:
+        asset_data = {}
+        
+        if (headers == False):
+            # TODO: Figure out how to skip headers
+            reader = csv.reader(csvfile)
+            reader.next()
+        else:
+            reader = csv.DictReader(csvfile)
+        
+        for i, row in enumerate(reader):
+            asset_data[i] = row
+            
+    return asset_data
     return
 

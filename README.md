@@ -11,5 +11,6 @@ python -m lab.riskrange.scan_portfolio
 python -c 'from lab.riskrange.lookup import rangeLookup; print(rangeLookup("EDV"))'
 <!-- Trend -->
 python -c 'from lab.trend.analyze import analyze; print(analyze("SPY"))'
+python -m lab.trend.week52
 <!-- Financials -->
 python -c 'from lab.financials.lookup import lookupFinancials; print(lookupFinancials("BELDF"))'

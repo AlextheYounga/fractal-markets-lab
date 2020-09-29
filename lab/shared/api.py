@@ -91,7 +91,7 @@ def getLongTermPrices(ticker):
 
 def getLongTermPrices(ticker):
     param = 'chartCloseOnly=true'
-    url = 'https://cloud.iexapis.com//stable/stock/{}/chart/2y?{}&token={}'.format(ticker, param, os.environ.get("IEX_TOKEN"))
+    url = 'https://cloud.iexapis.com/stable/stock/{}/chart/2y?{}&token={}'.format(ticker, param, os.environ.get("IEX_TOKEN"))
     api_response = requests.get(url).json()
     asset_data = {}
 
@@ -111,8 +111,12 @@ def getCurrentPrice(ticker):
 
     return price
 
-def getQuoteData():
-    return
+
+def getQuoteData(ticker):
+    stock = Stock(ticker, token=os.environ.get("IEX_TOKEN"))
+    quote = stock.get_quote()
+
+    return quote
 
 
 def testShortTermPrices(ticker):
@@ -153,6 +157,3 @@ def testLongTermPrices(ticker):
         }
 
     return asset_data
-
-
-

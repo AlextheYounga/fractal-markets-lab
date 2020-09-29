@@ -41,8 +41,8 @@ def rangeRules(ticker):
     # Probability Range
     upperVol = (current_price + volMonth)
     lowerVol = (current_price - volMonth)
-    highRange = (week3DonchianHigh - (volMonth * 2))
-    lowRange = (week3DonchianLow + (volMonth * 2))
+    highRange = (week3DonchianHigh - (volMonth * 3))
+    lowRange = (week3DonchianLow + (volMonth * 3))
     percentUpside = ((week3DonchianHigh - current_price) / current_price) * 100 if (technicalDonchianHigh > current_price) else "Infinite"
     percentDownside = ((current_price - week3DonchianLow) / current_price) * 100 if (current_price > technicalDonchianLow) else "Infinite"    
 
