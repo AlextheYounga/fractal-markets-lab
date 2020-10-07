@@ -19,21 +19,29 @@ nasdaq = parseCSV('NasdaqComposite.csv')
 
 
 def getTrendData(ticker):
-    price = getCurrentPrice(ticker)
+    try:
+        price = getCurrentPrice(ticker)
+        url = 'https://cloud.iexapis.com/stable/stock/{}/stats?token={}'.format(ticker, os.environ.get("IEX_TOKEN"))
+        stats = requests.get(url).json()
 
-    url = 'https://cloud.iexapis.com/stable/stock/{}/stats?token={}'.format(ticker, os.environ.get("IEX_TOKEN"))
-    stats = requests.get(url).json()
-
-    return price, stats
+        return price, stats
+    except:
+        return None, None
 
 
 results = {}
 for i, stock in nasdaq.items():
     price, stats = getTrendData(stock['ticker'])
-
+    if (price == None or stats == None):
+        continue
     week52high = stats['week52high'] if 'week52high' in stats else 0
+    if (week52high == 0 or week52high == None):
+        continue
+
     fromHigh = round((price / week52high) * 100, 3)
     eps = stats['ttmEPS'] if 'ttmEPS' in stats else 0
+    if (eps == 0 or eps == None):
+        continue
 
     if ((fromHigh < 110) and (fromHigh > 95)):
         if (eps > 0):
