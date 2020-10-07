@@ -60,6 +60,7 @@ for i, stock in nasdaq.items():
                     'month1ChangePercent': stats['month1ChangePercent'],
                     'day50MovingAvg': stats['day50MovingAvg'],
                     'day200MovingAvg': stats['day200MovingAvg'],
+                    'fromHigh': fromHigh,
                 }
                 
                 stock.update(keyStats)
