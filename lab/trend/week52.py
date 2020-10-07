@@ -4,8 +4,11 @@ import os
 import sys
 from .functions import *
 from ..shared.functions import *
+from ..shared.api import getCurrentPrice
+from ..shared.output import printTable
 from ..shared.imports import parseCSV
-from tabulate import tabulate
+from ..shared.export import writeCSV
+import texttable
 from dotenv import load_dotenv
 import requests
 load_dotenv()
@@ -14,42 +17,45 @@ nasdaq = parseCSV('NasdaqComposite.csv')
 
 # print(json.dumps(nasdaq, indent=1))
 
-def getTrendData(ticker):
-    param = 'latestPrice,week52High,changePercent,ytdChange,peRatio'
-    url = 'https://cloud.iexapis.com//stable/stock/{}/quote?filter={}&token={}'.format(ticker, param, os.environ.get("IEX_TOKEN"))
-    trend = requests.get(url).json()
 
-    url = 'https://cloud.iexapis.com//stable/stock/{}/stats?token={}'.format(ticker, param, os.environ.get("IEX_TOKEN"))
+def getTrendData(ticker):
+    price = getCurrentPrice(ticker)
+
+    url = 'https://cloud.iexapis.com/stable/stock/{}/stats?token={}'.format(ticker, os.environ.get("IEX_TOKEN"))
     stats = requests.get(url).json()
 
-    return trend, stats
+    return price, stats
 
-promising = {}
+
+results = {}
 for i, stock in nasdaq.items():
-    trendData, earningsData = getTrendData(stock['ticker'])
-    earnings = earningsData['earnings'] if 'earnings' in earningsData else None
-    if earnings == None:
-     continue
-    # Trend
-    week52high = trendData['week52High'] if 'week52High' in trendData else 0
-    price = trendData['latestPrice'] if 'latestPrice' in trendData else 0
-    changePercent = trendData['changePercent'] if 'changePercent' in trendData else 0
+    price, stats = getTrendData(stock['ticker'])
+
+    week52high = stats['week52high'] if 'week52high' in stats else 0
     fromHigh = round((price / week52high) * 100, 3)
-    # Earnings
-    eps = earnings['actualEPS'] if 'actualEPS' in earnings else 0
-    epsChange = earnings['yearAgoChangePercent'] if 'yearAgoChangePercent' in earnings else 0
-    print(eps)
+    eps = stats['ttmEPS'] if 'ttmEPS' in stats else 0
+
     if ((fromHigh < 110) and (fromHigh > 95)):
-
-        if ((eps > 0) and (epsChange > 0)):
-
-            if (changePercent > 3):
-                print(stock['ticker'])       
-                data = {stock, trendData, earnings}
-                promising[i] = data
+        if (eps > 0):
+            if (stats['day5ChangePercent'] > 10):
+                print(stock['ticker'] + "\n")
+                keyStats = {
+                    'week52high': stats['week52high'],
+                    'ttmEPS': stats['ttmEPS'],
+                    'peRatio': stats['peRatio'],
+                    'day5ChangePercent': stats['day5ChangePercent'],
+                    'month1ChangePercent': stats['month1ChangePercent'],
+                    'day50MovingAvg': stats['day50MovingAvg'],
+                    'day200MovingAvg': stats['day200MovingAvg'],
+                }
+                data = {stock, keyStats}
+                data['price'] = price
+                results[i] = data
     else:
-        print('.', end = "")
+        print('.', end="")
         sys.stdout.flush()
-    
 
-print(json.dumps(promising, indent=1))
+for item in results.items():
+    printTable(item)
+
+writeCSV(results, 'trend/trend_chasing.csv')

@@ -3,13 +3,13 @@ import math
 import json
 from ..shared.functions import *
 from ..shared.api import *
-from datetime import datetime 
+from datetime import datetime
 
 
 def rangeRules(ticker):
     signalArray = {}
     assetData = getShortTermData(ticker)
-    
+
     # Data
     prices = list(reversed(removeZeroes(extractData(assetData, 'close'))))
     current_price = getCurrentPrice(ticker)
@@ -28,23 +28,23 @@ def rangeRules(ticker):
     # Volatility
     stdevTrade = statistics.stdev(prices[:16])
     stdevMonth = statistics.stdev(prices[:22])
-    stdevTrend = statistics.stdev(prices[:64])    
+    stdevTrend = statistics.stdev(prices[:64])
     volTrade = current_price * (stdevTrade / current_price) * (math.sqrt(1/16)) if (current_price != 0) else 0
     volMonth = current_price * (stdevMonth / current_price) * (math.sqrt(1/22)) if (current_price != 0) else 0
-    volTrend = current_price * (stdevTrend / current_price) * (math.sqrt(1/64)) if (current_price != 0) else 0    
+    volTrend = current_price * (stdevTrend / current_price) * (math.sqrt(1/64)) if (current_price != 0) else 0
     volPercent = (volMonth / current_price) * 100
-    
+
     # Volume
     volumeTrend = volumes[:64]
     volumeChange = ((volumeTrend[0] - volumeTrend[-1]) / volumeTrend[-1]) * 100 if (volumeTrend[0] != 0 and volumeTrend[-1] != 0) else 0
-    
+
     # Probability Range
     upperVol = (current_price + volMonth)
     lowerVol = (current_price - volMonth)
     highRange = (week3DonchianHigh - (volMonth * 3))
     lowRange = (week3DonchianLow + (volMonth * 3))
     percentUpside = ((week3DonchianHigh - current_price) / current_price) * 100 if (technicalDonchianHigh > current_price) else "Infinite"
-    percentDownside = ((current_price - week3DonchianLow) / current_price) * 100 if (current_price > technicalDonchianLow) else "Infinite"    
+    percentDownside = ((current_price - week3DonchianLow) / current_price) * 100 if (current_price > technicalDonchianLow) else "Infinite"
 
     # Convert to Percentage Format
     volPercent = "{}%".format(round(volPercent, 2))
@@ -71,27 +71,21 @@ def rangeRules(ticker):
 
     signalArray[ticker] = {
         'currentPrice': current_price,
-        'signal': signal,
-        'trend': month3trend,
-        'donchian': {
-            'week3Low': round(week3DonchianLow, 3),
-            'week3High': round(week3DonchianHigh, 3),
-            'technicalLow': round(technicalDonchianLow, 3),
-            'technicalHigh': round(technicalDonchianHigh, 3)
-        },
-        'vol': {
-            'upper': round(upperVol, 3),
-            'lower': round(lowerVol, 3),
-            'stDev': round(volMonth, 3),
-            'stDevPercent': volPercent,
-            'volumeChange': volumeChange,
-        },
-        'range': {
-            'upper': round(highRange, 3),
-            'lower': round(lowRange, 3),
-            'downside': percentDownside,
-            'upside': percentUpside,
-        }
+        'lowerRange': round(lowRange, 3),
+        'upperRange': round(highRange, 3),
+        'lowerStDev': round(lowerVol, 3),
+        'upperStDev': round(upperVol, 3),
+        'technicalLow': round(technicalDonchianLow, 3),
+        'technicalHigh': round(technicalDonchianHigh, 3),
+        'week3DonchianLow': round(week3DonchianLow, 3),
+        'week3DonchianHigh': round(week3DonchianHigh, 3),
+        'stDev': round(volMonth, 3),
+        'stDevPercent%': volPercent,
+        'VolumeChange': volumeChange,
+        'PercentUpside': percentUpside,
+        'PercentDownside': percentDownside,
+        '3MonthTrend': month3trend,
+        'Signal': signal,
     }
-
+    
     return signalArray
