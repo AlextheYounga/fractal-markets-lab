@@ -29,11 +29,13 @@ def getTrendData(ticker):
         return None, None
 
 
-results = {}
+print('Running...')
+results = []
 for i, stock in nasdaq.items():
     price, stats = getTrendData(stock['ticker'])
     if (price == None or stats == None):
         continue
+
     week52high = stats['week52high'] if 'week52high' in stats else 0
     if (week52high == 0 or week52high == None):
         continue
@@ -43,10 +45,13 @@ for i, stock in nasdaq.items():
     if (eps == 0 or eps == None):
         continue
 
-    if ((fromHigh < 110) and (fromHigh > 95)):
+    if (stats['day5ChangePercent'] == None or stats['day5ChangePercent'] == 0):
+        continue
+    day5ChangePercent = stats['day5ChangePercent'] * 100
+
+    if ((fromHigh < 110) and (fromHigh > 90)):
         if (eps > 0):
-            if (stats['day5ChangePercent'] > 10):
-                print(stock['ticker'] + "\n")
+            if (day5ChangePercent > 10):                
                 keyStats = {
                     'week52high': stats['week52high'],
                     'ttmEPS': stats['ttmEPS'],
@@ -56,14 +61,11 @@ for i, stock in nasdaq.items():
                     'day50MovingAvg': stats['day50MovingAvg'],
                     'day200MovingAvg': stats['day200MovingAvg'],
                 }
-                data = {stock, keyStats}
-                data['price'] = price
-                results[i] = data
-    else:
-        print('.', end="")
-        sys.stdout.flush()
-
-for item in results.items():
-    printTable(item)
-
-writeCSV(results, 'trend/trend_chasing.csv')
+                
+                stock.update(keyStats)
+                stock['price'] = price
+                results.append(stock)
+                printTable(stock)
+    
+if results:
+    writeCSV(results, 'trend/trend_chasing.csv')
