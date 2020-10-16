@@ -2,6 +2,8 @@ import statistics
 import json
 import os
 import sys
+from datetime import datetime
+from datetime import date
 from .functions import *
 from ..shared.functions import *
 from ..shared.api import getCurrentPrice
@@ -29,10 +31,18 @@ def getTrendData(ticker):
         return None, None
 
 
+def checkEarnings(ticker):
+    url = 'https://cloud.iexapis.com/stable/stock/{}/earnings?token={}'.format(ticker, os.environ.get("IEX_TOKEN"))
+    earnings = requests.get(url).json()
+
+    return earnings
+
+
 print('Running...')
 results = []
 for i, stock in nasdaq.items():
     price, stats = getTrendData(stock['ticker'])
+
     if (price == None or stats == None):
         continue
 
@@ -51,10 +61,17 @@ for i, stock in nasdaq.items():
 
     if ((fromHigh < 110) and (fromHigh > 90)):
         if (eps > 0):
-            if (day5ChangePercent > 10):                
+            if (day5ChangePercent > 10):
+                earningsData = checkEarnings(stock['ticker'])
+                earnings = earningsData['earnings']
+
                 keyStats = {
                     'week52high': stats['week52high'],
                     'ttmEPS': stats['ttmEPS'],
+                    'lastEPS': earnings['actualEPS'] if 'actualEPS' in earnings else 'NA',
+                    'consensus': earnings['consensusEPS'] if 'consensusEPS' in earnings else 'NA',
+                    'surprise': earnings['EPSSurpriseDollar']  if 'EPSSurpriseDollar' in earnings else 'NA',
+                    'yearAgoEPS': earnings['yearAgo']  if 'yearAgo' in earnings else 'NA',
                     'peRatio': stats['peRatio'],
                     'day5ChangePercent': stats['day5ChangePercent'],
                     'month1ChangePercent': stats['month1ChangePercent'],
@@ -62,11 +79,12 @@ for i, stock in nasdaq.items():
                     'day200MovingAvg': stats['day200MovingAvg'],
                     'fromHigh': fromHigh,
                 }
-                
+
                 stock.update(keyStats)
                 stock['price'] = price
                 results.append(stock)
                 printTable(stock)
-    
+
 if results:
-    writeCSV(results, 'trend/trend_chasing.csv')
+    today = date.today().strftime('%m-%d')
+    writeCSV(results, 'trend/trend_chasing_{}.csv'.format(today))
