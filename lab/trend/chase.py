@@ -7,6 +7,7 @@ import sys
 from datetime import datetime
 from datetime import date
 from .functions import *
+from ..database.functions import uniqueField
 from ..shared.functions import *
 from ..shared.api import getCurrentPrice
 from ..shared.output import printTable
@@ -18,10 +19,7 @@ load_dotenv()
 django.setup()
 
 
-Stock = apps.get_model('database', 'Stock')
-stocks = Stock.objects.order_by('ticker').values('ticker').distinct()
-
-# print(json.dumps(nasdaq, indent=1))
+stocks = uniqueField('Stock', 'database_stock', 'ticker')
 
 
 def getTrendData(ticker):
@@ -35,18 +33,46 @@ def getTrendData(ticker):
         return None, None
 
 
-def checkEarnings(ticker):
-    url = 'https://cloud.iexapis.com/stable/stock/{}/earnings?token={}'.format(ticker, os.environ.get("IEX_TOKEN"))
+def getEarnings(ticker):
+    url = 'https://cloud.iexapis.com/stable/stock/{}/earnings/4/?token={}'.format(ticker, os.environ.get("IEX_TOKEN"))
     earnings = requests.get(url).json()
 
     return earnings
 
 
+def checkEarnings(earnings):
+    actual = []
+    consensus = []
+    consistency = []
+
+    for i, report in enumerate(earnings['earnings']):
+
+        actualEps = report['actualEPS'] if 'actualEPS' in report else 0
+        surpriseEps = report['EPSSurpriseDollar'] if 'EPSSurpriseDollar' in report else 0
+
+        if (i > 0):
+            previous = earnings['earnings'][i - 1]['actualEPS'] if 'actualEPS' in earnings['earnings'][i - 1] else 0
+            greater = actualEps > previous
+            consistency.append(greater)
+
+        period = report['fiscalPeriod'] if 'fiscalPeriod' in report else 0
+        actual.append({period: actualEps})
+        consensus.append({period: surpriseEps})
+
+    improvement = False if False in consistency else True
+
+    results = {
+        'actual': actual,
+        'consensus': consensus,
+        'consistency': improvement,
+    }
+
+    return results
+
+
 print('Running...')
 results = []
 for stock in stocks:
-    print(stock.ticker)
-    sys.exit()
     price, stats = getTrendData(stock.ticker)
 
     if (price == None or stats == None):
@@ -57,39 +83,44 @@ for stock in stocks:
         continue
 
     fromHigh = round((price / week52high) * 100, 3)
-    eps = stats['ttmEPS'] if 'ttmEPS' in stats else 0
-    if (eps == 0 or eps == None):
+    ttmEPS = stats['ttmEPS'] if 'ttmEPS' in stats else 0
+    if (ttmEPS == 0 or ttmEPS == None):
         continue
 
     if (stats['day5ChangePercent'] == None or stats['day5ChangePercent'] == 0):
         continue
     day5ChangePercent = stats['day5ChangePercent'] * 100
 
-    if ((fromHigh < 110) and (fromHigh > 90)):
-        if (eps > 0):
-            if (day5ChangePercent > 10):
-                earningsData = checkEarnings(stock['ticker'])
-                earnings = earningsData['earnings']
+    if ((fromHigh < 105) and (fromHigh > 95)):
+        if (day5ChangePercent > 15):
+            earningsData = getEarnings(stock.ticker)
+            earningsChecked = checkEarnings(earningsData)
 
+            if (earningsChecked['improvement'] == True):
                 keyStats = {
                     'week52high': stats['week52high'],
-                    'ttmEPS': stats['ttmEPS'],
-                    'lastEPS': earnings['actualEPS'] if 'actualEPS' in earnings else 'NA',
-                    'consensus': earnings['consensusEPS'] if 'consensusEPS' in earnings else 'NA',
-                    'surprise': earnings['EPSSurpriseDollar']  if 'EPSSurpriseDollar' in earnings else 'NA',
-                    'yearAgoEPS': earnings['yearAgo']  if 'yearAgo' in earnings else 'NA',
+                    'ttmEPS': ttmEPS,
+                    'reportedEPS': earningsChecked['actual'],
+                    'consensusBeat': earningsChecked['consensus'],
                     'peRatio': stats['peRatio'],
                     'day5ChangePercent': stats['day5ChangePercent'],
                     'month1ChangePercent': stats['month1ChangePercent'],
                     'day50MovingAvg': stats['day50MovingAvg'],
                     'day200MovingAvg': stats['day200MovingAvg'],
                     'fromHigh': fromHigh,
+                    # 'lastEPS': lastEarnings['actualEPS'] if 'actualEPS' in lastEarnings else 'NA',
+                    # 'consensus': lastEarnings['consensusEPS'] if 'consensusEPS' in lastEarnings else 'NA',
+                    # 'surprise': lastEarnings['EPSSurpriseDollar'] if 'EPSSurpriseDollar' in lastEarnings else 'NA',
+                    # 'yearAgoEPS': lastEarnings['yearAgo'] if 'yearAgo' in lastEarnings else 'NA',
                 }
-
-                stock.update(keyStats)
-                stock['price'] = price
-                results.append(stock)
-                printTable(stock)
+                stockData = {
+                    'ticker': stock.ticker,
+                    'name': stock.name,
+                    'price':price
+                }
+                stockData.update(keyStats)
+                results.append(stockData)
+                printTable(stockData)
 
 if results:
     today = date.today().strftime('%m-%d')

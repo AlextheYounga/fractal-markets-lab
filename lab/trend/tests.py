@@ -1,11 +1,12 @@
 import django
+import os
 from django.apps import apps
+from ..database.functions import uniqueField
+os.environ.setdefault
 django.setup()
 
-Stock = apps.get_model('database', 'Stock')
-
-stocks = Stock.objects.order_by('ticker').distinct()
+stocks = uniqueField('Stock', 'database_stock', 'ticker')
 
 # print(len(stocks))
 for stock in stocks:
-    print(stock)
+    print(stock.ticker)

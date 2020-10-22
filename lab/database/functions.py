@@ -2,10 +2,9 @@ import django
 from django.apps import apps
 django.setup()
 
-Stock = apps.get_model('database', 'Stock')
 
-def uniqueStocks():
-    Stock.objects.filter(stuff).values("ticker").annotate(n=models.Count("pk"))
-    for stock in Stock.objects.all():
-        print(stock.ticker)
+def uniqueField(model, table, field):
+    Model = apps.get_model('database', '{}'.format(model))
+    rows = Model.objects.raw('SELECT * FROM {} WHERE id IN (SELECT MIN(id) FROM database_stock GROUP BY {}) ORDER BY {}'.format(table, field, field))
 
+    return rows
