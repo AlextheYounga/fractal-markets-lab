@@ -1,3 +1,5 @@
+import django
+from django.apps import apps
 import statistics
 import json
 import os
@@ -8,14 +10,16 @@ from .functions import *
 from ..shared.functions import *
 from ..shared.api import getCurrentPrice
 from ..shared.output import printTable
-from ..shared.imports import parseCSV
 from ..shared.export import writeCSV
 import texttable
 from dotenv import load_dotenv
 import requests
 load_dotenv()
+django.setup()
 
-nasdaq = parseCSV('NasdaqComposite.csv')
+
+Stock = apps.get_model('database', 'Stock')
+stocks = Stock.objects.order_by('ticker').values('ticker').distinct()
 
 # print(json.dumps(nasdaq, indent=1))
 
@@ -40,8 +44,10 @@ def checkEarnings(ticker):
 
 print('Running...')
 results = []
-for i, stock in nasdaq.items():
-    price, stats = getTrendData(stock['ticker'])
+for stock in stocks:
+    print(stock.ticker)
+    sys.exit()
+    price, stats = getTrendData(stock.ticker)
 
     if (price == None or stats == None):
         continue

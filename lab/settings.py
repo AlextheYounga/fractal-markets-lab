@@ -25,6 +25,7 @@ DEBUG = env('DEBUG')
 # Raises django's ImproperlyConfigured exception if SECRET_KEY not in os.environ
 IEX_TOKEN = env('IEX_TOKEN')
 IEX_SANDBOX_TOKEN = env('IEX_SANDBOX_TOKEN')
+DJANGO_SETTINGS_MODULE='lab.settings'
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
