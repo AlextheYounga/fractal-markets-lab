@@ -1,7 +1,19 @@
 from django.db import models
 
+# Create your models here.
+class Index(models.Model):
+    name = models.CharField(max_length=200, unique=True)
+    count = models.IntegerField(null=True)
+
+    def __unicode__(self):              # __str__ on Python 3
+        return str(self.about_desc)
+
+    class Meta:
+        verbose_name_plural = "indices"
+
 
 class Stock(models.Model):
+    index_id = models.ForeignKey(Index, on_delete=models.CASCADE, default=0)
     ticker = models.CharField(max_length=30)
     name = models.CharField(max_length=200)
     lastPrice = models.IntegerField(null=True)
@@ -13,6 +25,13 @@ class Earnings(models.Model):
     consensusEPS = models.IntegerField(null=True)
     trailingEPS = models.IntegerField(null=True)
 
+    def __unicode__(self):              # __str__ on Python 3
+        return str(self.about_desc)
+
+    class Meta:
+        verbose_name_plural = "earnings"
+
+
 class Trend(models.Model):
     stock_id = models.ForeignKey(Stock, on_delete=models.CASCADE)
     week52 = models.IntegerField(null=True)
@@ -22,8 +41,9 @@ class Trend(models.Model):
     day200MovingAvg = models.IntegerField(null=True)
     fromHigh = models.IntegerField(null=True)
 
+
 class Vol(models.Model):
-    stock_id = models.ForeignKey(Stock, on_delete=models.CASCADE)    
+    stock_id = models.ForeignKey(Stock, on_delete=models.CASCADE)
     lowerRange = models.IntegerField(null=True)
     upperRange = models.IntegerField(null=True)
     lowerStDev = models.IntegerField(null=True)
@@ -39,3 +59,9 @@ class Vol(models.Model):
     percentDownside = models.CharField(max_length=200, null=True)
     month3Trend = models.CharField(max_length=200, null=True)
     signal = models.CharField(max_length=200, null=True)
+
+    def __unicode__(self):              # __str__ on Python 3
+        return str(self.about_desc)
+
+    class Meta:
+        verbose_name_plural = "vol"
