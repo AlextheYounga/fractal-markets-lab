@@ -62,7 +62,6 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('lastEPS', models.IntegerField(null=True)),
                 ('consensusEPS', models.IntegerField(null=True)),
-                ('trailingEPS', models.IntegerField(null=True)),
                 ('stock_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='database.Stock')),
             ],
         ),
