@@ -120,8 +120,6 @@ def getEarnings(ticker):
     try:
         url = 'https://cloud.iexapis.com/stable/stock/{}/earnings/5/?token={}'.format(ticker, os.environ.get("IEX_TOKEN"))
         earnings = requests.get(url).json()
-        type(earnings)
-        sys.exit()
     except:
         return None
 
@@ -134,7 +132,6 @@ def checkEarnings(earnings):
     consensus = []
     consistency = []
 
-    sys.exit()
     for i, report in enumerate(earnings['earnings']):
         actualEps = report['actualEPS'] if 'actualEPS' in report else 0
         surpriseEps = report['EPSSurpriseDollar'] if 'EPSSurpriseDollar' in report else 0

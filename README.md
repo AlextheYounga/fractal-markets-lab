@@ -1,4 +1,5 @@
 Commands:
+export DJANGO_SETTINGS_MODULE=lab.settings
 
 <!-- Donchian -->
 python -c 'from lab.donchian.calculator import calculate; print(calculate("CHWY"))'

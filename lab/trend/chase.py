@@ -25,8 +25,6 @@ Watchlist = apps.get_model('database', 'Watchlist')
 
 results = []
 for i, stock in enumerate(stocks):
-    if (i != 23):
-        continue
     print('{}: {}'.format(i, stock.ticker))
     price, stats = getTrendData(stock.ticker)  # Check Key Stats Trend Data
     if ((type(price) != float) or (stats and type(stats) != dict)):
@@ -35,14 +33,11 @@ for i, stock in enumerate(stocks):
     week52high = stats['week52high'] if 'week52high' in stats else 0
     day5ChangePercent = stats['day5ChangePercent'] * 100 if 'day5ChangePercent' in stats else 0
     critical = [week52high, ttmEPS, day5ChangePercent]
-    print(critical)
-    sys.exit()
-    for data in critical:
-        if (data == 0 or isinstance(data, (float, int)) == False):
-            continue
+
+    if ((0 in critical) or (None in critical)):
+        continue
 
     fromHigh = round((price / week52high) * 100, 3)
-
     # Save Data to DB
     Stock.objects.filter(ticker=stock.ticker).update(lastPrice=price)  # Save Stock
 
@@ -110,7 +105,6 @@ for i, stock in enumerate(stocks):
                     print('{} saved to Watchlist'.format(stock.ticker))
                     results.append(stockData)
                     printTable(stockData)
-                    sys.exit()
 
 if results:
     today = date.today().strftime('%m-%d')
