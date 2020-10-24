@@ -1,8 +1,16 @@
+import django
+from ..shared.api import getCurrentPrice
+from django.apps import apps
+import requests
 import statistics
 import json
 import sys
+import os
+from dotenv import load_dotenv
+load_dotenv()
+django.setup()
 
-
+# analyze.py
 def consecutiveDays(prices):
     upDays = 0
     downDays = 0
@@ -21,6 +29,7 @@ def consecutiveDays(prices):
     return upDays, downDays
 
 
+# analyze.py
 def longestStretch(data):
     upStreaks = {}
     downStreaks = {}
@@ -64,6 +73,7 @@ def longestStretch(data):
     return upStreaks, downStreaks
 
 
+# analyze.py
 def trendAnalysis(prices):
     analysis = {}
     consecutiveUps, consecutiveDowns = consecutiveDays(prices)
@@ -92,3 +102,81 @@ def trendAnalysis(prices):
     }
 
     return analysis
+
+# chase.py
+def getTrendData(ticker):
+    try:    
+        price = getCurrentPrice(ticker)
+        url = 'https://cloud.iexapis.com/stable/stock/{}/stats?token={}'.format(ticker, os.environ.get("IEX_TOKEN"))
+        stats = requests.get(url).json()
+    
+        return price, stats
+    except:
+        return None, None
+
+
+# chase.py
+def getEarnings(ticker):
+    try:
+        url = 'https://cloud.iexapis.com/stable/stock/{}/earnings/5/?token={}'.format(ticker, os.environ.get("IEX_TOKEN"))
+        earnings = requests.get(url).json()
+        type(earnings)
+        sys.exit()
+    except:
+        return None
+
+    return earnings
+
+
+# chase.py
+def checkEarnings(earnings):
+    actual = []
+    consensus = []
+    consistency = []
+
+    sys.exit()
+    for i, report in enumerate(earnings['earnings']):
+        actualEps = report['actualEPS'] if 'actualEPS' in report else 0
+        surpriseEps = report['EPSSurpriseDollar'] if 'EPSSurpriseDollar' in report else 0
+
+        if (i > 0):
+            previous = earnings['earnings'][i - 1]['actualEPS'] if ('actualEPS' in earnings['earnings'][i - 1]) else 0
+            greater = actualEps > previous if (previous != 0) else False
+            consistency.append(greater)
+
+        period = report['fiscalPeriod'] if 'fiscalPeriod' in report else 0
+        actual.append({period: actualEps})
+        consensus.append({period: surpriseEps})
+
+    improvement = False if False in consistency else True
+
+    results = {
+        'actual': actual,
+        'consensus': consensus,
+        'consistency': improvement,
+    }
+
+    return results
+
+
+# chase.py
+# Data must conform to this structure:
+# data = {
+#     'Model': {
+#         'key': data
+#     },
+# }
+def saveDynamic(data, stock):
+    if (isinstance(data, dict)):
+        for model, values in data.items():
+            Model = apps.get_model('database', model)
+            model_query = Model.objects.filter(stock=stock)
+            if (model_query.count() == 0):
+                Model.objects.create(**values)
+            else:
+                del values['stock']
+                model_query.update(**values)
+
+        return True
+    else:
+        return 'Data must be in dict form'
