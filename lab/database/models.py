@@ -1,7 +1,10 @@
 from django.db import models
 from jsonfield import JSONField
+# from bulk_update_or_create import BulkUpdateOrCreateQuerySet
 
 # Create your models here.
+
+
 class Index(models.Model):
     name = models.CharField(max_length=200, unique=True)
     count = models.IntegerField(null=True)
@@ -31,12 +34,12 @@ class Watchlist(models.Model):
     week52 = models.FloatField(null=True)
     day5ChangePercent = models.FloatField(null=True)
     month1ChangePercent = models.FloatField(null=True)
-    ytdChangePercent= models.FloatField(null=True)
+    ytdChangePercent = models.FloatField(null=True)
     day50MovingAvg = models.FloatField(null=True)
     day200MovingAvg = models.FloatField(null=True)
     fromHigh = models.FloatField(null=True)
-    previousEps = JSONField(null=True)
-    previousConsensus = JSONField(null=True)
+    reportedEPS = JSONField(null=True)
+    reportedConsensus = JSONField(null=True)
     ttmEPS = models.FloatField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -44,8 +47,8 @@ class Watchlist(models.Model):
 
 class Earnings(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
-    previousEps = JSONField(null=True)
-    previousConsensus = JSONField(null=True)
+    reportedEPS = JSONField(null=True)
+    reportedConsensus = JSONField(null=True)
     ttmEPS = models.FloatField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -56,6 +59,7 @@ class Earnings(models.Model):
     class Meta:
         verbose_name_plural = "earnings"
 
+
 class Valuation(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
     peRatio = JSONField(null=True)
@@ -64,11 +68,12 @@ class Valuation(models.Model):
 
 
 class Trend(models.Model):
+
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
     week52 = models.FloatField(null=True)
     day5ChangePercent = models.FloatField(null=True)
     month1ChangePercent = models.FloatField(null=True)
-    ytdChangePercent= models.FloatField(null=True)
+    ytdChangePercent = models.FloatField(null=True)
     day50MovingAvg = models.FloatField(null=True)
     day200MovingAvg = models.FloatField(null=True)
     fromHigh = models.FloatField(null=True)

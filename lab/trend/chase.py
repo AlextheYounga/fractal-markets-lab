@@ -34,8 +34,11 @@ def getTrendData(ticker):
 
 
 def getEarnings(ticker):
-    url = 'https://cloud.iexapis.com/stable/stock/{}/earnings/4/?token={}'.format(ticker, os.environ.get("IEX_TOKEN"))
-    earnings = requests.get(url).json()
+    try:
+        url = 'https://cloud.iexapis.com/stable/stock/{}/earnings/4/?token={}'.format(ticker, os.environ.get("IEX_TOKEN"))
+        earnings = requests.get(url).json()
+    except:
+        return None
 
     return earnings
 
@@ -51,8 +54,8 @@ def checkEarnings(earnings):
         surpriseEps = report['EPSSurpriseDollar'] if 'EPSSurpriseDollar' in report else 0
 
         if (i > 0):
-            previous = earnings['earnings'][i - 1]['actualEPS'] if 'actualEPS' in earnings['earnings'][i - 1] else 0
-            greater = actualEps > previous if previous != 0 else False
+            previous = earnings['earnings'][i - 1]['actualEPS'] if ('actualEPS' in earnings['earnings'][i - 1]) else 0
+            greater = actualEps > previous if (previous != 0) else False
             consistency.append(greater)
 
         period = report['fiscalPeriod'] if 'fiscalPeriod' in report else 0
@@ -80,6 +83,7 @@ Watchlist = apps.get_model('database', 'Watchlist')
 
 results = []
 for stock in stocks:
+    print(stock.ticker)
     price, stats = getTrendData(stock.ticker)
 
     if (price == None or stats == None):
@@ -98,78 +102,85 @@ for stock in stocks:
         continue
     day5ChangePercent = stats['day5ChangePercent'] * 100
 
-    # Save to DB
+    # Save Stock to DB
     Stock.objects.filter(ticker=stock.ticker).update(lastPrice=price)
-    Valuation.objects.update_or_create(
-        stock=stock,
-        defaults={'peRatio': stats['peRatio']}
-    )
-    Trend.objects.update_or_create(
-        stock=stock,
-        defaults={
-            'week52': week52high,
-            'day5ChangePercent': stats['day5ChangePercent'],
-            'month1ChangePercent': stats['month1ChangePercent'],
-            'ytdChangePercent': stats['ytdChangePercent'],
-            'day50MovingAvg': stats['day50MovingAvg'],
-            'day200MovingAvg': stats['day200MovingAvg'],
-            'fromHigh': fromHigh
-        }
-    )
-    Earnings.objects.update_or_create(
-        stock=stock,
-        defaults={'ttmEPS': ttmEPS}
-    )
+    # Save Valuations to DB
+    valuations = Valuation.objects.filter(stock=stock)
+    if (valuations.count() == 0):
+        Valuation(stock=stock, peRatio=stats['peRatio']).save()
+    else:
+        valuations.update(peRatio=stats['peRatio'])
+    # Save Trends to DB
+    trends = Trend.objects.filter(stock=stock)
+    trend_data = {
+        'stock': stock,
+        'week52': week52high,
+        'day5ChangePercent': stats['day5ChangePercent'],
+        'month1ChangePercent': stats['month1ChangePercent'],
+        'ytdChangePercent': stats['ytdChangePercent'],
+        'day50MovingAvg': stats['day50MovingAvg'],
+        'day200MovingAvg': stats['day200MovingAvg'],
+        'fromHigh': fromHigh
+    }
+    if (trends.count() == 0):
+        Trend.objects.create(**trend_data)
+    else:
+        del trend_data['stock']
+        trends.update(**trend_data)
+    # Save Earnings to DB
+    earnings_records = Earnings.objects.filter(stock=stock)
+    if (earnings_records.count() == 0):
+        Earnings(
+            stock=stock,
+            ttmEPS=ttmEPS
+        ).save()
+    else:
+        Earnings.objects.update(ttmEPS=ttmEPS)
 
     if ((fromHigh < 105) and (fromHigh > 95)):
         if (day5ChangePercent > 15):
             earningsData = getEarnings(stock.ticker)
-            earningsChecked = checkEarnings(earningsData)
+            if (earningsData != None):
+                earningsChecked = checkEarnings(earningsData)
 
-            if (earningsChecked['improvement'] == True):
+                if (earningsChecked['consistency'] == True):
+                    Earnings.objects.filter(stock=stock).update(
+                        reportedEPS=earningsChecked['actual'],
+                        reportedConsensus=earningsChecked['consensus'],
+                    )
 
-                Earnings.objects.filter(stock=stock).update(
-                    previousEps=earningsChecked['actual'],
-                    previousConsensus=earningsChecked['consensus'],
-                )
+                    keyStats = {
+                        'week52': stats['week52high'],
+                        'ttmEPS': ttmEPS,
+                        'reportedEPS': earningsChecked['actual'],
+                        'reportedConsensus': earningsChecked['consensus'],
+                        'peRatio': stats['peRatio'],
+                        'day5ChangePercent': stats['day5ChangePercent'],
+                        'month1ChangePercent': stats['month1ChangePercent'],
+                        'ytdChangePercent': stats['ytdChangePercent'],
+                        'day50MovingAvg': stats['day50MovingAvg'],
+                        'day200MovingAvg': stats['day200MovingAvg'],
+                        'fromHigh': fromHigh,
 
-                keyStats = {
-                    'week52high': stats['week52high'],
-                    'ttmEPS': ttmEPS,
-                    'reportedEPS': earningsChecked['actual'],
-                    'consensusBeat': earningsChecked['consensus'],
-                    'peRatio': stats['peRatio'],
-                    'day5ChangePercent': stats['day5ChangePercent'],
-                    'month1ChangePercent': stats['month1ChangePercent'],
-                    'ytdChangePercent': stats['ytdChangePercent'],
-                    'day50MovingAvg': stats['day50MovingAvg'],
-                    'day200MovingAvg': stats['day200MovingAvg'],
-                    'fromHigh': fromHigh,
-
-                }
-                stockData = {
-                    'ticker': stock.ticker,
-                    'name': stock.name,
-                    'lastPrice': price
-                }
-                stockData.update(keyStats)
-                Watchlist.objects.update_or_create(
-                    stock=stock,
-                    defaults=stockData
-                )
-                print('{} saved to Watchlist'.format(stock.ticker))
-                results.append(stockData)
-                printTable(stockData)
+                    }
+                    stockData = {
+                        'ticker': stock.ticker,
+                        'name': stock.name,
+                        'lastPrice': price
+                    }
+                    stockData.update(keyStats)
+                    watchlists = Watchlist.objects.filter(stock=stock)
+                    if (watchlists.count() == 0):
+                        stockData['stock'] = stock
+                        Watchlist.objects.create(**stockData)
+                    else:
+                        watchlists.update(**stockData)
+                    print('{} saved to Watchlist'.format(stock.ticker))
+                    results.append(stockData)
+                    printTable(stockData)
+                    sys.exit()
 
 if results:
     today = date.today().strftime('%m-%d')
     writeCSV(results, 'trend/trend_chasing_{}.csv'.format(today))
 
-
-# ---------------------------------------------------------------------------------
-# Scrap
-# ---------------------------------------------------------------------------------
-# 'lastEPS': lastEarnings['actualEPS'] if 'actualEPS' in lastEarnings else 'NA',
-# 'consensus': lastEarnings['consensusEPS'] if 'consensusEPS' in lastEarnings else 'NA',
-# 'surprise': lastEarnings['EPSSurpriseDollar'] if 'EPSSurpriseDollar' in lastEarnings else 'NA',
-# 'yearAgoEPS': lastEarnings['yearAgo'] if 'yearAgo' in lastEarnings else 'NA',
