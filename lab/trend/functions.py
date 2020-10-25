@@ -131,7 +131,7 @@ def getEarnings(ticker):
 
 
 # chase.py
-def checkEarnings(earnings):
+def checkEarnings(earnings):    
     actual = []
     consensus = []
     consistency = []
@@ -139,15 +139,15 @@ def checkEarnings(earnings):
     for i, report in enumerate(earnings['earnings']):
         actualEps = report['actualEPS'] if 'actualEPS' in report else 0
         surpriseEps = report['EPSSurpriseDollar'] if 'EPSSurpriseDollar' in report else 0
-
-        previous = earnings['earnings'][i + 1]['actualEPS'] if (i + 1 in range(-len(earnings['earnings']), len(earnings['earnings']))) else 0
-        greater = actualEps > previous if (previous != 0) else False
-        consistency.append(greater)
+        if (i + 1 in range(-len(earnings['earnings']), len(earnings['earnings']))):
+            previous = earnings['earnings'][i + 1]['actualEPS']
+            greater = actualEps > previous
+            consistency.append(greater)
 
         period = report['fiscalPeriod'] if 'fiscalPeriod' in report else i
         actual.append({period: actualEps})
         consensus.append({period: surpriseEps})
-
+        
     improvement = False if False in consistency else True
 
     results = {

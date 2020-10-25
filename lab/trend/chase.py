@@ -32,14 +32,12 @@ for i, stock in enumerate(unique_stocks):
 
 chunked_tickers = chunks(tickers, 100)
 for i, chunk in enumerate(chunked_tickers):
-    if (i < 34):
-        continue
     batchData = quoteStatsBatchRequest(chunk)  # Check Key Stats Trend Data
 
     for ticker, batchStats in batchData.items():
         stocks = Stock.objects.filter(ticker=ticker)
-        if (type(stock) == django.db.models.query.QuerySet):
-            stock = stock[0]
+        if (type(stocks) == django.db.models.query.QuerySet):
+            stock = stocks[0]
 
         print('Chunk {}: {}'.format(i, ticker))
 
@@ -93,8 +91,15 @@ for i, chunk in enumerate(chunked_tickers):
                 if (day5ChangePercent > 8):
                     earningsData = getEarnings(ticker)
                     if (earningsData and isinstance(earningsData, dict)):
+                        print('{} ---- Checking Earnings ----'.format(ticker))
                         earningsChecked = checkEarnings(earningsData)
 
+                        # Save Earnings to DB
+                        Earnings.objects.filter(stock=stock).update(
+                            reportedEPS=earningsChecked['actual'],
+                            reportedConsensus=earningsChecked['consensus'],
+                        )
+                        
                         if (earningsChecked['improvement'] == True):
                             keyStats = {
                                 'week52': stats['week52high'],
@@ -117,11 +122,7 @@ for i, chunk in enumerate(chunked_tickers):
                             }
                             stockData.update(keyStats)
 
-                            Earnings.objects.filter(stock=stock).update(
-                                reportedEPS=earningsChecked['actual'],
-                                reportedConsensus=earningsChecked['consensus'],
-                            )
-
+                            # Save to Watchlist
                             watchlists = Watchlist.objects.filter(stock=stock)
                             if (watchlists.count() == 0):
                                 stockData['stock'] = stock
