@@ -2,15 +2,15 @@ import statistics
 import json
 import sys
 from .functions import *
-from ..shared.functions import *
-from ..shared.api import *
+from ...core.functions import *
+from ...core.api import *
 import matplotlib.pyplot as plt
 import numpy as np
 from tabulate import tabulate
 from collections import OrderedDict 
 
 
-def analyze(ticker):
+def streak_analyzer(ticker):
     asset_data = getLongTermPrices(ticker)
     data_inversed = OrderedDict(reversed(list(asset_data.items())))
     

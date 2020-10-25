@@ -1,6 +1,6 @@
 import json
-from ..shared.functions import *
-from ..shared.api import *
+from ..core.functions import *
+from ..core.api import *
 from tabulate import tabulate
 import requests
 import json

@@ -1,5 +1,5 @@
 import texttable
-from ..shared.output import setWidths
+from ..core.output import setWidths
 
 
 def printTable(ticker, stats):

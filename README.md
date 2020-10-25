@@ -11,7 +11,7 @@ python -c 'from lab.volatility.calculator import calculate; print(calculate("SPY
 python -m lab.riskrange.scan_portfolio
 python -c 'from lab.riskrange.lookup import rangeLookup; print(rangeLookup("EDV"))'
 <!-- Trend -->
-python -c 'from lab.trend.analyze import analyze; print(analyze("SPY"))'
-python -m lab.trend.chase
+python -c 'from lab.trend.streak.analyze import streak_analyzer; print(streak_analyzer("SPY"))'
+python -m lab.trend.chaser.chase
 <!-- Financials -->
 python -c 'from lab.financials.lookup import lookupFinancials; print(lookupFinancials("BELDF"))'

@@ -44,6 +44,19 @@ class Watchlist(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+class Portfolio(models.Model):
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, default=0)
+    ticker = models.CharField(max_length=30)
+    name = models.CharField(max_length=200)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __unicode__(self):              # __str__ on Python 3
+        return str(self.about_desc)
+
+    class Meta:
+        verbose_name_plural = "portfolio"
+
 
 class Earnings(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE)

@@ -3,7 +3,7 @@ from datetime import date
 from datetime import datetime
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta
-from ..shared.functions import *
+from ..core.functions import *
 import pandas as pd
 import numpy as np
 import calendar

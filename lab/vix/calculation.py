@@ -2,8 +2,8 @@ import json
 import math
 import statistics
 import sys
-from ..shared.api import *
-from ..shared.functions import *
+from ..core.api import *
+from ..core.functions import *
 from .functions import *
 
 

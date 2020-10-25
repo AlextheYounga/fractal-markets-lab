@@ -1,17 +1,15 @@
 import django
 from django.apps import apps
-import statistics
 import json
 import os
 import sys
-from datetime import datetime
 from datetime import date
 from .functions import *
-from ..database.functions import *
-from ..shared.functions import *
-from ..shared.api import quoteStatsBatchRequest
-from ..shared.output import printTable
-from ..shared.export import writeCSV
+from ...database.functions import *
+from ...core.functions import *
+from ...core.api import quoteStatsBatchRequest
+from ...core.output import printTable
+from ...core.export import writeCSV
 import texttable
 django.setup()
 

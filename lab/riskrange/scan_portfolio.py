@@ -4,8 +4,8 @@ import json
 from .export import *
 from .output import printTable
 from .methodology import *
-from ..shared.functions import *
-from ..shared.api import *
+from ..core.functions import *
+from ..core.api import *
 import texttable
 
 

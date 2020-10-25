@@ -1,9 +1,9 @@
 import statistics
 from scipy import stats
 import math
-from ..shared.functions import *
-from ..shared.api import *
-from ..shared.imports import *
+from ..core.functions import *
+from ..core.api import *
+from ..core.imports import *
 from .functions import *
 from .imports import *
 from .export import exportFractal

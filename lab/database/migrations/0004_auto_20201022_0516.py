@@ -3,8 +3,8 @@
 from django.db import migrations
 import json
 import sys
-from ...shared.functions import *
-from ...shared.imports import parseCSV
+from ...core.functions import *
+from ...core.imports import parseCSV
 
 
 def build_stock_list():

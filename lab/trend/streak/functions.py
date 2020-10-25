@@ -1,16 +1,8 @@
-import django
-from ..shared.api import getCurrentPrice
-from django.apps import apps
-import requests
 import statistics
 import json
 import sys
 import os
-from dotenv import load_dotenv
-load_dotenv()
-django.setup()
 
-# analyze.py
 
 
 def consecutiveDays(prices):
@@ -31,7 +23,6 @@ def consecutiveDays(prices):
     return upDays, downDays
 
 
-# analyze.py
 def longestStretch(data):
     upStreaks = {}
     downStreaks = {}
@@ -75,7 +66,6 @@ def longestStretch(data):
     return upStreaks, downStreaks
 
 
-# analyze.py
 def trendAnalysis(prices):
     analysis = {}
     consecutiveUps, consecutiveDowns = consecutiveDays(prices)
@@ -104,59 +94,6 @@ def trendAnalysis(prices):
     }
 
     return analysis
-
-# chase.py
-
-
-def getTrendData(ticker):
-    try:
-        price = getCurrentPrice(ticker)
-        url = 'https://cloud.iexapis.com/stable/stock/{}/stats?token={}'.format(ticker, os.environ.get("IEX_TOKEN"))
-        stats = requests.get(url).json()
-
-        return price, stats
-    except:
-        return None, None
-
-
-# chase.py
-def getEarnings(ticker):
-    try:
-        url = 'https://cloud.iexapis.com/stable/stock/{}/earnings/5/?token={}'.format(ticker, os.environ.get("IEX_TOKEN"))
-        earnings = requests.get(url).json()
-    except:
-        return None
-
-    return earnings
-
-
-# chase.py
-def checkEarnings(earnings):    
-    actual = []
-    consensus = []
-    consistency = []
-
-    for i, report in enumerate(earnings['earnings']):
-        actualEps = report['actualEPS'] if 'actualEPS' in report else 0
-        surpriseEps = report['EPSSurpriseDollar'] if 'EPSSurpriseDollar' in report else 0
-        if (i + 1 in range(-len(earnings['earnings']), len(earnings['earnings']))):
-            previous = earnings['earnings'][i + 1]['actualEPS']
-            greater = actualEps > previous
-            consistency.append(greater)
-
-        period = report['fiscalPeriod'] if 'fiscalPeriod' in report else i
-        actual.append({period: actualEps})
-        consensus.append({period: surpriseEps})
-        
-    improvement = False if False in consistency else True
-
-    results = {
-        'actual': actual,
-        'consensus': consensus,
-        'improvement': improvement,
-    }
-
-    return results
 
 
 

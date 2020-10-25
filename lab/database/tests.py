@@ -3,8 +3,8 @@
 import os
 import json
 import sys
-from ..shared.functions import *
-from ..shared.imports import parseCSV
+from ..core.functions import *
+from ..core.imports import parseCSV
 
     
 nasdaq = {'Nasdaq Composite': parseCSV('NasdaqComposite.csv') }
