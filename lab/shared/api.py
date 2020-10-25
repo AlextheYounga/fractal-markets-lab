@@ -118,6 +118,17 @@ def getQuoteData(ticker):
 
     return quote
 
+# Accepts list of tickers
+# Maximum 100
+def quoteStatsBatchRequest(batch):
+    try:
+        batch = ",".join(batch) #Convert to comma-separated string        
+        url = 'https://cloud.iexapis.com/stable/stock/market/batch?symbols={}&types=quote,stats&token={}'.format(batch, os.environ.get("IEX_TOKEN"))
+        batch_request = requests.get(url).json()
+        return batch_request
+    except:
+        return None
+
 
 def testShortTermPrices(ticker):
     # Set IEX Finance API Token (Test)

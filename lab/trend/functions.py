@@ -11,6 +11,8 @@ load_dotenv()
 django.setup()
 
 # analyze.py
+
+
 def consecutiveDays(prices):
     upDays = 0
     downDays = 0
@@ -104,12 +106,14 @@ def trendAnalysis(prices):
     return analysis
 
 # chase.py
+
+
 def getTrendData(ticker):
-    try:    
+    try:
         price = getCurrentPrice(ticker)
         url = 'https://cloud.iexapis.com/stable/stock/{}/stats?token={}'.format(ticker, os.environ.get("IEX_TOKEN"))
         stats = requests.get(url).json()
-    
+
         return price, stats
     except:
         return None, None
@@ -136,12 +140,11 @@ def checkEarnings(earnings):
         actualEps = report['actualEPS'] if 'actualEPS' in report else 0
         surpriseEps = report['EPSSurpriseDollar'] if 'EPSSurpriseDollar' in report else 0
 
-        if (i > 0):
-            previous = earnings['earnings'][i - 1]['actualEPS'] if ('actualEPS' in earnings['earnings'][i - 1]) else 0
-            greater = actualEps > previous if (previous != 0) else False
-            consistency.append(greater)
+        previous = earnings['earnings'][i + 1]['actualEPS'] if (i + 1 in range(-len(earnings['earnings']), len(earnings['earnings']))) else 0
+        greater = actualEps > previous if (previous != 0) else False
+        consistency.append(greater)
 
-        period = report['fiscalPeriod'] if 'fiscalPeriod' in report else 0
+        period = report['fiscalPeriod'] if 'fiscalPeriod' in report else i
         actual.append({period: actualEps})
         consensus.append({period: surpriseEps})
 
@@ -150,30 +153,10 @@ def checkEarnings(earnings):
     results = {
         'actual': actual,
         'consensus': consensus,
-        'consistency': improvement,
+        'improvement': improvement,
     }
 
     return results
 
 
-# chase.py
-# Data must conform to this structure:
-# data = {
-#     'Model': {
-#         'key': data
-#     },
-# }
-def saveDynamic(data, stock):
-    if (isinstance(data, dict)):
-        for model, values in data.items():
-            Model = apps.get_model('database', model)
-            model_query = Model.objects.filter(stock=stock)
-            if (model_query.count() == 0):
-                Model.objects.create(**values)
-            else:
-                del values['stock']
-                model_query.update(**values)
 
-        return True
-    else:
-        return 'Data must be in dict form'

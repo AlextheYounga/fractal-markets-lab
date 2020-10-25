@@ -33,6 +33,10 @@ def extractData(data, key):
             values.append(value)
     return values
 
+def chunks(lst, n):
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+
 
 def removeZeroes(lst):
     while 0 in lst:
