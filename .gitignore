@@ -5,5 +5,5 @@ lab/__pycache__
 lab/*/__pycache__
 lab/__pycache__/
 lab/exports/*
-lab/shared/storage/*
+lab/core/storage/*
 lab/scrap/*

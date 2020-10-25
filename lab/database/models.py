@@ -48,6 +48,7 @@ class Portfolio(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, default=0)
     ticker = models.CharField(max_length=30)
     name = models.CharField(max_length=200)
+    purchase_price = models.FloatField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

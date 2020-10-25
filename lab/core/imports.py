@@ -24,7 +24,7 @@ def csvDictionary():
     return
 
 def parseCSV(file, headers=True):
-    with open('lab/shared/storage/{}'.format(file), newline='', encoding='utf-8-sig') as csvfile:
+    with open('lab/core/storage/{}'.format(file), newline='', encoding='utf-8-sig') as csvfile:
         asset_data = {}
         
         if (headers == False):
