@@ -7,13 +7,13 @@ from ..core.functions import *
 from ..core.imports import parseCSV
 
     
-nasdaq = {'Nasdaq Composite': parseCSV('NasdaqComposite.csv') }
-nasdaq['Nasdaq Composite'].update(parseCSV('NasdaqOthersListed.csv'))
-dow = { 'Dow Jones Industrial Average': parseCSV('DowJones.csv') }
-nyse = {'New York Stock Exchange': parseCSV('NYSE.csv') }
-russell2k = { 'Russell 2000': parseCSV('Russell2000.csv') }
-russell3k = { 'Russell 3000': parseCSV('Russell3000.csv') } 
-spx = { 'S&P 500': parseCSV('S&P500.csv') }
+nasdaq = {'Nasdaq Composite': parseCSV('stocks/NasdaqComposite.csv') }
+nasdaq['Nasdaq Composite'].update(parseCSV('stocks/NasdaqOthersListed.csv'))
+dow = { 'Dow Jones Industrial Average': parseCSV('stocks/DowJones.csv') }
+nyse = {'New York Stock Exchange': parseCSV('stocks/NYSE.csv') }
+russell2k = { 'Russell 2000': parseCSV('stocks/Russell2000.csv') }
+russell3k = { 'Russell 3000': parseCSV('stocks/Russell3000.csv') } 
+spx = { 'S&P 500': parseCSV('stocks/S&P500.csv') }
 
 stocks = [
     nasdaq,    

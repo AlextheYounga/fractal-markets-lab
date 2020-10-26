@@ -3,8 +3,6 @@ from jsonfield import JSONField
 # from bulk_update_or_create import BulkUpdateOrCreateQuerySet
 
 # Create your models here.
-
-
 class Index(models.Model):
     name = models.CharField(max_length=200, unique=True)
     count = models.IntegerField(null=True)
