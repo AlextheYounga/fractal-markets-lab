@@ -43,18 +43,20 @@ for i, chunk in enumerate(chunked_tickers):
             continue
 
         if (isinstance(batchStats['quote'], dict) and isinstance(batchStats['stats'], dict)):
-            price = batchStats['quote']['latestPrice'] if 'latestPrice' in batchStats['quote'] else 0
+            quote = batchStats['quote'] if 'quote' in batchStats else 0
             stats = batchStats['stats'] if 'stats' in batchStats else 0
-
-            if ((type(price) != float) or (stats and type(stats) != dict)):
+            if ((isinstance(quote, dict) == False) and (isinstance(stats, dict) == False) and (quote and stats == False)):
                 continue
-
-            stocks.update(lastPrice=price)  # Save Stock
+            price = quote['latestPrice'] if ('latestPrice' in quote) else 0
+            changeToday = quote['changePercent'] * 100 if ('changePercent' in quote and quote['changePercent']) else 0
+            if (isinstance(price, float) and price):
+                stocks.update(lastPrice=price)  # Save Stock
 
             ttmEPS = stats['ttmEPS'] if ('ttmEPS' in stats and stats['ttmEPS']) else 0
             week52high = stats['week52high'] if ('week52high' in stats and stats['week52high']) else 0
             day5ChangePercent = stats['day5ChangePercent'] * 100 if ('day5ChangePercent' in stats and stats['day5ChangePercent']) else 0
-            critical = [week52high, ttmEPS, day5ChangePercent]
+
+            critical = [price, changeToday, week52high, ttmEPS, day5ChangePercent]
 
             if ((0 in critical)):
                 continue
@@ -84,9 +86,8 @@ for i, chunk in enumerate(chunked_tickers):
             }
 
             saveDynamic(data_for_db, stock)
-
             if ((fromHigh < 105) and (fromHigh > 95)):
-                if (day5ChangePercent > 8):
+                if (changeToday > 8):
                     earningsData = getEarnings(ticker)
                     if (earningsData and isinstance(earningsData, dict)):
                         print('{} ---- Checking Earnings ----'.format(ticker))
@@ -97,7 +98,7 @@ for i, chunk in enumerate(chunked_tickers):
                             reportedEPS=earningsChecked['actual'],
                             reportedConsensus=earningsChecked['consensus'],
                         )
-                        
+
                         if (earningsChecked['improvement'] == True):
                             keyStats = {
                                 'week52': stats['week52high'],

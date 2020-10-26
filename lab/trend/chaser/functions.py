@@ -25,7 +25,7 @@ def getTrendData(ticker):
 
 def getEarnings(ticker):
     try:
-        url = 'https://cloud.iexapis.com/stable/stock/{}/earnings/5/?token={}'.format(ticker, os.environ.get("IEX_TOKEN"))
+        url = 'https://cloud.iexapis.com/stable/stock/{}/earnings/4/?token={}'.format(ticker, os.environ.get("IEX_TOKEN"))
         earnings = requests.get(url).json()
     except:
         return None

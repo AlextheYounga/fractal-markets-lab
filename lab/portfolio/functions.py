@@ -29,7 +29,8 @@ def parsePortfolioCSV(fullpath):
     # print(reader)
 
 
-    return portfolio
+    # return portfolio
+    return
 
 
 def latestFile(files):
