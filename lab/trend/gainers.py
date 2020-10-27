@@ -21,6 +21,7 @@ for i, mover in enumerate(gainers):
     companyName = mover.get('companyName', None)
     peRatio = mover.get('peRatio', None)
     week52high = mover.get('week52High', None)
+    marketCap = mover.get('marketCap', None) / 1000000 if (mover.get('marketCap')) else None
     changePercent = mover.get('changePercent', None) * 100 if (mover.get('changePercent')) else None
     ytdChange = mover.get('ytdChange', None) * 100 if (mover.get('ytdChange')) else None
     fromHigh = round((price / week52high) * 100, 3) if (price and week52high) else None
@@ -82,10 +83,10 @@ for i, mover in enumerate(gainers):
         'ytdChange': ytdChange,
         'week52High': week52high,
         'fromHigh': fromHigh,
-        'volume': mover.get('volume', None),
-        'previousVolume': mover.get('previousVolume', None),
+        'volume': "{}k".format(mover.get('volume', None) / 1000) if (mover.get('volume')) else None,
+        'previousVolume': "{}k".format(mover.get('previousVolume', None) / 1000) if (mover.get('previousVolume')) else None,
         'peRatio': peRatio,
-        'marketCap': mover.get('marketCap', None),
+        'marketCap': marketCap,
         'primaryExchange': index,
     }
     printTable(stockdata)
