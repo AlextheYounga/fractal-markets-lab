@@ -3,22 +3,15 @@ from jsonfield import JSONField
 # from bulk_update_or_create import BulkUpdateOrCreateQuerySet
 
 # Create your models here.
-class Index(models.Model):
-    name = models.CharField(max_length=200, unique=True)
-    count = models.IntegerField(null=True)
-
-    def __unicode__(self):              # __str__ on Python 3
-        return str(self.about_desc)
-
-    class Meta:
-        verbose_name_plural = "indices"
-
-
 class Stock(models.Model):
-    index = models.ForeignKey(Index, on_delete=models.CASCADE, default=0)
-    ticker = models.CharField(max_length=30)
+    ticker = models.CharField(max_length=30, unique=True)
     name = models.CharField(max_length=200)
     lastPrice = models.FloatField(null=True)
+    sector = models.CharField(max_length=300, null=True)
+    industry = models.CharField(max_length=300, null=True)
+    employees = models.IntegerField(null=True)
+    description = models.TextField(null=True)
+    index = models.CharField(max_length=200, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -1,5 +1,5 @@
 import django
-from ...core.api import getCurrentPrice
+from ..core.api import getCurrentPrice
 from django.apps import apps
 import requests
 import json
@@ -10,17 +10,34 @@ load_dotenv()
 django.setup()
 
 
+def dynamicUpdateCreate(data, find):
+    """ 
+    Parameters
+    ----------
+    data :  dict
+            Data must conform to this structure:
+                data = {
+                    'Model': {
+                    'column': value
+                    },
+                }
+    find :  QuerySet object
 
-def getTrendData(ticker):
-    try:
-        price = getCurrentPrice(ticker)
-        url = 'https://cloud.iexapis.com/stable/stock/{}/stats?token={}'.format(ticker, os.environ.get("IEX_TOKEN"))
-        stats = requests.get(url).json()
+    Returns
+    -------
+    boolean|string
+    """
+    if (isinstance(data, dict)):
+        for model, values in data.items():
+            Model = apps.get_model('database', model)
+            Model.objects.update_or_create(
+                stock=find,
+                defaults=values,
+            )
+    else:
+        return 'Data must be in dict structure'
 
-        return price, stats
-    except:
-        return None, None
-
+    return True
 
 
 def getEarnings(ticker):
@@ -33,8 +50,7 @@ def getEarnings(ticker):
     return earnings
 
 
-
-def checkEarnings(earnings):    
+def checkEarnings(earnings):
     actual = []
     consensus = []
     consistency = []
@@ -50,7 +66,7 @@ def checkEarnings(earnings):
         period = report['fiscalPeriod'] if 'fiscalPeriod' in report else i
         actual.append({period: actualEps})
         consensus.append({period: surpriseEps})
-        
+
     improvement = False if False in consistency else True
 
     results = {
@@ -60,6 +76,3 @@ def checkEarnings(earnings):
     }
 
     return results
-
-
-

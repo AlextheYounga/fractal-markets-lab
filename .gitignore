@@ -6,4 +6,4 @@ lab/*/__pycache__
 lab/__pycache__/
 lab/exports/*
 lab/core/storage/*
-lab/scrap/*
+lab/graveyard/

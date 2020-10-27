@@ -5,15 +5,13 @@ import os
 import sys
 from datetime import date
 from .functions import *
-from ...database.functions import *
-from ...core.functions import *
-from ...core.api import quoteStatsBatchRequest
-from ...core.output import printTable
-from ...core.export import writeCSV
+from ..core.functions import chunks
+from ..core.api import quoteStatsBatchRequest
+from ..core.output import printTable
+from ..core.export import writeCSV
 import texttable
 django.setup()
 
-unique_stocks = uniqueField('Stock', 'database_stock', 'ticker')
 Stock = apps.get_model('database', 'Stock')
 Earnings = apps.get_model('database', 'Earnings')
 Watchlist = apps.get_model('database', 'Watchlist')
@@ -21,42 +19,36 @@ Watchlist = apps.get_model('database', 'Watchlist')
 # Main Thread Start
 print('Running...')
 
-tickers = []
 results = []
-for i, stock in enumerate(unique_stocks):
-    if ('$' in stock.ticker):  # Removing bad tickers
-        continue
-    tickers.append(stock.ticker)
+tickers = Stock.objects.all().values_list('ticker', flat=True)
 
 chunked_tickers = chunks(tickers, 100)
 for i, chunk in enumerate(chunked_tickers):
-    batchData = quoteStatsBatchRequest(chunk)  # Check Key Stats Trend Data
+    batch = quoteStatsBatchRequest(chunk)
 
-    for ticker, batchStats in batchData.items():
-        stocks = Stock.objects.filter(ticker=ticker)
-        if (type(stocks) == django.db.models.query.QuerySet):
-            stock = stocks[0]
-
+    for ticker, stockinfo in batch.items():
         print('Chunk {}: {}'.format(i, ticker))
 
-        if (('quote' not in batchStats) or ('stats' not in batchStats)):
-            continue
+        if (stockinfo.get('quote', False) and stockinfo.get('stats', False)):
+            quote = stockinfo.get('quote')
+            stats = stockinfo.get('stats')
 
-        if (isinstance(batchStats['quote'], dict) and isinstance(batchStats['stats'], dict)):
-            quote = batchStats['quote'] if 'quote' in batchStats else 0
-            stats = batchStats['stats'] if 'stats' in batchStats else 0
-            if ((isinstance(quote, dict) == False) and (isinstance(stats, dict) == False) and (quote and stats == False)):
+            price = quote.get('latestPrice', 0)
+
+            if (price and isinstance(price, float)):
+                stock, created = Stock.objects.update_or_create(
+                    ticker=ticker,
+                    defaults={'lastPrice': price},
+                )
+            else:
                 continue
-            price = quote['latestPrice'] if ('latestPrice' in quote) else 0
-            changeToday = quote['changePercent'] * 100 if ('changePercent' in quote and quote['changePercent']) else 0
-            if (isinstance(price, float) and price):
-                stocks.update(lastPrice=price)  # Save Stock
 
-            ttmEPS = stats['ttmEPS'] if ('ttmEPS' in stats and stats['ttmEPS']) else 0
-            week52high = stats['week52high'] if ('week52high' in stats and stats['week52high']) else 0
-            day5ChangePercent = stats['day5ChangePercent'] * 100 if ('day5ChangePercent' in stats and stats['day5ChangePercent']) else 0
+            ttmEPS = stats.get('ttmEPS', 0)
+            week52high = stats.get('week52high', 0)
+            changeToday = quote.get('changePercent', 0) * 100 if (quote.get('changePercent')) else 0
+            day5ChangePercent = stats.get('day5ChangePercent', 0) * 100 if (stats.get('day5ChangePercent')) else 0
 
-            critical = [price, changeToday, week52high, ttmEPS, day5ChangePercent]
+            critical = [changeToday, week52high, ttmEPS, day5ChangePercent]
 
             if ((0 in critical)):
                 continue
@@ -66,28 +58,26 @@ for i, chunk in enumerate(chunked_tickers):
             # Save Data to DB
             data_for_db = {
                 'Valuation':  {
-                    'stock': stock,
                     'peRatio': stats['peRatio'],
                 },
                 'Trend': {
-                    'stock': stock,
                     'week52': week52high,
                     'day5ChangePercent': stats['day5ChangePercent'],
-                    'month1ChangePercent': stats['month1ChangePercent'],
-                    'ytdChangePercent': stats['ytdChangePercent'],
-                    'day50MovingAvg': stats['day50MovingAvg'],
-                    'day200MovingAvg': stats['day200MovingAvg'],
+                    'month1ChangePercent': stats.get('month1ChangePercent', None),
+                    'ytdChangePercent': stats.get('ytdChangePercent', None),
+                    'day50MovingAvg': stats.get('day50MovingAvg', None),
+                    'day200MovingAvg': stats.get('day200MovingAvg', None),
                     'fromHigh': fromHigh
                 },
                 'Earnings': {
-                    'stock': stock,
                     'ttmEPS': ttmEPS
                 },
             }
+            
+            dynamicUpdateCreate(data_for_db, stock)
 
-            saveDynamic(data_for_db, stock)
             if ((fromHigh < 105) and (fromHigh > 95)):
-                if (changeToday > 8):
+                if (changeToday > 10):
                     earningsData = getEarnings(ticker)
                     if (earningsData and isinstance(earningsData, dict)):
                         print('{} ---- Checking Earnings ----'.format(ticker))
@@ -122,12 +112,10 @@ for i, chunk in enumerate(chunked_tickers):
                             stockData.update(keyStats)
 
                             # Save to Watchlist
-                            watchlists = Watchlist.objects.filter(stock=stock)
-                            if (watchlists.count() == 0):
-                                stockData['stock'] = stock
-                                Watchlist.objects.create(**stockData)
-                            else:
-                                watchlists.update(**stockData)
+                            Watchlist.objects.update_or_create(
+                                stock=stock,
+                                defaults=stockData
+                            )
 
                             print('{} saved to Watchlist'.format(ticker))
                             results.append(stockData)

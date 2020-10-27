@@ -12,6 +12,11 @@ def setWidths(data):
 
 
 def printTable(data):
+    """ 
+    Parameters
+    ----------
+    data :  dict
+    """
     print("\n")
     headers = data.keys()
     table = texttable.Texttable()
