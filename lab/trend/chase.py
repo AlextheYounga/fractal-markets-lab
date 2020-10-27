@@ -77,7 +77,7 @@ for i, chunk in enumerate(chunked_tickers):
             dynamicUpdateCreate(data_for_db, stock)
 
             if ((fromHigh < 105) and (fromHigh > 95)):
-                if (changeToday > 10):
+                if (changeToday > 5):
                     earningsData = getEarnings(ticker)
                     if (earningsData and isinstance(earningsData, dict)):
                         print('{} ---- Checking Earnings ----'.format(ticker))
