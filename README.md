@@ -22,10 +22,18 @@ Rescaled Range (I think this is currently broken, and it needs to be redone comp
 
 ```python -m lab.rescaledrange.calculator```
 
-Volatility Formulas. I recreated the VIX Volatility Index here. I'm suspicious of the math involved with the VIX. Maybe I'm missing something, but the logic behind the math seems very odd, and amazingly, you can use the VIX formula on a penny stock and get a value like 23. I still need to go through and compare just how accurate the VIX is on SPX compared to other common volatility formulas.
 
 
-```python -c 'from lab.volatility.calculator import calculate; print(calculate("SPY"))'```
+VIX Volatility Index
+
+
+
+I recreated the VIX Volatility Index here. I'm suspicious of the math involved with the VIX formula. Maybe I'm missing something on the option expiration dates, but still, the logic behind the math seems very odd. Amazingly, you can use the VIX formula on a penny stock and get a value like 23. Supposedly the VIX is the most accurate vol index on SPY in existence, but I'm starting to question that. I'd like to eventually go through and test the VIX compared to common vol equations. 
+
+I've thoroughly commented the equation to explain what is happening at each step. You can see how weird the logic is yourself. I set the default ticker to Spanish Mountain Gold so you can see the weirdness for yourself. 
+
+
+```python -c 'from lab.vix.calculation import vixCalculation; print(vixCalculation("SPY"))'```
 
 Trends
 
