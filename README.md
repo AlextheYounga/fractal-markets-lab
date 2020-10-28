@@ -35,6 +35,4 @@ python -m lab.trend.gainers'''
 Financials
 
 
-'''
-python -c 'from lab.financials.lookup import lookupFinancials; print(lookupFinancials("BELDF"))'
-'''
+'''python -c 'from lab.financials.lookup import lookupFinancials; print(lookupFinancials("BELDF"))''''
