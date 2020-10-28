@@ -1,13 +1,17 @@
-Commands:
-export DJANGO_SETTINGS_MODULE=lab.settings
+Commands
+Must run the first time you start the project
+```export DJANGO_SETTINGS_MODULE=lab.settings```
 
-<!-- Donchian -->
-python -c 'from lab.donchian.calculator import calculate; print(calculate("CHWY"))'
-<!-- Value at Risk -->
-python -c 'from lab.VaR.calculator import variancecovarianceVaR; print(variancecovarianceVaR("SPY"))'
-<!-- Volatility -->
-python -c 'from lab.volatility.calculator import calculate; print(calculate("SPY"))'
-<!-- Risk Range -->
+Donchian Formulas:
+```python -c 'from lab.donchian.calculator import calculate; print(calculate("CHWY"))'```
+
+Value at Risk (Still figuring this out)
+```python -c 'from lab.VaR.calculator import variancecovarianceVaR; print(variancecovarianceVaR("SPY"))'```
+
+Volatility Formulas
+```python -c 'from lab.volatility.calculator import calculate; print(calculate("SPY"))'```
+
+Risk Range 
 python -m lab.riskrange.scan_portfolio
 python -c 'from lab.riskrange.lookup import rangeLookup; print(rangeLookup("EDV"))'
 <!-- Trend -->
