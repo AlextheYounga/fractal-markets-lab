@@ -22,7 +22,7 @@ Rescaled Range (I think this is currently broken, and it needs to be redone comp
 
 ```python -m lab.rescaledrange.calculator```
 
-Volatility Formulas
+Volatility Formulas. I recreated the VIX Volatility Index here. I'm suspicious of the math involved with the VIX. Maybe I'm missing something, but the logic behind the math seems very odd, and amazingly, you can use the VIX formula on a penny stock and get a value like 23. I still need to go through and compare just how accurate the VIX is on SPX compared to other common volatility formulas.
 
 
 ```python -c 'from lab.volatility.calculator import calculate; print(calculate("SPY"))'```
