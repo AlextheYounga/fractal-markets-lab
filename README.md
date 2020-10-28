@@ -28,11 +28,13 @@ Volatility Formulas
 Trends
 
 
-'''python -c 'from lab.trend.streak.analyze import streak_analyzer; print(streak_analyzer("SPY"))'
+```
+python -c 'from lab.trend.streak.analyze import streak_analyzer; print(streak_analyzer("SPY"))'
 python -m lab.trend.chase
-python -m lab.trend.gainers'''
+python -m lab.trend.gainers
+```
 
 Financials
 
 
-'''python -c 'from lab.financials.lookup import lookupFinancials; print(lookupFinancials("BELDF"))''''
+```python -c 'from lab.financials.lookup import lookupFinancials; print(lookupFinancials("BELDF"))'```
