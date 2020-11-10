@@ -7,6 +7,7 @@ import requests
 import json
 import os
 import texttable
+os.environ['DJANGO_SETTINGS_MODULE'] = 'lab.settings'
 load_dotenv()
 
 Stock = apps.get_model('database', 'Stock')

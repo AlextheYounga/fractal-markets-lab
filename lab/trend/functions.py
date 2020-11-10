@@ -50,6 +50,16 @@ def getEarnings(ticker):
     return earnings
 
 
+def getPriceTarget(ticker):
+    try:
+        url = 'https://cloud.iexapis.com/stable/stock/{}/price-target?token={}'.format(ticker, os.environ.get("IEX_TOKEN"))
+        priceTarget = requests.get(url).json()
+    except:
+        return None
+
+    return priceTarget
+
+
 def checkEarnings(earnings):
     actual = []
     consensus = []

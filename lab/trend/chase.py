@@ -1,5 +1,6 @@
 import django
 from django.apps import apps
+from dotenv import load_dotenv
 import json
 import os
 import sys
@@ -10,10 +11,11 @@ from ..core.api import quoteStatsBatchRequest
 from ..core.output import printTable
 from ..core.export import writeCSV
 import texttable
+load_dotenv()
 django.setup()
 
 Stock = apps.get_model('database', 'Stock')
-Earnings = apps.get_model('database', 'Earnings')
+Trend = apps.get_model('database', 'Trend')
 Watchlist = apps.get_model('database', 'Watchlist')
 
 # Main Thread Start
@@ -78,8 +80,21 @@ for i, chunk in enumerate(chunked_tickers):
             dynamicUpdateCreate(data_for_db, stock)
 
             if ((fromHigh < 105) and (fromHigh > 95)):
-                if (changeToday > 10):
+                if (changeToday > 12):
                     if (volume > previousVolume):
+                        priceTargets = getPriceTarget(ticker)
+                        fromPriceTarget = round((price / priceTargets['priceTargetHigh']) * 100, 3) if (priceTargets and 'priceTargetLow' in priceTargets) else 0
+                        avgPricetarget = priceTargets['priceTargetAverage'] if (priceTargets and 'priceTargetAverage' in priceTargets) else None
+                        highPriceTarget = priceTargets['priceTargetHigh'] if (priceTargets and 'priceTargetHigh' in priceTargets) else None
+
+
+                        # Save Trends to DB
+                        Trend.objects.filter(stock=stock).update(                            
+                            avgPricetarget=avgPricetarget,
+                            highPriceTarget=highPriceTarget,
+                            fromPriceTarget=fromPriceTarget,
+                        )
+                    
                         keyStats = {
                             'week52': stats['week52high'],
                             'ttmEPS': ttmEPS,
@@ -88,7 +103,9 @@ for i, chunk in enumerate(chunked_tickers):
                             'month1ChangePercent': stats['month1ChangePercent'],
                             'ytdChangePercent': stats['ytdChangePercent'],
                             'day50MovingAvg': stats['day50MovingAvg'],
-                            'day200MovingAvg': stats['day200MovingAvg'],
+                            'day200MovingAvg': stats['day200MovingAvg'],                            
+                            'highPriceTarget': highPriceTarget,
+                            'fromPriceTarget': fromPriceTarget,
                             'fromHigh': fromHigh,
 
                         }
@@ -105,8 +122,6 @@ for i, chunk in enumerate(chunked_tickers):
                             defaults=stockData
                         )
 
-                        stockData['volume'] = "{}K".format(round(volume / 1000))
-                        stockData['previousVolume'] = "{}K".format(round(previousVolume / 1000))
                         stockData['changeToday'] = changeToday                        
                         print('{} saved to Watchlist'.format(ticker))
                         results.append(stockData)

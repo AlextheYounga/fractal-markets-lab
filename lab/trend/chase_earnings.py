@@ -1,5 +1,6 @@
 import django
 from django.apps import apps
+from dotenv import load_dotenv
 import json
 import os
 import sys
@@ -10,6 +11,7 @@ from ..core.api import quoteStatsBatchRequest
 from ..core.output import printTable
 from ..core.export import writeCSV
 import texttable
+load_dotenv()
 django.setup()
 
 Stock = apps.get_model('database', 'Stock')
