@@ -42,32 +42,32 @@ for i, chunk in enumerate(chunked_etfs):
 
             day5ChangePercent = stats['day5ChangePercent'] * 100 if ('day5ChangePercent' in stats and stats['day5ChangePercent']) else None
             changeToday = quote['changePercent'] * 100 if ('changePercent' in quote and quote['changePercent']) else 0
-            previousVolume = quote['previousVolume'] if ('previousVolume' in quote and quote['previousVolume']) else 0
-            month1ChangePercent = stats['month1ChangePercent'] * 100 if ('month1ChangePercent' in stats and stats['month1ChangePercent']) else None
-            # Critical
+            previousVolume = quote['previousVolume'] if ('previousVolume' in quote and quote['previousVolume']) else 0            
             volume = quote['volume'] if ('volume' in quote and quote['volume']) else 0
             avg30Volume = stats['avg30Volume'] if ('avg30Volume' in stats and stats['avg30Volume']) else None
             week52high = stats['week52high'] if ('week52high' in stats and stats['week52high']) else 0
             month3ChangePercent = stats['month3ChangePercent'] * 100 if ('month3ChangePercent' in stats and stats['month3ChangePercent']) else None
             day50MovingAvg = stats['day50MovingAvg'] if ('day50MovingAvg' in stats and stats['day50MovingAvg']) else None
+            # Critical
+            ytdChangePercent = stats['ytdChangePercent'] * 100 if ('ytdChangePercent' in stats and stats['ytdChangePercent']) else 0
+            month1ChangePercent = stats['month1ChangePercent'] * 100 if ('month1ChangePercent' in stats and stats['month1ChangePercent']) else 0
 
-            critical = [volume, avg30Volume, week52high, day50MovingAvg]
+            critical = [ytdChangePercent, month1ChangePercent]
 
             if ((0 in critical)):
                 continue
 
             fromHigh = round((price / week52high) * 100, 3)
 
-            if ((fromHigh < 100) and (fromHigh > 70)):
-                if (price > day50MovingAvg):
-                    if ((volume / avg30Volume) > 3):
-
+            if (ytdChangePercent > 10):
+                if (month1ChangePercent > 5):
+                    if (volume > avg30Volume):
                         keyStats = {
                             'week52': stats['week52high'],
                             'day5ChangePercent': stats['day5ChangePercent'],
                             'month3ChangePercent': stats['month3ChangePercent'],
-                            'ytdChangePercent': stats['ytdChangePercent'],                            
-                            'avg30Volume': "{}K".format(avg30Volume / 1000),
+                            'ytdChangePercent': ytdChangePercent,                            
+                            'avg30Volume': "{}K".format(round(avg30Volume / 1000, 3)),
                             'month1ChangePercent': month1ChangePercent,
                             'month3ChangePercent': month3ChangePercent,
                             'day50MovingAvg': day50MovingAvg,
