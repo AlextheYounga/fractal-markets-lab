@@ -36,7 +36,7 @@ for i, chunk in enumerate(chunked_tickers):
             stats = stockinfo.get('stats')
             price = quote.get('latestPrice', 0)
 
-            if (price and isinstance(price, float)):
+            if ((price) and (isinstance(price, float)) and (price > 10)):
                 stock, created = Stock.objects.update_or_create(
                     ticker=ticker,
                     defaults={'lastPrice': price},
@@ -44,14 +44,15 @@ for i, chunk in enumerate(chunked_tickers):
             else:
                 continue
 
-            ttmEPS = stats['ttmEPS'] if ('ttmEPS' in stats and stats['ttmEPS']) else 0
+            ttmEPS = stats['ttmEPS'] if ('ttmEPS' in stats and stats['ttmEPS']) else None
+            day5ChangePercent = stats['day5ChangePercent'] * 100 if ('day5ChangePercent' in stats and stats['day5ChangePercent']) else None
+            # Critical
             week52high = stats['week52high'] if ('week52high' in stats and stats['week52high']) else 0
-            changeToday = quote['changePercent'] * 100 if ('changePercent' in quote and quote['changePercent']) else 0
-            day5ChangePercent = stats['day5ChangePercent'] * 100 if ('day5ChangePercent' in stats and stats['day5ChangePercent']) else 0
+            changeToday = quote['changePercent'] * 100 if ('changePercent' in quote and quote['changePercent']) else 0            
             volume = quote['volume'] if ('volume' in quote and quote['volume']) else 0
             previousVolume = quote['previousVolume'] if ('previousVolume' in quote and quote['previousVolume']) else 0
 
-            critical = [changeToday, week52high, ttmEPS, volume, previousVolume]
+            critical = [changeToday, week52high, volume, previousVolume]
 
             if ((0 in critical)):
                 continue
@@ -78,10 +79,9 @@ for i, chunk in enumerate(chunked_tickers):
             }
             
             dynamicUpdateCreate(data_for_db, stock)
-
-            if ((fromHigh < 105) and (fromHigh > 95)):
-                if (changeToday > 12):
-                    if (volume > previousVolume):
+            if ((fromHigh < 100) and (fromHigh > 70)):
+                if (changeToday > 5):
+                    if ((volume / previousVolume) > 3):
                         priceTargets = getPriceTarget(ticker)
                         fromPriceTarget = round((price / priceTargets['priceTargetHigh']) * 100, 3) if (priceTargets and 'priceTargetLow' in priceTargets) else 0
                         avgPricetarget = priceTargets['priceTargetAverage'] if (priceTargets and 'priceTargetAverage' in priceTargets) else None
@@ -122,7 +122,9 @@ for i, chunk in enumerate(chunked_tickers):
                             defaults=stockData
                         )
 
-                        stockData['changeToday'] = changeToday                        
+                        stockData['volume'] = "{}K".format(volume / 1000)
+                        stockData['previousVolume'] = "{}K".format(previousVolume / 1000)
+                        stockData['changeToday'] = changeToday    
                         print('{} saved to Watchlist'.format(ticker))
                         results.append(stockData)
                         printTable(stockData)
