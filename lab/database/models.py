@@ -15,6 +15,30 @@ class Stock(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+class MacroTrend(models.Model):
+    etf = models.ForeignKey(Stock, on_delete=models.CASCADE)
+    ticker = models.CharField(max_length=30)
+    name = models.CharField(max_length=200)
+    lastPrice = models.FloatField(null=True)
+    week52 = models.FloatField(null=True)
+    avg30Volume = models.CharField(max_length=30, null=True)
+    day5ChangePercent = models.FloatField(null=True)
+    month1ChangePercent = models.FloatField(null=True)
+    month3ChangePercent = models.FloatField(null=True)
+    ytdChangePercent = models.FloatField(null=True)
+    day50MovingAvg = models.FloatField(null=True)
+    day200MovingAvg = models.FloatField(null=True)    
+    fromHigh = models.FloatField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __unicode__(self):              # __str__ on Python 3
+        return str(self.about_desc)
+
+    class Meta:
+        verbose_name = "MacroTrend"
+        verbose_name_plural = "MacroTrends"
+
 
 class Watchlist(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, default=0)

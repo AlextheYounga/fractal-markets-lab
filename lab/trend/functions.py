@@ -40,26 +40,6 @@ def dynamicUpdateCreate(data, find):
     return True
 
 
-def getEarnings(ticker):
-    try:
-        url = 'https://cloud.iexapis.com/stable/stock/{}/earnings/4/?token={}'.format(ticker, os.environ.get("IEX_TOKEN"))
-        earnings = requests.get(url).json()
-    except:
-        return None
-
-    return earnings
-
-
-def getPriceTarget(ticker):
-    try:
-        url = 'https://cloud.iexapis.com/stable/stock/{}/price-target?token={}'.format(ticker, os.environ.get("IEX_TOKEN"))
-        priceTarget = requests.get(url).json()
-    except:
-        return None
-
-    return priceTarget
-
-
 def checkEarnings(earnings):
     actual = []
     consensus = []
