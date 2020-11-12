@@ -1,19 +1,21 @@
 import django
 from django.apps import apps
+from dotenv import load_dotenv
 import json
 import os
 import sys
 from datetime import date
 from .functions import *
 from ..core.functions import chunks
-from ..core.api import quoteStatsBatchRequest
+from ..core.api import quoteStatsBatchRequest, getEarnings, getPriceTarget
 from ..core.output import printTable
 from ..core.export import writeCSV
 import texttable
+load_dotenv()
 django.setup()
 
 Stock = apps.get_model('database', 'Stock')
-Earnings = apps.get_model('database', 'Earnings')
+Trend = apps.get_model('database', 'Trend')
 Watchlist = apps.get_model('database', 'Watchlist')
 
 # Main Thread Start
@@ -32,7 +34,6 @@ for i, chunk in enumerate(chunked_tickers):
         if (stockinfo.get('quote', False) and stockinfo.get('stats', False)):
             quote = stockinfo.get('quote')
             stats = stockinfo.get('stats')
-
             price = quote.get('latestPrice', 0)
 
             if (price and isinstance(price, float)):
@@ -43,12 +44,14 @@ for i, chunk in enumerate(chunked_tickers):
             else:
                 continue
 
-            ttmEPS = stats.get('ttmEPS', 0)
-            week52high = stats.get('week52high', 0)
-            changeToday = quote.get('changePercent', 0) * 100 if (quote.get('changePercent')) else 0
-            day5ChangePercent = stats.get('day5ChangePercent', 0) * 100 if (stats.get('day5ChangePercent')) else 0
+            ttmEPS = stats['ttmEPS'] if ('ttmEPS' in stats and stats['ttmEPS']) else 0
+            week52high = stats['week52high'] if ('week52high' in stats and stats['week52high']) else 0
+            changeToday = quote['changePercent'] * 100 if ('changePercent' in quote and quote['changePercent']) else 0
+            day5ChangePercent = stats['day5ChangePercent'] * 100 if ('day5ChangePercent' in stats and stats['day5ChangePercent']) else 0
+            volume = quote['volume'] if ('volume' in quote and quote['volume']) else 0
+            previousVolume = quote['previousVolume'] if ('previousVolume' in quote and quote['previousVolume']) else 0
 
-            critical = [changeToday, week52high, ttmEPS, day5ChangePercent]
+            critical = [changeToday, week52high, ttmEPS, volume, previousVolume]
 
             if ((0 in critical)):
                 continue
@@ -77,49 +80,52 @@ for i, chunk in enumerate(chunked_tickers):
             dynamicUpdateCreate(data_for_db, stock)
 
             if ((fromHigh < 105) and (fromHigh > 95)):
-                if (changeToday > 5):
-                    earningsData = getEarnings(ticker)
-                    if (earningsData and isinstance(earningsData, dict)):
-                        print('{} ---- Checking Earnings ----'.format(ticker))
-                        earningsChecked = checkEarnings(earningsData)
+                if (changeToday > 12):
+                    if (volume > previousVolume):
+                        priceTargets = getPriceTarget(ticker)
+                        fromPriceTarget = round((price / priceTargets['priceTargetHigh']) * 100, 3) if (priceTargets and 'priceTargetLow' in priceTargets) else 0
+                        avgPricetarget = priceTargets['priceTargetAverage'] if (priceTargets and 'priceTargetAverage' in priceTargets) else None
+                        highPriceTarget = priceTargets['priceTargetHigh'] if (priceTargets and 'priceTargetHigh' in priceTargets) else None
 
-                        # Save Earnings to DB
-                        Earnings.objects.filter(stock=stock).update(
-                            reportedEPS=earningsChecked['actual'],
-                            reportedConsensus=earningsChecked['consensus'],
+
+                        # Save Trends to DB
+                        Trend.objects.filter(stock=stock).update(                            
+                            avgPricetarget=avgPricetarget,
+                            highPriceTarget=highPriceTarget,
+                            fromPriceTarget=fromPriceTarget,
+                        )
+                    
+                        keyStats = {
+                            'week52': stats['week52high'],
+                            'ttmEPS': ttmEPS,
+                            'peRatio': stats['peRatio'],
+                            'day5ChangePercent': stats['day5ChangePercent'],
+                            'month1ChangePercent': stats['month1ChangePercent'],
+                            'ytdChangePercent': stats['ytdChangePercent'],
+                            'day50MovingAvg': stats['day50MovingAvg'],
+                            'day200MovingAvg': stats['day200MovingAvg'],                            
+                            'highPriceTarget': highPriceTarget,
+                            'fromPriceTarget': fromPriceTarget,
+                            'fromHigh': fromHigh,
+
+                        }
+                        stockData = {
+                            'ticker': ticker,
+                            'name': stock.name,
+                            'lastPrice': price
+                        }
+                        stockData.update(keyStats)
+
+                        # Save to Watchlist
+                        Watchlist.objects.update_or_create(
+                            stock=stock,
+                            defaults=stockData
                         )
 
-                        if (earningsChecked['improvement'] == True):
-                            keyStats = {
-                                'week52': stats['week52high'],
-                                'ttmEPS': ttmEPS,
-                                'reportedEPS': earningsChecked['actual'],
-                                'reportedConsensus': earningsChecked['consensus'],
-                                'peRatio': stats['peRatio'],
-                                'day5ChangePercent': stats['day5ChangePercent'],
-                                'month1ChangePercent': stats['month1ChangePercent'],
-                                'ytdChangePercent': stats['ytdChangePercent'],
-                                'day50MovingAvg': stats['day50MovingAvg'],
-                                'day200MovingAvg': stats['day200MovingAvg'],
-                                'fromHigh': fromHigh,
-
-                            }
-                            stockData = {
-                                'ticker': ticker,
-                                'name': stock.name,
-                                'lastPrice': price
-                            }
-                            stockData.update(keyStats)
-
-                            # Save to Watchlist
-                            Watchlist.objects.update_or_create(
-                                stock=stock,
-                                defaults=stockData
-                            )
-
-                            print('{} saved to Watchlist'.format(ticker))
-                            results.append(stockData)
-                            printTable(stockData)
+                        stockData['changeToday'] = changeToday                        
+                        print('{} saved to Watchlist'.format(ticker))
+                        results.append(stockData)
+                        printTable(stockData)
 
 if results:
     today = date.today().strftime('%m-%d')

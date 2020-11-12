@@ -7,12 +7,14 @@ import requests
 import json
 import os
 import texttable
+os.environ['DJANGO_SETTINGS_MODULE'] = 'lab.settings'
 load_dotenv()
 
 Stock = apps.get_model('database', 'Stock')
 Earnings = apps.get_model('database', 'Earnings')
 Watchlist = apps.get_model('database', 'Watchlist')
 gainers = get_market_gainers()
+
 for i, mover in enumerate(gainers):
     print(i + 1)
     ticker = mover.get('symbol', None)
@@ -89,4 +91,5 @@ for i, mover in enumerate(gainers):
         'marketCap': marketCap,
         'primaryExchange': index,
     }
+    print('here')
     printTable(stockdata)
