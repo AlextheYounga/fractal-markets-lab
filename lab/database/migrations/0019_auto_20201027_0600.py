@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='stock',
             name='ticker',
-            field=models.CharField(max_length=30, unique=False),
+            field=models.CharField(max_length=30, unique=True),
         ),
     ]
