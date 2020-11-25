@@ -17,8 +17,6 @@ tickers = [stock['symbol'] for stock in stocks]
 chunked_tickers = chunks(tickers, 100)
 
 for i, chunk in enumerate(chunked_tickers):
-    if (i < 91):
-        continue
     batch = companyBatchRequest(chunk)
 
     for i, info in batch.items():

@@ -79,17 +79,18 @@ for i, chunk in enumerate(chunked_tickers):
             dynamicUpdateCreate(data_for_db, stock)
 
             if ((fromHigh < 105) and (fromHigh > 95)):
-                if (changeToday > 5):
+                if (changeToday > 10):
                     earningsData = getEarnings(ticker)
                     if (earningsData and isinstance(earningsData, dict)):
                         print('{} ---- Checking Earnings ----'.format(ticker))
                         earningsChecked = checkEarnings(earningsData)
 
-                        # Save Earnings to DB
-                        Earnings.objects.filter(stock=stock).update(
-                            reportedEPS=earningsChecked['actual'],
-                            reportedConsensus=earningsChecked['consensus'],
-                        )
+                        if (earningsChecked['actual'] and earningsChecked['consensus']):
+                            # Save Earnings to DB
+                            Earnings.objects.filter(stock=stock).update(
+                                reportedEPS=earningsChecked['actual'],
+                                reportedConsensus=earningsChecked['consensus'],
+                            )
 
                         if (earningsChecked['improvement'] == True):
                             keyStats = {
