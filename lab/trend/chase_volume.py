@@ -10,6 +10,7 @@ from ..core.functions import chunks
 from ..core.api import quoteStatsBatchRequest, getEarnings, getPriceTarget
 from ..core.output import printTable
 from ..core.export import writeCSV
+from ..twitter.tweet import *
 import texttable
 load_dotenv()
 django.setup()
@@ -51,6 +52,7 @@ for i, chunk in enumerate(chunked_tickers):
             changeToday = quote['changePercent'] * 100 if ('changePercent' in quote and quote['changePercent']) else 0
             volume = quote['volume'] if ('volume' in quote and quote['volume']) else 0
             previousVolume = quote['previousVolume'] if ('previousVolume' in quote and quote['previousVolume']) else 0
+            # avgVolume = 
 
             critical = [changeToday, week52high, volume, previousVolume]
 
@@ -81,7 +83,7 @@ for i, chunk in enumerate(chunked_tickers):
             dynamicUpdateCreate(data_for_db, stock)
             if ((fromHigh < 100) and (fromHigh > 80)):
                 if (changeToday > 5):
-                    if ((volume / previousVolume) > 3):
+                    if ((volume / previousVolume) > 7):
                         priceTargets = getPriceTarget(ticker)
                         fromPriceTarget = round((price / priceTargets['priceTargetHigh']) * 100, 3) if (priceTargets and 'priceTargetLow' in priceTargets) else 0
                         avgPricetarget = priceTargets['priceTargetAverage'] if (priceTargets and 'priceTargetAverage' in priceTargets) else None
@@ -98,9 +100,9 @@ for i, chunk in enumerate(chunked_tickers):
                             'week52': stats['week52high'],
                             'ttmEPS': ttmEPS,
                             'peRatio': stats['peRatio'],
-                            'day5ChangePercent': stats['day5ChangePercent'] * 100 if ('day5ChangePercent' in stats) else None,
-                            'month1ChangePercent': stats['month1ChangePercent'] * 100 if ('month1ChangePercent' in stats) else None,
-                            'ytdChangePercent': stats['ytdChangePercent'] * 100 if ('ytdChangePercent' in stats) else None,
+                            'day5ChangePercent': round(stats['day5ChangePercent'] * 100, 2) if ('day5ChangePercent' in stats) else None,
+                            'month1ChangePercent': round(stats['month1ChangePercent'] * 100, 2) if ('month1ChangePercent' in stats) else None,
+                            'ytdChangePercent': round(stats['ytdChangePercent'] * 100, 2) if ('ytdChangePercent' in stats) else None,
                             'day50MovingAvg': stats['day50MovingAvg'],
                             'day200MovingAvg': stats['day200MovingAvg'],
                             'highPriceTarget': highPriceTarget,
@@ -121,13 +123,23 @@ for i, chunk in enumerate(chunked_tickers):
                             defaults=stockData
                         )
 
-                        stockData['volume'] = "{}K".format(volume / 1000)
-                        stockData['previousVolume'] = "{}K".format(previousVolume / 1000)
+                        stockData['volume'] = "{}K".format(round(volume / 1000, 2))
+                        stockData['previousVolume'] = "{}K".format(round(previousVolume / 1000, 2))
                         stockData['changeToday'] = changeToday
+
                         print('{} saved to Watchlist'.format(ticker))
+
                         results.append(stockData)
+
+                        # Removing from terminal output
+                        del stockData['day50MovingAvg']
+                        del stockData['day200MovingAvg']
                         printTable(stockData)
+
 
 if results:
     today = date.today().strftime('%m-%d')
     writeCSV(results, 'trend/trend_chasing_{}.csv'.format(today))
+
+    # Tweet
+    tweet_volume(results)
