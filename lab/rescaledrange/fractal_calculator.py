@@ -42,7 +42,7 @@ def collect_key_stats(ticker):
     # Arbitrary fractal scales
     scales = exponential_scales(count, 3, 6)
 
-    # print(json.dumps(scales, indent=1))
+    print(json.dumps(scales, indent=1))
 
     returns = returns_calculator(prices)
     deviations = deviations_calculator(returns, scales)
@@ -70,14 +70,14 @@ def collect_key_stats(ticker):
     for scale, values in range_stats.items():
         range_stats[scale]['keyStats'] = {}
         rescaleRanges = list(values['rescaleRanges'].values())
-        range_stats[scale]['keyStats']['rescaleRangeAvg'] = statistics.mean(rescaleRanges) #This is the rescaled range
+        range_stats[scale]['keyStats']['rescaleRangeAvg'] = statistics.mean(rescaleRanges)  # This is the rescaled range
         range_stats[scale]['keyStats']['size'] = scales[scale]
         range_stats[scale]['keyStats']['logRR'] = math.log10(statistics.mean(rescaleRanges)) if (statistics.mean(rescaleRanges) > 0) else 0
         range_stats[scale]['keyStats']['logScale'] = math.log10(scales[scale])
 
     return scales, range_stats
 
-# Final Calculation
+
 def perform_hurst_calculations(x, y):
     """
     This function performs hurst fractal calculations based on key stats returned from collect_key_stats()
@@ -137,7 +137,7 @@ def fractalCalculator(ticker):
     -------
     dict
         Returns fractal statistics and can export to csv, output to terminal and tweet
-            
+
     """
     scales, range_stats = collect_key_stats(ticker)
 
@@ -158,7 +158,6 @@ def fractalCalculator(ticker):
     fractal_results['regressionResults'] = perform_hurst_calculations(log_scales, log_RRs)
     # Export to CSV
     exportFractal(fractal_results, scales)
-
 
 
 # print(json.dumps(fractal_results, indent=1))
