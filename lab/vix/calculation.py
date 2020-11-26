@@ -9,7 +9,7 @@ from .functions import *
 
 def vixCalculation(ticker='SPAZF'):
     # Testing Spanish Mountain Gold Stock
-    asset_data = getLongTermPrices(ticker)
+    asset_data = getHistoricalData(ticker, '1yr')
     prices = list(reversed(extractData(asset_data, 'close')))
     # Daily logarithmic returns, basically increase on an evenly-scaled percent change basis.
     log_returns = logReturns(prices)

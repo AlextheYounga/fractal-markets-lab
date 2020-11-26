@@ -11,7 +11,7 @@ from collections import OrderedDict
 
 
 def streak_analyzer(ticker):
-    asset_data = getLongTermPrices(ticker)
+    asset_data = getHistoricalData(ticker, '1yr')
     data_inversed = OrderedDict(reversed(list(asset_data.items())))
     
     prices = extractData(asset_data, 'close')

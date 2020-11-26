@@ -3,6 +3,7 @@ from iexfinance.stocks import Stock
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import requests
+import sys
 import json
 import csv
 import os
@@ -14,6 +15,7 @@ def syncStocks():
         url = 'https://cloud.iexapis.com/stable/ref-data/iex/symbols?token={}'.format(os.environ.get("IEX_TOKEN"))
         tickers = requests.get(url).json()
     except:
+        #print("Unexpected error:", sys.exc_info()[0])
         return {}
 
     return tickers
@@ -28,6 +30,7 @@ def quoteStatsBatchRequest(batch):
         url = 'https://cloud.iexapis.com/stable/stock/market/batch?symbols={}&types=quote,stats&token={}'.format(batch, os.environ.get("IEX_TOKEN"))
         batch_request = requests.get(url).json()
     except:
+        #print("Unexpected error:", sys.exc_info()[0])
         return {}
 
     return batch_request
@@ -41,6 +44,7 @@ def companyBatchRequest(batch):
         url = 'https://cloud.iexapis.com/stable/stock/market/batch?symbols={}&types=quote,company&token={}'.format(batch, os.environ.get("IEX_TOKEN"))
         batch_request = requests.get(url).json()
     except:
+        #print("Unexpected error:", sys.exc_info()[0])
         return {}
 
     return batch_request
@@ -51,6 +55,7 @@ def getCurrentPrice(ticker):
         stock = Stock(ticker, token=os.environ.get("IEX_TOKEN"))
         price = stock.get_price()
     except:
+        #print("Unexpected error:", sys.exc_info()[0])
         return {}
 
     return price
@@ -61,6 +66,7 @@ def getStockInfo(ticker):
         stock = Stock(ticker, token=os.environ.get("IEX_TOKEN"))
         company = stock.get_company()
     except:
+        #print("Unexpected error:", sys.exc_info()[0])
         return {}
 
     return company
@@ -71,6 +77,7 @@ def getEarnings(ticker):
         url = 'https://cloud.iexapis.com/stable/stock/{}/earnings/4/?token={}'.format(ticker, os.environ.get("IEX_TOKEN"))
         earnings = requests.get(url).json()
     except:
+        #print("Unexpected error:", sys.exc_info()[0])
         return None
 
     return earnings
@@ -81,123 +88,10 @@ def getPriceTarget(ticker):
         url = 'https://cloud.iexapis.com/stable/stock/{}/price-target?token={}'.format(ticker, os.environ.get("IEX_TOKEN"))
         priceTarget = requests.get(url).json()
     except:
+        #print("Unexpected error:", sys.exc_info()[0])
         return None
 
     return priceTarget
-
-
-def getCustomTimeRange(ticker, time):
-    try:
-        start = datetime.today() - timedelta(days=time)
-        end = datetime.today()
-
-        api_response = get_historical_data(ticker, start, end, token=os.environ.get("IEX_TOKEN"))
-        asset_data = {}
-        i = 0
-        for day, quote in api_response.items():
-            asset_data[i] = {
-                'date': day,
-                'open': quote['open'],
-                'close': quote['close'],
-                'high': quote['high'],
-                'low': quote['low'],
-                'volume': quote['volume']
-            }
-            i = i + 1
-    except:
-        return {}
-
-    return asset_data
-
-
-def getShortTermData(ticker):
-    try:
-        start = datetime.today() - timedelta(days=64)
-        end = datetime.today()
-
-        api_response = get_historical_data(ticker, start, end, token=os.environ.get("IEX_TOKEN"))
-        asset_data = {}
-        i = 0
-        for day, quote in api_response.items():
-            asset_data[i] = {
-                'date': day,
-                'open': quote['open'],
-                'close': quote['close'],
-                'high': quote['high'],
-                'low': quote['low'],
-                'volume': quote['volume']
-            }
-            i = i + 1
-
-    except:
-        return {}
-
-    return asset_data
-
-
-def getShortTermPrices(ticker):
-    try:
-        start = datetime.today() - timedelta(days=64)
-        end = datetime.today()
-
-        api_response = get_historical_data(ticker, start, end, close_only=True, token=os.environ.get("IEX_TOKEN"))
-        asset_data = {}
-        i = 0
-        for day, quote in api_response.items():
-            asset_data[i] = {
-                'date': day,
-                'close': quote['close'],
-                'volume': quote['volume']
-            }
-            i = i + 1
-
-    except:
-        return {}
-
-    return asset_data
-
-
-def getLongTermPrices(ticker):
-    """ BEWARE, VERY HIGH MESSAGE USE! """
-    try:
-        url = 'https://cloud.iexapis.com//stable/stock/{}/chart/2y?token={}'.format(ticker, param, os.environ.get("IEX_TOKEN"))
-        api_response = requests.get(url).json()
-        asset_data = {}
-
-        for i, day in enumerate(api_response):
-            asset_data[i] = {
-                'date': day['date'],
-                'close': day['close'],
-                'open': day['open'],
-                'high': day['high'],
-                'low': day['low'],
-                'volume': day['volume']
-            }
-
-    except:
-        return {}
-
-    return asset_data
-
-
-def getLongTermPrices(ticker):
-    try:
-        param = 'chartCloseOnly=true'
-        url = 'https://cloud.iexapis.com/stable/stock/{}/chart/2y?{}&token={}'.format(ticker, param, os.environ.get("IEX_TOKEN"))
-        api_response = requests.get(url).json()
-        asset_data = {}
-
-        for i, day in enumerate(api_response):
-            asset_data[i] = {
-                'date': day['date'],
-                'close': day['close'],
-                'volume': day['volume']
-            }
-
-    except:
-        return {}
-
-    return asset_data
 
 
 def getQuoteData(ticker):
@@ -205,57 +99,54 @@ def getQuoteData(ticker):
         stock = Stock(ticker, token=os.environ.get("IEX_TOKEN"))
         quote = stock.get_quote()
     except:
+        #print("Unexpected error:", sys.exc_info()[0])
         return {}
 
     return quote
 
 
+def getHistoricalData(ticker, timeframe, priceOnly=False):
+    try:
+        url = 'https://cloud.iexapis.com/stable/stock/{}/chart/{}?token={}'.format(
+            ticker,
+            timeframe,
+            os.environ.get("IEX_TOKEN")
+        )
+        if (priceOnly):
+            url = 'https://cloud.iexapis.com/stable/stock/{}/chart/6m?chartCloseOnly=true&token={}'.format(
+                ticker,
+                timeframe,
+                os.environ.get("IEX_TOKEN")
+            )
+
+        historicalData = requests.get(url).json()
+    except:
+        #print("Unexpected error:", sys.exc_info()[0])
+        return {}
+
+    return historicalData
+
 # ----------------------------------------------
 # Testing Queries using IEX Sandbox
 # ----------------------------------------------
-def testShortTermPrices(ticker):
+
+def testHistoricalData(ticker, timeframe, priceOnly=False):
     try:
-        # Set IEX Finance API Token (Test)
-        os.environ['IEX_API_VERSION'] = 'iexcloud-sandbox'
-        start = datetime.today() - timedelta(days=64)
-        end = datetime.today()
+        url = 'https://sandbox.iexapis.com/stable/stock/{}/chart/{}?token={}'.format(
+            ticker,
+            timeframe,
+            os.environ.get("IEX_SANDBOX_TOKEN")
+        )
+        if (priceOnly):
+            url = 'https://sandbox.iexapis.com/stable/stock/{}/chart/6m?chartCloseOnly=true&token={}'.format(
+                ticker,
+                timeframe,
+                os.environ.get("IEX_SANDBOX_TOKEN")
+            )
 
-        api_response = get_historical_data(ticker, start, end, token=os.environ.get("IEX_SANDBOX_TOKEN"))
-        asset_data = {}
-        i = 0
-        for day, quote in api_response.items():
-            asset_data[i] = {
-                'date': day,
-                'open': quote['open'],
-                'close': quote['close'],
-                'high': quote['high'],
-                'low': quote['low'],
-                'volume': quote['volume']
-            }
-            i = i + 1
-        os.environ['IEX_API_VERSION'] = 'v1'
-
+        historicalData = requests.get(url).json()
     except:
+        print("Unexpected error:", sys.exc_info()[0])
         return {}
 
-    return asset_data
-
-
-def testLongTermPrices(ticker):
-    try:
-        param = 'chartCloseOnly=true'
-        url = 'https://sandbox.iexapis.com/stable/stock/{}/chart/2y?{}&token={}'.format(ticker, param, os.environ.get("IEX_SANDBOX_TOKEN"))
-        api_response = requests.get(url).json()
-        asset_data = {}
-
-        for i, day in enumerate(api_response):
-            asset_data[i] = {
-                'date': day['date'],
-                'close': day['close'],
-                'volume': day['volume']
-            }
-
-    except:
-        return {}
-
-    return asset_data
+    return historicalData

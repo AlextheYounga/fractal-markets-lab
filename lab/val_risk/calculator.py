@@ -11,7 +11,7 @@ from tabulate import tabulate
 
 # Variance/Covariance VAR analysis
 def varCovar(ticker):
-    asset_data = getShortTermPrices(ticker)
+    asset_data = getHistoricalData(ticker, '3m')
 
     prices = extractData(asset_data, 'close')
     series = pd.Series(prices)

@@ -6,32 +6,49 @@ import numpy as np
 # Returns a list of items from a nested object.
 
 
+def burrow(data, key):
+    values = []
+    if len(key) == 2:
+        for i, row in data.items():
+            value = row[key[0]][key[1]]
+            values.append(value)
+    if len(key) == 3:
+        for i, row in data.items():
+            value = row[key[0]][key[1]][key[2]]
+            values.append(value)
+    if len(key) == 4:
+        for i, row in data.items():
+            value = row[key[0]][key[1]][key[2]][key[3]]
+            values.append(value)
+    if len(key) == 5:
+        for i, row in data.items():
+            value = row[key[0]][key[1]][key[2]][key[3]][key[4]]
+            values.append(value)
+    if len(key) > 5:
+        return 'Nest level too deep to retrieve via function.'
+
+
 def extractData(data, key):
     values = []
-    if (type(key) == list):
-        if len(key) == 2:
+    if (type(data) == dict):
+        if (type(key) == list):
+            burrow(data, key)
+        else:
             for i, row in data.items():
-                value = row[key[0]][key[1]]
+                value = row[key]
                 values.append(value)
-        if len(key) == 3:
-            for i, row in data.items():
-                value = row[key[0]][key[1]][key[2]]
+    if (type(data) == list):
+        if (type(key) == list):
+            burrow(data[0], key)
+        else:
+            for i, row in enumerate(data):
+                value = row[key]
                 values.append(value)
-        if len(key) == 4:
-            for i, row in data.items():
-                value = row[key[0]][key[1]][key[2]][key[3]]
-                values.append(value)
-        if len(key) == 5:
-            for i, row in data.items():
-                value = row[key[0]][key[1]][key[2]][key[3]][key[4]]
-                values.append(value)
-        if len(key) > 5:
-            return 'Nest level too deep to retrieve via function.'
-    else:
-        for i, row in data.items():
-            value = row[key]
-            values.append(value)
-    return values
+    if (values):
+        return values
+
+    return None
+
 
 def chunks(lst, n):
     for i in range(0, len(lst), n):
@@ -52,16 +69,18 @@ def logReturns(prices):
 
     return list(log_returns)
 
+
 def calculateVol(prices):
     stdevTrade = statistics.stdev(prices[:16])
     stdevMonth = statistics.stdev(prices[:22])
-    stdevTrend = statistics.stdev(prices[:64])    
+    stdevTrend = statistics.stdev(prices[:64])
     volTrade = prices[-1] * (stdevTrade / prices[-1]) * (math.sqrt(1/16)) if (prices[-1] != 0) else 0
     volMonth = prices[-1] * (stdevMonth / prices[-1]) * (math.sqrt(1/22)) if (prices[-1] != 0) else 0
     volTrend = prices[-1] * (stdevTrend / prices[-1]) * (math.sqrt(1/64)) if (prices[-1] != 0) else 0
     volMean = round(statistics.mean([volTrade, volMonth, volTrend]), 3)
 
     return volMean
+
 
 def prompt_yes_no(question, default="yes"):
     """Ask a yes/no question via raw_input() and return their answer.
@@ -94,4 +113,3 @@ def prompt_yes_no(question, default="yes"):
         else:
             sys.stdout.write("Please respond with 'yes' or 'no' "
                              "(or 'y' or 'n').\n")
-    

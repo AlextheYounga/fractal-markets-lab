@@ -9,7 +9,7 @@ from tabulate import tabulate
 
 
 def calculate(ticker):
-    asset_data = getShortTermData(ticker)
+    asset_data = getHistoricalData(ticker, '3m')
         
     prices = extractData(asset_data, 'close')
     highs = extractData(asset_data, 'high')

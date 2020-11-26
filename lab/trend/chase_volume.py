@@ -83,7 +83,7 @@ for i, chunk in enumerate(chunked_tickers):
             dynamicUpdateCreate(data_for_db, stock)
             if ((fromHigh < 100) and (fromHigh > 80)):
                 if (changeToday > 5):
-                    if ((volume / previousVolume) > 7):
+                    if ((volume / previousVolume) > 3):
                         priceTargets = getPriceTarget(ticker)
                         fromPriceTarget = round((price / priceTargets['priceTargetHigh']) * 100, 3) if (priceTargets and 'priceTargetLow' in priceTargets) else 0
                         avgPricetarget = priceTargets['priceTargetAverage'] if (priceTargets and 'priceTargetAverage' in priceTargets) else None
@@ -142,4 +142,12 @@ if results:
     writeCSV(results, 'trend/trend_chasing_{}.csv'.format(today))
 
     # Tweet
-    tweet_volume(results)
+    tweet = ""
+    for i, data in enumerate(results):
+        ticker = '${}'.format(data['ticker'])
+        previousVolume = data['previousVolume']
+        volume = data['volume']
+        tweet_data = "{} previous: {}, today: {} \n".format(ticker, previousVolume, volume)
+        tweet = tweet + tweet_data
+
+    send_tweet(tweet)
