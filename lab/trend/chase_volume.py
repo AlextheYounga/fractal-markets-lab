@@ -10,7 +10,7 @@ from ..core.functions import chunks
 from ..core.api import quoteStatsBatchRequest, getEarnings, getPriceTarget
 from ..core.output import printTable
 from ..core.export import writeCSV
-from ..twitter.tweet import *
+from ..twitter.tweet import send_tweet
 import texttable
 load_dotenv()
 django.setup()
@@ -150,4 +150,4 @@ if results:
         tweet_data = "{} previous: {}, today: {} \n".format(ticker, previousVolume, volume)
         tweet = tweet + tweet_data
 
-    send_tweet(tweet)
+    send_tweet(tweet, True)

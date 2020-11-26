@@ -1,16 +1,18 @@
 import statistics
 import json
-from ..core.functions import *
-from ..core.api import *
+from ..core.functions import extractData
+from ..core.api import getHistoricalData, testHistoricalData, getCurrentPrice
 from .export import exportDonchian
-import matplotlib.pyplot as plt
-import numpy as np
 from tabulate import tabulate
+from ..twitter.tweet import send_tweet, translate_data
+# import matplotlib.pyplot as plt
+# import numpy as np
 
 
-def calculate(ticker):
-    asset_data = getHistoricalData(ticker, '3m')
-        
+def calculate(ticker, tweet=False):
+    # asset_data = getHistoricalData(ticker, '1m')
+    asset_data = testHistoricalData(ticker, '1m')
+
     prices = extractData(asset_data, 'close')
     highs = extractData(asset_data, 'high')
     lows = extractData(asset_data, 'low')
@@ -21,22 +23,26 @@ def calculate(ticker):
         'currentPrice': getCurrentPrice(ticker),
         'donchianLow': min(list(reversed(lows))[:16])
     }
-    
+
     print(tabulate([
         ['Donchian High', donchian_range['donchianHigh']],
         ['Current Price', donchian_range['currentPrice']],
         ['Donchian Low', donchian_range['donchianLow']]]))
 
+    if (tweet):
+        headline = "${} 3week Donchian Range:".format(ticker)
+        tweet = headline + translate_data(donchian_range)
+        send_tweet(tweet)
 
-    exportDonchian(donchian_range, ticker)
+    # exportDonchian(donchian_range, ticker)
 
-    x = dates
-    plt.plot(x, lows, label='lows')  # Plot some data on the (implicit) axes.
-    plt.plot(x, prices, label='price')  # etc.
-    plt.plot(x, highs, label='highs')
-    plt.xlabel('x Date')
-    plt.ylabel('y Price')
-    plt.title("Donchian")
-    plt.legend()
+    # x = dates
+    # plt.plot(x, lows, label='lows')  # Plot some data on the (implicit) axes.
+    # plt.plot(x, prices, label='price')  # etc.
+    # plt.plot(x, highs, label='highs')
+    # plt.xlabel('x Date')
+    # plt.ylabel('y Price')
+    # plt.title("Donchian")
+    # plt.legend()
 
-    plt.show()
+    # plt.show()

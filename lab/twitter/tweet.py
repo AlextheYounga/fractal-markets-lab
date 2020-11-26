@@ -12,6 +12,7 @@ api = twitter.Api(consumer_key=os.environ.get("TWITTER_API_KEY"),
                   access_token_key=os.environ.get("TWITTER_ACCESS_KEY"),
                   access_token_secret=os.environ.get("TWITTER_ACCESS_SECRET"))
 
+
 def draw_box(text):
     lines = text.splitlines()
     width = max(len(s) for s in lines)
@@ -22,7 +23,7 @@ def draw_box(text):
     return '\n'.join(res)
 
 
-def send_tweet(tweet, headline=True, footer=False):
+def send_tweet(tweet, headline=False, footer=False):
     while True:
         if (headline):
             sys.stdout.write('Write tweet headline:')
@@ -33,8 +34,6 @@ def send_tweet(tweet, headline=True, footer=False):
             headline = "{} \n".format(input())
             tweet = tweet + headline
 
-
-        
         print("Tweet:")
         print(draw_box(tweet))
         print('Characters: {}'.format(len(tweet)))
@@ -66,3 +65,14 @@ def send_tweet(tweet, headline=True, footer=False):
             api.PostUpdate(tweet)
             print('Tweet Sent')
             break
+
+
+def translate_data(dic, keys=None):
+    content = ""
+    if not keys:
+        keys = dic.keys()
+
+    for k in keys:
+        content = content + "\n{}: {}".format(k.title(), dic[k])
+        
+    return content
