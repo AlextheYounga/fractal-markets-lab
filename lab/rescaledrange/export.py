@@ -22,11 +22,11 @@ def writeCSV(fractal_results, refScales, resultsfile, append):
         headers.append(header)
 
     # Making lists from each set of data
-    hurstExponents = scaledDataCollector(results_scales, fractal_results['regressionResults'], 'hurstExponent')
-    fractalDimensions = scaledDataCollector(results_scales, fractal_results['regressionResults'], 'fractalDimension')
-    rSquared = scaledDataCollector(results_scales, fractal_results['regressionResults'], 'r-squared')
-    pValues = scaledDataCollector(results_scales, fractal_results['regressionResults'], 'p-value')
-    standardErrors = scaledDataCollector(results_scales, fractal_results['regressionResults'], 'standardError')
+    hurstExponents = scaled_data_collector(results_scales, fractal_results['regressionResults'], 'hurstExponent')
+    fractalDimensions = scaled_data_collector(results_scales, fractal_results['regressionResults'], 'fractalDimension')
+    rSquared = scaled_data_collector(results_scales, fractal_results['regressionResults'], 'r-squared')
+    pValues = scaled_data_collector(results_scales, fractal_results['regressionResults'], 'p-value')
+    standardErrors = scaled_data_collector(results_scales, fractal_results['regressionResults'], 'standardError')
     # Zipping all lists into row
     rows = zip(results_scales, hurstExponents, fractalDimensions, rSquared, pValues, standardErrors)
 

@@ -113,7 +113,7 @@ def getHistoricalData(ticker, timeframe, priceOnly=False):
             os.environ.get("IEX_TOKEN")
         )
         if (priceOnly):
-            url = 'https://cloud.iexapis.com/stable/stock/{}/chart/6m?chartCloseOnly=true&token={}'.format(
+            url = 'https://cloud.iexapis.com/stable/stock/{}/chart/{}?chartCloseOnly=true&token={}'.format(
                 ticker,
                 timeframe,
                 os.environ.get("IEX_TOKEN")
@@ -138,7 +138,7 @@ def testHistoricalData(ticker, timeframe, priceOnly=False):
             os.environ.get("IEX_SANDBOX_TOKEN")
         )
         if (priceOnly):
-            url = 'https://sandbox.iexapis.com/stable/stock/{}/chart/6m?chartCloseOnly=true&token={}'.format(
+            url = 'https://sandbox.iexapis.com/stable/stock/{}/chart/{}?chartCloseOnly=true&token={}'.format(
                 ticker,
                 timeframe,
                 os.environ.get("IEX_SANDBOX_TOKEN")
