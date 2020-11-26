@@ -2,14 +2,28 @@ import texttable
 
 
 def setWidths(data):
-    widths = []
-    for word in data.keys():
-        length = len(word)
-        if (word == 'name'):
-            length = length * 3
-        widths.append(length)
-    return widths
-
+    """ 
+    Parameters
+    ----------
+    data :  dict|list
+    """
+    if (type(data) == dict):
+        widths = []
+        for word in data.keys():
+            length = len(word)
+            if (word == 'name'):
+                length = length * 3
+            widths.append(length)
+        return widths
+    if (type(data) == list):
+        widths = []
+        for word in data:
+            length = len(word)
+            if (word == 'name'):
+                length = length * 3
+            widths.append(length)
+        return widths
+    return False
 
 def printTable(data):
     """ 

@@ -5,7 +5,7 @@ from ..core.functions import extractData
 from ..core.api import getCurrentPrice, getHistoricalData, testHistoricalData
 from ..core.imports import *
 from .functions import *
-from .export import exportFractal
+from .output import exportFractal, outputTable
 import sys
 from tabulate import tabulate
 # from .imports import *
@@ -41,8 +41,7 @@ def collect_key_stats(ticker):
 
     # Arbitrary fractal scales
     scales = exponential_scales(count, 3, 6)
-
-    print(json.dumps(scales, indent=1))
+    # print(json.dumps(scales, indent=1))
 
     returns = returns_calculator(prices)
     deviations = deviations_calculator(returns, scales)
@@ -124,7 +123,7 @@ def perform_hurst_calculations(x, y):
     return results
 
 
-def fractalCalculator(ticker):
+def fractalCalculator(ticker, output='table'):
     """
     Main process thread. Will call on collect_key_stats() and perform_hurst_calculations()
 
@@ -132,6 +131,9 @@ def fractalCalculator(ticker):
     ----------
     ticker      :str
                  stock ticker, stock data is retrieved from IEX Data
+    output      :str
+                 Can either be table, csv, or tweet
+                 (output always goes to table in terminal, table param ensures it only goes to table.)
 
     Returns
     -------
@@ -157,20 +159,11 @@ def fractalCalculator(ticker):
     # Results
     fractal_results['regressionResults'] = perform_hurst_calculations(log_scales, log_RRs)
     # Export to CSV
-    exportFractal(fractal_results, scales)
+    if (output == 'csv'):
+        exportFractal(fractal_results, scales)
+    # if (output == 'tweet'):    
+
+    outputTable(fractal_results, scales) #Output will always go to table in terminal as well.
 
 
-# print(json.dumps(fractal_results, indent=1))
-# print('The lists are:', *L, sep='\n')
-# print(tabulate([
-#     ['Count', trend_data['upDays']['count']],
-#     ['Consecutive', trend_data['upDays']['consecutive']],
-#     ['Average', trend_data['upDays']['average']]],
-#     headers=['Up Days', '']))
 
-# print(tabulate([
-#     ['Trade', trend_data['downDays']['count']],
-#     ['Month', trend_data['downDays']['consecutive']],
-#     ['Trend', trend_data['downDays']['average']],
-#     ['Tail', trend_data['downDays']['average']]],
-#     headers=['Scale', 'HurstExponent', 'FractalDimension', 'r-squared', 'p-value', 'StandardError']))
