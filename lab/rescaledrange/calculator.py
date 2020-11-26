@@ -5,10 +5,10 @@ from ..core.functions import *
 from ..core.api import *
 from ..core.imports import *
 from .functions import *
-from .imports import *
 from .export import exportFractal
 import sys
 from tabulate import tabulate
+# from .imports import *
 
 # Fetch historical prices
 # ticker = "SP500"
