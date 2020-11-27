@@ -59,37 +59,37 @@ for i, chunk in enumerate(chunked_etfs):
 
             fromHigh = round((price / week52high) * 100, 3)
 
-            if (ytdChangePercent > 10):
-                if (month1ChangePercent > 5):
-                    if (volume > avg30Volume):
-                        keyStats = {
-                            'week52': stats['week52high'],
-                            'day5ChangePercent': stats['day5ChangePercent'],
-                            'month3ChangePercent': stats['month3ChangePercent'],
-                            'ytdChangePercent': ytdChangePercent,                            
-                            'avg30Volume': "{}K".format(round(avg30Volume / 1000, 3)),
-                            'month1ChangePercent': month1ChangePercent,
-                            'month3ChangePercent': month3ChangePercent,
-                            'day50MovingAvg': day50MovingAvg,
-                            'day200MovingAvg': stats['day200MovingAvg'],
-                            'fromHigh': fromHigh,
-                        }
+            # if (ytdChangePercent > 10):
+            if (month1ChangePercent > 20):
+                if (volume > avg30Volume):
+                    keyStats = {
+                        'week52': stats['week52high'],
+                        'day5ChangePercent': stats['day5ChangePercent'],
+                        'month3ChangePercent': stats['month3ChangePercent'],
+                        'ytdChangePercent': ytdChangePercent,                            
+                        'avg30Volume': "{}K".format(round(avg30Volume / 1000, 3)),
+                        'month1ChangePercent': month1ChangePercent,
+                        'month3ChangePercent': month3ChangePercent,
+                        'day50MovingAvg': day50MovingAvg,
+                        'day200MovingAvg': stats['day200MovingAvg'],
+                        'fromHigh': fromHigh,
+                    }
 
-                        stockData = {
-                            'ticker': ticker,
-                            'name': etf.name,
-                            'lastPrice': price
-                        }
-                        stockData.update(keyStats)
+                    stockData = {
+                        'ticker': ticker,
+                        'name': etf.name,
+                        'lastPrice': price
+                    }
+                    stockData.update(keyStats)
 
-                        # Save to Macro
-                        MacroTrends.objects.update_or_create(
-                            etf=etf,
-                            defaults=stockData
-                        )
-                        stockData['volume'] = "{}K".format(volume / 1000)
-                        results.append(stockData)
-                        printTable(stockData)
+                    # Save to Macro
+                    MacroTrends.objects.update_or_create(
+                        etf=etf,
+                        defaults=stockData
+                    )
+                    stockData['volume'] = "{}K".format(volume / 1000)
+                    results.append(stockData)
+                    printTable(stockData)
 
 if results:
     today = date.today().strftime('%m-%d')

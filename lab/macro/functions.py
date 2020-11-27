@@ -24,7 +24,8 @@ def getETFs(tickersonly=False):
 
     return etfs
 
-def getTopPerformingETFs(n=None):
+
+def getTopPerformingETFsYTD(n=None):
     """
     Parameters
     ----------
@@ -37,18 +38,58 @@ def getTopPerformingETFs(n=None):
     """
     MacroTrends = apps.get_model('database', 'MacroTrend')
     if (n):
-        trends = MacroTrends.objects.order_by('-ytdChangePercent')[:n]
+        etfs = MacroTrends.objects.order_by('-ytdChangePercent')[:n]
     else:
-        trends = MacroTrends.objects.order_by('-ytdChangePercent')
+        etfs = MacroTrends.objects.order_by('-ytdChangePercent')
+
+    return etfs
+
+
+def getMonthMovers(n=None):
+    """
+    Parameters
+    ----------
+    n      :int
+            number of items you wish to take
+
+    Returns
+    -------
+    query object
+    """
+    MacroTrends = apps.get_model('database', 'MacroTrend')
+    if (n):
+        etfs = MacroTrends.objects.order_by('-month1ChangePercent')[:n]
+    else:
+        etfs = MacroTrends.objects.order_by('-month1ChangePercent')
+
+    return etfs
+
+
+def queryNameEtfs(string):
+    MacroTrends = apps.get_model('database', 'MacroTrend')
+    results = []
+    if (isinstance(string, str)):
+        etfs = MacroTrends.objects.all()
+        for etf in etfs:
+            if(string in etf.name):
+                print("{} - {} monthChange:{}%".format(etf.ticker, etf.name, round(etf.month1ChangePercent, 2)))
+                results.append(etf)
+
+    return results               
     
-    return trends
 
 
-def top_performing_etf_tweet():
+def top_performing_ytd_etf_tweet():
     tweet = ""
-    for etf in getTopPerformingETFs(5):
+    for etf in getTopPerformingETFsYTD(5):
         txt = "${} +{}%\n".format(etf.ticker, round(etf.ytdChangePercent, 2))
         tweet = tweet + txt
     send_tweet(tweet, True)
-    
-    
+
+
+def month_movers_etf_tweet():
+    tweet = ""
+    for etf in getMonthMovers(5):
+        txt = "${} - {} +{}%\n".format(etf.ticker, etf.name, round(etf.month1ChangePercent, 2))
+        tweet = tweet + txt
+    send_tweet(tweet, True)
