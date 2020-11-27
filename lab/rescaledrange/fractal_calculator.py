@@ -3,12 +3,13 @@ from scipy import stats
 import math
 from ..core.functions import extractData
 from ..core.api import getCurrentPrice, getHistoricalData, testHistoricalData
-from ..core.imports import *
 from .functions import *
 from .output import exportFractal, outputTable
 import sys
 from tabulate import tabulate
-# from .imports import *
+
+# For full detailed explanation on the calculation, visit:
+# https://blogs.cfainstitute.org/investor/2013/01/30/rescaled-range-analysis-a-method-for-detecting-persistence-randomness-or-mean-reversion-in-financial-markets/
 
 
 def collect_key_stats(ticker):
@@ -34,47 +35,51 @@ def collect_key_stats(ticker):
         Returns dict of scales with number of items in each scale.
         Returns dict of key stats to be used in final rescale range analysis calculation.
     """
-    asset_prices = testHistoricalData(ticker, "max", True)
-    prices = list(reversed(extractData(asset_prices, 'close')))
+    asset_prices = getHistoricalData(ticker, "1y", True)
+    if (asset_prices):
+        prices = list(reversed(extractData(asset_prices, 'close')))
 
-    count = len(prices)
+        count = len(prices)
 
-    # Arbitrary fractal scales
-    scales = exponential_scales(count, 3, 6)
-    # print(json.dumps(scales, indent=1))
+        # Arbitrary fractal scales
+        scales = exponential_scales(count, 2, 6)
+        # print(json.dumps(scales, indent=1))
 
-    returns = returns_calculator(prices)
-    deviations = deviations_calculator(returns, scales)
-    running_totals = running_totals_calculator(deviations, scales)
+        returns = returns_calculator(prices)
+        deviations = deviations_calculator(returns, scales)
+        running_totals = running_totals_calculator(deviations, scales)
 
-    # Calculating statistics of returns and running totals
-    range_stats = {}
-    for scale, days in scales.items():
-        range_stats[scale] = {}
-        range_stats[scale]['means'] = chunked_averages(returns, days)
-        range_stats[scale]['stDevs'] = chunked_devs(returns, days)
-        range_stats[scale]['minimums'] = chunked_range(running_totals[scale], days)['minimum']
-        range_stats[scale]['maximums'] = chunked_range(running_totals[scale], days)['maximum']
-        range_stats[scale]['ranges'] = chunked_range(running_totals[scale], days)['range']
+        # Calculating statistics of returns and running totals
+        range_stats = {}
+        for scale, days in scales.items():
+            range_stats[scale] = {}
+            range_stats[scale]['means'] = chunked_averages(returns, days)
+            range_stats[scale]['stDevs'] = chunked_devs(returns, days)
+            range_stats[scale]['minimums'] = chunked_range(running_totals[scale], days)['minimum']
+            range_stats[scale]['maximums'] = chunked_range(running_totals[scale], days)['maximum']
+            range_stats[scale]['ranges'] = chunked_range(running_totals[scale], days)['range']
 
-    # Calculating Rescale Range
-    for scale, values in range_stats.items():
-        range_stats[scale]['rescaleRanges'] = {}
-        for i, value in values['ranges'].items():
-            rescaleRange = (value / values['stDevs'][i] if (values['stDevs'][i] != 0) else 0)
+        # Calculating Rescale Range
+        for scale, values in range_stats.items():
+            range_stats[scale]['rescaleRanges'] = {}
+            for i, value in values['ranges'].items():
+                rescaleRange = (value / values['stDevs'][i] if (values['stDevs'][i] != 0) else 0)
 
-            range_stats[scale]['rescaleRanges'][i] = rescaleRange
+                range_stats[scale]['rescaleRanges'][i] = rescaleRange
 
-    # Key stats for fractal calculations
-    for scale, values in range_stats.items():
-        range_stats[scale]['keyStats'] = {}
-        rescaleRanges = list(values['rescaleRanges'].values())
-        range_stats[scale]['keyStats']['rescaleRangeAvg'] = statistics.mean(rescaleRanges)  # This is the rescaled range
-        range_stats[scale]['keyStats']['size'] = scales[scale]
-        range_stats[scale]['keyStats']['logRR'] = math.log10(statistics.mean(rescaleRanges)) if (statistics.mean(rescaleRanges) > 0) else 0
-        range_stats[scale]['keyStats']['logScale'] = math.log10(scales[scale])
+        # Key stats for fractal calculations
+        for scale, values in range_stats.items():
+            range_stats[scale]['keyStats'] = {}
+            rescaleRanges = list(values['rescaleRanges'].values())
+            range_stats[scale]['keyStats']['rescaleRangeAvg'] = statistics.mean(rescaleRanges)  # This is the rescaled range
+            range_stats[scale]['keyStats']['size'] = scales[scale]
+            range_stats[scale]['keyStats']['logRR'] = math.log10(statistics.mean(rescaleRanges)) if (statistics.mean(rescaleRanges) > 0) else 0
+            range_stats[scale]['keyStats']['logScale'] = math.log10(scales[scale])
 
-    return scales, range_stats
+        return scales, range_stats
+    else:
+        print('Prices returned nil')
+        sys.exit()
 
 
 def perform_hurst_calculations(x, y):
@@ -83,8 +88,8 @@ def perform_hurst_calculations(x, y):
     Processes:
     1. Organize data into arbitrary or practical ways of viewing the data. Currently two options, classic view or view
        I've optimized for short term stock market analysis: 
-        basic_fractal_scales()
-        trading_fractal_scales()
+        basic_fractal_sections()
+        trading_fractal_sections()
     2. Calculate linear regression from log10 scales and log10 rescaled ranges
 
 
@@ -101,7 +106,9 @@ def perform_hurst_calculations(x, y):
         Returns dict linear regression statistics containing:
             hurstExponent, fractalDimension, r-squared, p-value, standardError
     """
-    sections = trading_fractal_sections(x, y)
+    # Set how you want data to be organized
+    sections = standard_fractal_sections(x, y)
+
     results = {}
     for i, section in sections.items():
         slope, intercept, r_value, p_value, std_err = stats.linregress(section['x'], section['y'])
@@ -158,12 +165,10 @@ def fractalCalculator(ticker, output='table'):
 
     # Results
     fractal_results['regressionResults'] = perform_hurst_calculations(log_scales, log_RRs)
-    # Export to CSV
+    outputTable(fractal_results, scales)  # Output will always go to table in terminal as well.
     if (output == 'csv'):
         exportFractal(fractal_results, scales)
-    # if (output == 'tweet'):    
 
-    outputTable(fractal_results, scales) #Output will always go to table in terminal as well.
-
-
-
+    # TODO: Think of a way to tweet this complicated data.
+    # if (tweet):
+    #     tweet = ""

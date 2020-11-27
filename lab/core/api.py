@@ -118,7 +118,6 @@ def getHistoricalData(ticker, timeframe, priceOnly=False):
                 timeframe,
                 os.environ.get("IEX_TOKEN")
             )
-
         historicalData = requests.get(url).json()
     except:
         #print("Unexpected error:", sys.exc_info()[0])

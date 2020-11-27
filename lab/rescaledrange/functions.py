@@ -361,6 +361,53 @@ def chunked_range(lst, n):
 
 
 # Fractal Analysis Functions
+def standard_fractal_sections(x, y):
+    """
+    This is the classic way of looking at the rescaled range data, breaking the picture into easily understandable chunks
+    of 1/2 and 1/3
+
+    Parameters
+    ----------
+    x      :list
+            list of log10 values for each chunk in scale
+    y      :list
+            list of log10 values for each chunk in scale
+
+    Returns
+    -------
+    dict broken into the arbitrary scales listed above
+    """
+    if len(x) != len(y):
+        return "X and Y values contain disproportionate counts"
+
+    half = int(len(x) / 2)
+    third = int(len(x) / 3)
+
+    fractalScales = {
+        'pastHalfSeries': {
+            'x': list(chunks(x, half))[0],
+            'y': list(chunks(y, half))[0]
+        },
+        'currentHalfSeries': {
+            'x': list(chunks(x, half))[1],
+            'y': list(chunks(y, half))[1]
+        },
+        'pastThirdSeries': {
+            'x': list(chunks(x, third))[0],
+            'y': list(chunks(y, third))[0]
+        },
+        'middleThirdSeries': {
+            'x': list(chunks(x, third))[1],
+            'y': list(chunks(y, third))[1]
+        },
+        'currentThirdSeries': {
+            'x': list(chunks(x, third))[2],
+            'y': list(chunks(y, third))[2]
+        },
+    }
+    return fractalScales
+
+
 def trading_fractal_sections(x, y):
     """
     This is an arbitrary way of looking at the data, but it's being organized in a way that may give a better impression
@@ -404,13 +451,13 @@ def trading_fractal_sections(x, y):
             'y': list(backward_chunks(y, 5))[-1],
         },
     }
+    print(json.dumps(fractal_scales, indent=1))
+    sys.exit()
     return fractal_scales
 
 
-def basic_fractal_sections(x, y):
+def quarter_sections(x, y):
     """
-    This is the classic way of looking at the rescaled range data, breaking the picture into easily understandable chunks
-    of 1/2 and 1/3
 
     Parameters
     ----------
@@ -427,7 +474,7 @@ def basic_fractal_sections(x, y):
         return "X and Y values contain disproportionate counts"
 
     half = int(len(x) / 2)
-    third = int(len(x) / 3)
+    fourth = int(len(x) / 4)
 
     fractalScales = {
         'pastHalfSeries': {
@@ -438,17 +485,21 @@ def basic_fractal_sections(x, y):
             'x': list(chunks(x, half))[1],
             'y': list(chunks(y, half))[1]
         },
-        'pastThirdSeries': {
-            'x': list(chunks(x, third))[0],
-            'y': list(chunks(y, third))[0]
+        'Q1': {
+            'x': list(chunks(x, fourth))[0],
+            'y': list(chunks(y, fourth))[0]
         },
-        'middleThirdSeries': {
-            'x': list(chunks(x, third))[1],
-            'y': list(chunks(y, third))[1]
+        'Q2': {
+            'x': list(chunks(x, fourth))[1],
+            'y': list(chunks(y, fourth))[1]
         },
-        'currentThirdSeries': {
-            'x': list(chunks(x, third))[2],
-            'y': list(chunks(y, third))[2]
+        'Q3': {
+            'x': list(chunks(x, fourth))[2],
+            'y': list(chunks(y, fourth))[2]
+        },
+        'Q4': {
+            'x': list(chunks(x, fourth))[3],
+            'y': list(chunks(y, fourth))[3]
         },
     }
     return fractalScales
