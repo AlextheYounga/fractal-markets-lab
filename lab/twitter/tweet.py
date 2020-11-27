@@ -31,8 +31,8 @@ def send_tweet(tweet, headline=False, footer=False):
             tweet = headline + tweet
         if (footer):
             sys.stdout.write('Write tweet footer:')
-            headline = "{} \n".format(input())
-            tweet = tweet + headline
+            footer = "\n{}".format(input())
+            tweet = tweet + footer
 
         print("Tweet:")
         print(draw_box(tweet))

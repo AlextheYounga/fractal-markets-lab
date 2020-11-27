@@ -1,19 +1,4 @@
 import sys
-from .tweet import tweet_confirm 
+from .tweet import send_tweet 
 
-def tweet_test():
-    
-
-    while True:
-        sys.stdout.write('Write tweet:')
-        tweet = input()        
-        while True:
-            answer = str(input('Run again? (y/n): '))
-            if answer in ('y', 'n'):
-                break
-            print("invalid input.")
-        if answer == 'y':
-            continue
-        else:
-            print("Tweet Sent")
-            break
+send_tweet('This is the tweet content', True, True)
