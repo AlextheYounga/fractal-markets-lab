@@ -4,7 +4,6 @@ import sys
 import os
 
 
-
 def consecutiveDays(prices):
     upDays = 0
     downDays = 0
@@ -24,45 +23,44 @@ def consecutiveDays(prices):
 
 
 def longestStretch(data):
-    upStreaks = {}
-    downStreaks = {}
-    strkTemp = {}
+    upStreaks = []
+    downStreaks = []
+    strkTemp = []
     streak = 0
-    index = 0
-    for i, day in data.items():
-        if (i - 1 > 0):
-            percentChange = (day['close'] - data[i - 1]['close']) / data[i - 1]['close']
+    # UpDays
+    for i, day in enumerate(data):
+        if (i+1 >= 0 and i+1 < len(data)):
+            percentChange = (day['close'] - data[i + 1]['close']) / data[i + 1]['close']
             if percentChange > 0:
                 streak = streak + 1
-                strkTemp[streak] = day
+                strkTemp.append(day)
             else:
-                index = index + 1
-                upStreaks[index] = strkTemp
+                if(len(strkTemp) > 0):
+                    upStreaks.append(strkTemp)
                 streak = 0
-                strkTemp = {}
+                strkTemp = []
 
-    maxcount = max(len(v) for v in upStreaks.values())
-    longest = [k for k, v in upStreaks.items() if len(v) == maxcount][0]
+    maxcount = max(len(v) for v in upStreaks)
+    longest = [k for k, v in enumerate(upStreaks) if len(v) == maxcount][0]
     upStreaks = upStreaks[longest]
-    strkTemp = {}
+    strkTemp = []
     streak = 0
-    index = 0
-    for i, day in data.items():
-        if (i - 1 > 0):
-            percentChange = (day['close'] - data[i - 1]['close']) / data[i - 1]['close']
+    # DownDays
+    for i, day in enumerate(data):
+        if (i+1 >= 0 and i+1 < len(data)):
+            percentChange = (day['close'] - data[i + 1]['close']) / data[i + 1]['close']
             if percentChange < 0:
                 streak = streak + 1
-                strkTemp[streak] = day
+                strkTemp.append(day)
             else:
-                index = index + 1
-                downStreaks[index] = strkTemp
+                if(len(strkTemp) > 0):
+                    downStreaks.append(strkTemp)
                 streak = 0
-                strkTemp = {}
+                strkTemp = []
 
-    maxcount = max(len(v) for v in downStreaks.values())
-    longest = [k for k, v in downStreaks.items() if len(v) == maxcount][0]
+    maxcount = max(len(v) for v in downStreaks)
+    longest = [k for k, v in enumerate(downStreaks) if len(v) == maxcount][0]
     downStreaks = downStreaks[longest]
-
     return upStreaks, downStreaks
 
 
@@ -94,6 +92,3 @@ def trendAnalysis(prices):
     }
 
     return analysis
-
-
-

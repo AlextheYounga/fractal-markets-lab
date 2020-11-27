@@ -7,18 +7,17 @@ from ...core.api import *
 import matplotlib.pyplot as plt
 import numpy as np
 from tabulate import tabulate
-from collections import OrderedDict 
+
 
 
 def streak_analyzer(ticker):
-    asset_data = getHistoricalData(ticker, '1yr')
-    data_inversed = OrderedDict(reversed(list(asset_data.items())))
-    
+    asset_data = list(reversed(getHistoricalData(ticker, '1y', True)))
+
     prices = extractData(asset_data, 'close')
     dates = extractData(asset_data, 'date')
     
-    upStreaks, downStreaks = longestStretch(data_inversed)
-    trend_data = trendAnalysis(list(reversed(prices))[:64])
+    upStreaks, downStreaks = longestStretch(asset_data)
+    trend_data = trendAnalysis(prices[:64])
 
 
 
@@ -40,12 +39,12 @@ def streak_analyzer(ticker):
     print("\n")
 
     print("Up")
-    for i, day in upStreaks.items():
+    for i, day in enumerate(upStreaks):
         print("{} - {}".format(day['date'], day['close']))
 
     print("\n")
     print("Down")
-    for i, day in downStreaks.items():
+    for i, day in enumerate(downStreaks):
         print("{} - {}".format(day['date'], day['close']))
 
     
