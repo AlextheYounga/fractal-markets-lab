@@ -44,7 +44,7 @@ def getTopPerformingETFs(n=None):
     return trends
 
 
-def send_etf_tweet():
+def top_performing_etf_tweet():
     tweet = ""
     for etf in getTopPerformingETFs(5):
         txt = "${} +{}%\n".format(etf.ticker, round(etf.ytdChangePercent, 2))

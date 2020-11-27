@@ -11,7 +11,6 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'lab.settings'
 load_dotenv()
 
 Stock = apps.get_model('database', 'Stock')
-Earnings = apps.get_model('database', 'Earnings')
 Watchlist = apps.get_model('database', 'Watchlist')
 gainers = get_market_gainers()
 
@@ -40,12 +39,8 @@ for i, mover in enumerate(gainers):
     else:
         continue
 
-    if (fromHigh and ((fromHigh < 105) and (fromHigh > 95))):
-        earningsData = getEarnings(ticker)
-        if (earningsData and isinstance(earningsData, dict)):
-            print('{} ---- Checking Earnings ----'.format(ticker))
-            earningsChecked = checkEarnings(earningsData)
-
+    if (price > 10):
+        if (fromHigh and ((fromHigh < 105) and (fromHigh > 95))):
             data_for_db = {
                 'Valuation':  {
                     'peRatio': peRatio,
@@ -53,29 +48,21 @@ for i, mover in enumerate(gainers):
                 'Trend': {
                     'week52': week52high,
                     'fromHigh': fromHigh
-                },
-                'Earnings': {
-                    'reportedEPS': earningsChecked['actual'],
-                    'reportedConsensus': earningsChecked['consensus'],
-                },
+                }
             }
 
             dynamicUpdateCreate(data_for_db, stock)
+            keyStats = {
+                'week52': week52high,
+                'peRatio': peRatio,
+                'fromHigh': fromHigh,
 
-            if (earningsChecked['improvement'] == True):
-                keyStats = {
-                    'week52': week52high,
-                    'reportedEPS': earningsChecked['actual'],
-                    'reportedConsensus': earningsChecked['consensus'],
-                    'peRatio': peRatio,
-                    'fromHigh': fromHigh,
-
-                }
-                Watchlist.objects.update_or_create(
-                    stock=stock,
-                    defaults=keyStats
-                )
-                print('{} saved to Watchlist'.format(ticker))
+            }
+            Watchlist.objects.update_or_create(
+                stock=stock,
+                defaults=keyStats
+            )
+            print('{} saved to Watchlist'.format(ticker))
 
     stockdata = {
         'ticker': ticker,
@@ -91,5 +78,4 @@ for i, mover in enumerate(gainers):
         'marketCap': marketCap,
         'primaryExchange': index,
     }
-    print('here')
     printTable(stockdata)

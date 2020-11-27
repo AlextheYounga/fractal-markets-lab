@@ -10,6 +10,7 @@ from ..core.functions import chunks
 from ..core.api import quoteStatsBatchRequest, getEarnings, getPriceTarget
 from ..core.output import printTable
 from ..core.export import writeCSV
+from ..twitter.tweet import send_tweet
 import texttable
 load_dotenv()
 django.setup()
@@ -79,54 +80,65 @@ for i, chunk in enumerate(chunked_tickers):
             
             dynamicUpdateCreate(data_for_db, stock)
 
-            if ((fromHigh < 105) and (fromHigh > 95)):
-                if (changeToday > 12):
-                    if (volume > previousVolume):
-                        priceTargets = getPriceTarget(ticker)
-                        fromPriceTarget = round((price / priceTargets['priceTargetHigh']) * 100, 3) if (priceTargets and 'priceTargetLow' in priceTargets) else 0
-                        avgPricetarget = priceTargets['priceTargetAverage'] if (priceTargets and 'priceTargetAverage' in priceTargets) else None
-                        highPriceTarget = priceTargets['priceTargetHigh'] if (priceTargets and 'priceTargetHigh' in priceTargets) else None
+            if (price > 1):
+                if ((fromHigh < 105) and (fromHigh > 95)):
+                    if (changeToday > 12):
+                        if (volume > previousVolume):
+                            priceTargets = getPriceTarget(ticker)
+                            fromPriceTarget = round((price / priceTargets['priceTargetHigh']) * 100, 3) if (priceTargets and 'priceTargetLow' in priceTargets) else 0
+                            avgPricetarget = priceTargets['priceTargetAverage'] if (priceTargets and 'priceTargetAverage' in priceTargets) else None
+                            highPriceTarget = priceTargets['priceTargetHigh'] if (priceTargets and 'priceTargetHigh' in priceTargets) else None
 
 
-                        # Save Trends to DB
-                        Trend.objects.filter(stock=stock).update(                            
-                            avgPricetarget=avgPricetarget,
-                            highPriceTarget=highPriceTarget,
-                            fromPriceTarget=fromPriceTarget,
-                        )
-                    
-                        keyStats = {
-                            'week52': stats['week52high'],
-                            'ttmEPS': ttmEPS,
-                            'peRatio': stats['peRatio'],
-                            'day5ChangePercent': stats['day5ChangePercent'],
-                            'month1ChangePercent': stats['month1ChangePercent'],
-                            'ytdChangePercent': stats['ytdChangePercent'],
-                            'day50MovingAvg': stats['day50MovingAvg'],
-                            'day200MovingAvg': stats['day200MovingAvg'],                            
-                            'highPriceTarget': highPriceTarget,
-                            'fromPriceTarget': fromPriceTarget,
-                            'fromHigh': fromHigh,
+                            # Save Trends to DB
+                            Trend.objects.filter(stock=stock).update(                            
+                                avgPricetarget=avgPricetarget,
+                                highPriceTarget=highPriceTarget,
+                                fromPriceTarget=fromPriceTarget,
+                            )
+                        
+                            keyStats = {
+                                'week52': stats['week52high'],
+                                'ttmEPS': ttmEPS,
+                                'peRatio': stats['peRatio'],
+                                'day5ChangePercent': day5ChangePercent,
+                                'month1ChangePercent': round(stats['month1ChangePercent'] * 100, 2) if ('month1ChangePercent' in stats) else None,
+                                'ytdChangePercent': round(stats['ytdChangePercent'] * 100, 2) if ('ytdChangePercent' in stats) else None,
+                                'day50MovingAvg': stats['day50MovingAvg'],
+                                'day200MovingAvg': stats['day200MovingAvg'],                            
+                                'highPriceTarget': highPriceTarget,
+                                'fromPriceTarget': fromPriceTarget,
+                                'fromHigh': fromHigh,
 
-                        }
-                        stockData = {
-                            'ticker': ticker,
-                            'name': stock.name,
-                            'lastPrice': price
-                        }
-                        stockData.update(keyStats)
+                            }
+                            stockData = {
+                                'ticker': ticker,
+                                'name': stock.name,
+                                'lastPrice': price
+                            }
+                            stockData.update(keyStats)
 
-                        # Save to Watchlist
-                        Watchlist.objects.update_or_create(
-                            stock=stock,
-                            defaults=stockData
-                        )
+                            # Save to Watchlist
+                            Watchlist.objects.update_or_create(
+                                stock=stock,
+                                defaults=stockData
+                            )
 
-                        stockData['changeToday'] = changeToday                        
-                        print('{} saved to Watchlist'.format(ticker))
-                        results.append(stockData)
-                        printTable(stockData)
+                            stockData['changeToday'] = changeToday                        
+                            print('{} saved to Watchlist'.format(ticker))
+                            results.append(stockData)
+                            printTable(stockData)
 
 if results:
     today = date.today().strftime('%m-%d')
     writeCSV(results, 'trend/trend_chasing_{}.csv'.format(today))
+
+    # Tweet
+    tweet = ""
+    for i, data in enumerate(results):
+        ticker = '${}'.format(data['ticker'])
+        changeToday = data['changeToday']
+        tweet_data = "{} +{}% \n".format(ticker, changeToday)
+        tweet = tweet + tweet_data
+
+    send_tweet(tweet, True)
