@@ -42,7 +42,7 @@ def autoFollowFollowers(handle, p=0):
             p += 1
             print('Page {}'.format(p))
             for f in page:
-                if (f.followers_count > 1000):
+                if (f.followers_count > 700):
                     friendship = api.lookup_friendships([f.id])[0]
                     if (not(friendship.is_following or friendship.is_following_requested)):
                         api.create_friendship(f.id, screen_name=None, user_id=f.id, follow=False)
