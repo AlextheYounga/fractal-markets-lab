@@ -5,7 +5,7 @@ import time
 import logging
 import sys
 from time import sleep
-from ..core.cron import RepeatedTimer
+from datetime import datetime, timedelta
 from ..core.functions import prompt_yes_no
 from dotenv import load_dotenv
 import tweepy
@@ -18,7 +18,7 @@ auth.set_access_token(os.environ.get("TWITTER_ACCESS_KEY"), os.environ.get("TWIT
 api = tweepy.API(auth)
 
 
-def autoFollowFollowers(handle):
+def autoFollowFollowers(handle, p=0):
     user = api.get_user(handle)
     print("Name: {}\nScreen Name: {}\nDescription: {}\n".format(user.name, user.screen_name, user.description))
 
@@ -29,10 +29,16 @@ def autoFollowFollowers(handle):
                 try:
                     yield cursor.next()
                 except tweepy.RateLimitError:
-                    time.sleep(15 * 60)
+                    now = datetime.now()
+                    wait_time = (15 * 60)
+                    current_time = datetime.now()
+                    next_run = (current_time + timedelta(minutes=15)).strftime("%H:%M:%S")
+                    print("Run Stopped =", current_time.strftime("%H:%M:%S"))
+                    print("Next Run = {}".format(next_run))
 
-        p = 0
-        for page in limit_handled(tweepy.Cursor(api.followers, id=user.id).pages()):
+                    time.sleep(wait_time)
+
+        for page in limit_handled(tweepy.Cursor(api.followers, id=user.id, page=p).pages()):
             p += 1
             print('Page {}'.format(p))
             for f in page:
