@@ -34,15 +34,3 @@ def calculate(ticker, tweet=False):
         tweet = headline + translate_data(donchian_range)
         send_tweet(tweet)
 
-    # exportDonchian(donchian_range, ticker)
-
-    # x = dates
-    # plt.plot(x, lows, label='lows')  # Plot some data on the (implicit) axes.
-    # plt.plot(x, prices, label='price')  # etc.
-    # plt.plot(x, highs, label='highs')
-    # plt.xlabel('x Date')
-    # plt.ylabel('y Price')
-    # plt.title("Donchian")
-    # plt.legend()
-
-    # plt.show()
