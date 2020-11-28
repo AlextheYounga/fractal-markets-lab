@@ -21,13 +21,22 @@ def syncStocks():
     return tickers
 
 
-def quoteStatsBatchRequest(batch):
+def quoteStatsBatchRequest(batch, sandbox=False):
     # Accepts list of tickers
     # Maximum 100
+    domain = 'cloud.iexapis.com'
+    key = os.environ.get("IEX_TOKEN")
+    if (sandbox):
+        domain = 'sandbox.iexapis.com'
+        key = os.environ.get("IEX_SANDBOX_TOKEN")
 
     batch = ",".join(batch)  # Convert to comma-separated string
     try:
-        url = 'https://cloud.iexapis.com/stable/stock/market/batch?symbols={}&types=quote,stats&token={}'.format(batch, os.environ.get("IEX_TOKEN"))
+        url = 'https://{}/stable/stock/market/batch?symbols={}&types=quote,stats&token={}'.format(
+            domain,
+            batch,
+            key
+        )
         batch_request = requests.get(url).json()
     except:
         #print("Unexpected error:", sys.exc_info()[0])
@@ -36,12 +45,21 @@ def quoteStatsBatchRequest(batch):
     return batch_request
 
 
-def companyBatchRequest(batch):
+def companyBatchRequest(batch, sandbox=False):
     # Accepts list of tickers
     # Maximum 100
+    domain = 'cloud.iexapis.com'
+    key = os.environ.get("IEX_TOKEN")
+    if (sandbox):
+        domain = 'sandbox.iexapis.com'
+        key = os.environ.get("IEX_SANDBOX_TOKEN")
     try:
         batch = ",".join(batch)  # Convert to comma-separated string
-        url = 'https://cloud.iexapis.com/stable/stock/market/batch?symbols={}&types=quote,company&token={}'.format(batch, os.environ.get("IEX_TOKEN"))
+        url = 'https://{}/stable/stock/market/batch?symbols={}&types=quote,company&token={}'.format(
+            domain,
+            batch,
+            key
+        )
         batch_request = requests.get(url).json()
     except:
         #print("Unexpected error:", sys.exc_info()[0])
@@ -72,9 +90,18 @@ def getStockInfo(ticker):
     return company
 
 
-def getEarnings(ticker):
+def getEarnings(ticker, sandbox=False):
+    domain = 'cloud.iexapis.com'
+    key = os.environ.get("IEX_TOKEN")
+    if (sandbox):
+        domain = 'sandbox.iexapis.com'
+        key = os.environ.get("IEX_SANDBOX_TOKEN")
     try:
-        url = 'https://cloud.iexapis.com/stable/stock/{}/earnings/4/?token={}'.format(ticker, os.environ.get("IEX_TOKEN"))
+        url = 'https://{}/stable/stock/{}/earnings/4/?token={}'.format(
+            domain,
+            ticker,
+            key
+        )
         earnings = requests.get(url).json()
     except:
         #print("Unexpected error:", sys.exc_info()[0])
@@ -83,9 +110,18 @@ def getEarnings(ticker):
     return earnings
 
 
-def getPriceTarget(ticker):
+def getPriceTarget(ticker, sandbox=False):
+    domain = 'cloud.iexapis.com'
+    key = os.environ.get("IEX_TOKEN")
+    if (sandbox):
+        domain = 'sandbox.iexapis.com'
+        key = os.environ.get("IEX_SANDBOX_TOKEN")
     try:
-        url = 'https://cloud.iexapis.com/stable/stock/{}/price-target?token={}'.format(ticker, os.environ.get("IEX_TOKEN"))
+        url = 'https://{}/stable/stock/{}/price-target?token={}'.format(
+            domain,
+            ticker,
+            key
+        )
         priceTarget = requests.get(url).json()
     except:
         #print("Unexpected error:", sys.exc_info()[0])
@@ -105,18 +141,25 @@ def getQuoteData(ticker):
     return quote
 
 
-def getHistoricalData(ticker, timeframe, priceOnly=False):
+def getHistoricalData(ticker, timeframe, priceOnly=False, sandbox=False):
+    domain = 'cloud.iexapis.com'
+    key = os.environ.get("IEX_TOKEN")
+    if (sandbox):
+        domain = 'sandbox.iexapis.com'
+        key = os.environ.get("IEX_SANDBOX_TOKEN")
     try:
-        url = 'https://cloud.iexapis.com/stable/stock/{}/chart/{}?token={}'.format(
+        url = 'https://{}/stable/stock/{}/chart/{}?token={}'.format(
+            domain,
             ticker,
             timeframe,
-            os.environ.get("IEX_TOKEN")
+            key
         )
         if (priceOnly):
-            url = 'https://cloud.iexapis.com/stable/stock/{}/chart/{}?chartCloseOnly=true&token={}'.format(
+            url = 'https://{}/stable/stock/{}/chart/{}?chartCloseOnly=true&token={}'.format(
+                domain,
                 ticker,
                 timeframe,
-                os.environ.get("IEX_TOKEN")
+                key
             )
         historicalData = requests.get(url).json()
     except:
@@ -125,27 +168,3 @@ def getHistoricalData(ticker, timeframe, priceOnly=False):
 
     return historicalData
 
-# ----------------------------------------------
-# Testing Queries using IEX Sandbox
-# ----------------------------------------------
-
-def testHistoricalData(ticker, timeframe, priceOnly=False):
-    try:
-        url = 'https://sandbox.iexapis.com/stable/stock/{}/chart/{}?token={}'.format(
-            ticker,
-            timeframe,
-            os.environ.get("IEX_SANDBOX_TOKEN")
-        )
-        if (priceOnly):
-            url = 'https://sandbox.iexapis.com/stable/stock/{}/chart/{}?chartCloseOnly=true&token={}'.format(
-                ticker,
-                timeframe,
-                os.environ.get("IEX_SANDBOX_TOKEN")
-            )
-
-        historicalData = requests.get(url).json()
-    except:
-        print("Unexpected error:", sys.exc_info()[0])
-        return {}
-
-    return historicalData
