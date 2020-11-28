@@ -7,7 +7,7 @@ from pandas import read_csv
 import datetime
 from ..definitions import STORAGE
 
-
+# TODO: Get this setup to read the csv export from TD Ameritrade
 def parsePortfolioCSV(fullpath):
     """
     Parameters
