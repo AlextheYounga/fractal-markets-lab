@@ -1,5 +1,6 @@
 .env
 lab/.env
+lab/database/.env
 lab/key.py
 lab/__pycache__
 lab/*/__pycache__

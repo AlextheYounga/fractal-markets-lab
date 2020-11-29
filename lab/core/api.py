@@ -68,38 +68,51 @@ def companyBatchRequest(batch, sandbox=False):
     return batch_request
 
 
-def getCurrentPrice(ticker):
+def getCurrentPrice(ticker, sandbox=False):
+    key = os.environ.get("IEX_TOKEN")
+    if (sandbox):
+        os.environ['IEX_API_VERSION'] = 'iexcloud-sandbox'
+        key = os.environ.get("IEX_SANDBOX_TOKEN")
     try:
-        stock = Stock(ticker, token=os.environ.get("IEX_TOKEN"))
+        stock = Stock(ticker, token=key)
         price = stock.get_price()
     except:
         #print("Unexpected error:", sys.exc_info()[0])
         return {}
 
+    if (sandbox):
+        os.environ['IEX_API_VERSION'] = 'v1'
     return price
 
 
-def getStockInfo(ticker):
+def getStockInfo(ticker, sandbox=False):
+    key = os.environ.get("IEX_TOKEN")
+    if (sandbox):
+        os.environ['IEX_API_VERSION'] = 'iexcloud-sandbox'
+        key = os.environ.get("IEX_SANDBOX_TOKEN")
     try:
-        stock = Stock(ticker, token=os.environ.get("IEX_TOKEN"))
+        stock = Stock(ticker, token=key)
         company = stock.get_company()
     except:
         #print("Unexpected error:", sys.exc_info()[0])
         return {}
 
+    if (sandbox):
+        os.environ['IEX_API_VERSION'] = 'v1'
     return company
 
 
-def getEarnings(ticker, sandbox=False):
+def getHistoricalEarnings(ticker, quarters=4, sandbox=False):
     domain = 'cloud.iexapis.com'
     key = os.environ.get("IEX_TOKEN")
     if (sandbox):
         domain = 'sandbox.iexapis.com'
         key = os.environ.get("IEX_SANDBOX_TOKEN")
     try:
-        url = 'https://{}/stable/stock/{}/earnings/4/?token={}'.format(
+        url = 'https://{}/stable/stock/{}/earnings/{}/?token={}'.format(
             domain,
             ticker,
+            quarters,
             key
         )
         earnings = requests.get(url).json()
@@ -130,15 +143,118 @@ def getPriceTarget(ticker, sandbox=False):
     return priceTarget
 
 
-def getQuoteData(ticker):
+def getQuoteData(ticker, sandbox=False):
+    key = os.environ.get("IEX_TOKEN")
+    if (sandbox):
+        os.environ['IEX_API_VERSION'] = 'iexcloud-sandbox'
+        key = os.environ.get("IEX_SANDBOX_TOKEN")
     try:
-        stock = Stock(ticker, token=os.environ.get("IEX_TOKEN"))
+        stock = Stock(ticker, token=key)
         quote = stock.get_quote()
     except:
         #print("Unexpected error:", sys.exc_info()[0])
         return {}
-
+    if (sandbox):
+        os.environ['IEX_API_VERSION'] = 'v1'
     return quote
+
+
+def getKeyStats(ticker, filterResults=False, sandbox=False):
+    domain = 'cloud.iexapis.com'
+    key = os.environ.get("IEX_TOKEN")
+    if (sandbox):
+        domain = 'sandbox.iexapis.com'
+        key = os.environ.get("IEX_SANDBOX_TOKEN")
+    if (filterResults):
+        filters = ",".join(filterResults)
+    try:
+        url = 'https://{}/stable/stock/{}/stats?token={}'.format(
+            domain,
+            ticker,
+            key
+        )
+        if (filterResults):
+            url = 'https://{}/stable/stock/{}/stats?filter={}&token={}'.format(
+                domain,
+                ticker,
+                filters,
+                key
+            )
+        keyStats = requests.get(url).json()
+    except:
+        #print("Unexpected error:", sys.exc_info()[0])
+        return None
+
+    return keyStats
+
+
+def getAdvancedStats(ticker, filterResults=False, sandbox=False):
+    domain = 'cloud.iexapis.com'
+    key = os.environ.get("IEX_TOKEN")
+    if (sandbox):
+        domain = 'sandbox.iexapis.com'
+        key = os.environ.get("IEX_SANDBOX_TOKEN")
+    if (filterResults):
+        filters = ",".join(filterResults)
+    try:
+        url = 'https://{}/stable/stock/{}/advanced-stats?token={}'.format(
+            domain,
+            ticker,
+            key
+        )
+        if (filterResults):
+            url = 'https://{}/stable/stock/{}/advanced-stats?filter={}&token={}'.format(
+                domain,
+                ticker,
+                filters,
+                key
+            )
+        advancedStats = requests.get(url).json()
+    except:
+        #print("Unexpected error:", sys.exc_info()[0])
+        return None
+
+    return advancedStats
+
+
+def getFinancials(ticker, sandbox=False):
+    domain = 'cloud.iexapis.com'
+    key = os.environ.get("IEX_TOKEN")
+    if (sandbox):
+        domain = 'sandbox.iexapis.com'
+        key = os.environ.get("IEX_SANDBOX_TOKEN")
+    try:
+        url = 'https://{}/stable/stock/{}/financials?token={}'.format(
+            domain,
+            ticker,
+            key
+        )
+        financials = requests.get(url).json()
+    except:
+        #print("Unexpected error:", sys.exc_info()[0])
+        return None
+
+    return financials
+
+
+def getCashFlow(ticker, sandbox=False):
+    domain = 'cloud.iexapis.com'
+    key = os.environ.get("IEX_TOKEN")
+    if (sandbox):
+        domain = 'sandbox.iexapis.com'
+        key = os.environ.get("IEX_SANDBOX_TOKEN")
+    try:
+        url = 'https://{}/stable/stock/{}/cash-flow?token={}'.format(
+            domain,
+            ticker,
+            key
+        )
+        cashflow = requests.get(url).json()
+    except:
+        #print("Unexpected error:", sys.exc_info()[0])
+        return None
+
+    return cashflow
 
 
 def getHistoricalData(ticker, timeframe, priceOnly=False, sandbox=False):
@@ -168,3 +284,32 @@ def getHistoricalData(ticker, timeframe, priceOnly=False, sandbox=False):
 
     return historicalData
 
+
+def batchHistoricalData(batch, timeframe, priceOnly=False, sandbox=False):
+    domain = 'cloud.iexapis.com'
+    key = os.environ.get("IEX_TOKEN")
+    if (sandbox):
+        domain = 'sandbox.iexapis.com'
+        key = os.environ.get("IEX_SANDBOX_TOKEN")
+
+    batch = ",".join(batch)  # Convert to comma-separated string
+    try:
+        url = 'https://{}/stable/stock/market/batch?symbols={}&types=chart&range={}&token={}'.format(
+            domain,
+            batch,
+            timeframe,
+            key
+        )
+        if (priceOnly):
+            url = 'https://{}/stable/stock/market/batch?symbols={}&types=chart&range={}&chartCloseOnly=true&token={}'.format(
+                domain,
+                batch,
+                timeframe,
+                key
+            )
+        batchrequest = requests.get(url).json()
+    except:
+        #print("Unexpected error:", sys.exc_info()[0])
+        return {}
+
+    return batchrequest

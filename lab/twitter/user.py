@@ -1,6 +1,6 @@
 from django.core.cache import cache
 from datetime import datetime, timedelta
-from ..core.functions import prompt_yes_no
+from ..core.functions import prompt_yes_no, wordVariator
 from time import sleep
 from dotenv import load_dotenv
 import os
@@ -26,15 +26,15 @@ def autoFollowFollowers(handle, p=0):
     if (prompt_yes_no("This user?")):
 
         def limit_handled(cursor):
-            while True:                
-                try:                    
+            while True:
+                try:
                     yield cursor.next()
                 except tweepy.RateLimitError:
                     last_run = cache.get('auto_followers_last_run')
                     current_time = datetime.now()
-                    if (last_run):                                
+                    if (last_run):
                         next_run = (last_run + timedelta(minutes=15))
-                        wait_time = (next_run - current_time).seconds + 5 #Giving it a little leeway of 5 seconds
+                        wait_time = (next_run - current_time).seconds + 5  # Giving it a little leeway of 5 seconds
                         print("Run Halted =", last_run.strftime("%H:%M:%S"))
                         print("Next Run = {}".format(next_run.strftime("%H:%M:%S")))
 
@@ -52,10 +52,10 @@ def autoFollowFollowers(handle, p=0):
             p += 1
             current_time = datetime.now()
             cache.set('auto_followers_last_run', current_time, 1800)
-            
+
             print('Page {}'.format(p))
             for f in page:
-                if (f.followers_count > 500):
+                if (screen_follower(f)):
                     try:
                         friendship = api.lookup_friendships([f.id])[0]
                     except:
@@ -63,3 +63,48 @@ def autoFollowFollowers(handle, p=0):
                     if (not(friendship.is_following or friendship.is_following_requested)):
                         api.create_friendship(f.id, screen_name=None, user_id=f.id, follow=False)
                         print("{} - {} followers".format(f.screen_name, f.followers_count))
+
+
+def check_bio(bio):
+    base_words = [
+        'stock'
+        'market',
+        'gold',
+        'commodities',
+        'data',
+        'economy',
+        'bitcoin',
+        'crypto',
+        'silver',
+        'commodity',
+        'trade',
+        'trading',
+        'research',
+        'hedge',
+        'accounting',
+        'machine',
+        'learning',
+        'coding',
+        'MBA',
+        'CFA',
+        'business',
+        'capitalism',
+        'libertarian',
+        'option',
+        'developer',        
+        'programmer'
+    ]
+    keywords = wordVariator(base_words)
+
+    for k in keywords:
+        if (k in bio):
+            return True
+
+    return False
+
+
+def screen_follower(f):
+    if (f.followers_count > 300):
+        if (check_bio(f.description)):
+            return True
+    return False
