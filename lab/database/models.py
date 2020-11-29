@@ -3,6 +3,8 @@ from jsonfield import JSONField
 # from bulk_update_or_create import BulkUpdateOrCreateQuerySet
 
 # Create your models here.
+
+
 class Stock(models.Model):
     ticker = models.CharField(max_length=30, unique=True)
     name = models.CharField(max_length=200)
@@ -150,6 +152,8 @@ class Financials(models.Model):
     netWorth = models.FloatField(null=True)
     shortTermDebt = models.FloatField(null=True)
     longTermDebt = models.FloatField(null=True)
+    totalCash = models.FloatField(null=True)
+    totalDebt = models.FloatField(null=True)
     debtToEquity = models.FloatField(null=True)
     priceToSales = models.FloatField(null=True)
     EBITDA = models.FloatField(null=True)
@@ -168,3 +172,9 @@ class Financials(models.Model):
 class HistoricalPrices(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
     prices = JSONField(null=True)
+
+    def __unicode__(self):              # __str__ on Python 3
+        return str(self.about_desc)
+
+    class Meta:
+        verbose_name_plural = "historicalprices"

@@ -156,7 +156,7 @@ def getQuoteData(ticker, sandbox=False):
     return quote
 
 
-def getStats(ticker, filterResults=False, sandbox=False):
+def getKeyStats(ticker, filterResults=False, sandbox=False):
     domain = 'cloud.iexapis.com'
     key = os.environ.get("IEX_TOKEN")
     if (sandbox):
@@ -171,7 +171,7 @@ def getStats(ticker, filterResults=False, sandbox=False):
             key
         )
         if (filterResults):
-            url = 'https://{}/stable/stock/{}/stats?filter={}={}'.format(
+            url = 'https://{}/stable/stock/{}/stats?filter={}&token={}'.format(
                 domain,
                 ticker,
                 filters,
@@ -199,7 +199,7 @@ def getAdvancedStats(ticker, filterResults=False, sandbox=False):
             key
         )
         if (filterResults):
-            url = 'https://{}/stable/stock/{}/advanced-stats?filter={}={}'.format(
+            url = 'https://{}/stable/stock/{}/advanced-stats?filter={}&token={}'.format(
                 domain,
                 ticker,
                 filters,
