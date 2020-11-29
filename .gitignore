@@ -9,3 +9,4 @@ lab/core/storage/*
 lab/graveyard/
 lab/riskrange
 lab/COMMANDS.txt
+db.sqlite3
