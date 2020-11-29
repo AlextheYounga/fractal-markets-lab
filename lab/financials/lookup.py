@@ -28,13 +28,13 @@ def lookupFinancials(ticker):
         financials = financials_json['financials'][0]
         cash_flow = cash_flow_json['cashflow'][0]
 
-        capitalExpenditures = checkArray(cash_flow, 'capitalExpenditures')
-        sharesOutstanding = checkArray(stats, 'sharesOutstanding')
-        shareholderEquity = checkArray(financials, 'shareholderEquity')
-        cashFlow = checkArray(cash_flow, 'cashFlow')
-        longTermDebt = checkArray(financials, 'longTermDebt')
-        totalAssets = checkArray(financials, 'totalAssets')
-        totalLiabilities = checkArray(financials, 'totalLiabilities')
+        capitalExpenditures = dataSanityCheck(cash_flow, 'capitalExpenditures')
+        sharesOutstanding = dataSanityCheck(stats, 'sharesOutstanding')
+        shareholderEquity = dataSanityCheck(financials, 'shareholderEquity')
+        cashFlow = dataSanityCheck(cash_flow, 'cashFlow')
+        longTermDebt = dataSanityCheck(financials, 'longTermDebt')
+        totalAssets = dataSanityCheck(financials, 'totalAssets')
+        totalLiabilities = dataSanityCheck(financials, 'totalLiabilities')
 
         freeCashFlow = capitalExpenditures - cashFlow if (capitalExpenditures and cashFlow) else 0
         freeCashFlowPerShare = freeCashFlow / sharesOutstanding if (freeCashFlow and sharesOutstanding) else 0

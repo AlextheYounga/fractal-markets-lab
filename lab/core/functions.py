@@ -114,9 +114,10 @@ def prompt_yes_no(question, default="yes"):
             sys.stdout.write("Please respond with 'yes' or 'no' "
                              "(or 'y' or 'n').\n")
 
-def checkArray(array, key):
-    if (key in array and array[key]):
-        return array[key]
+def dataSanityCheck(array, key):
+    if(array):
+        if (key in array and array[key]):
+            return array[key]
     return 0
 
 def wordVariator(lst):
