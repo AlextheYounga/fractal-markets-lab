@@ -6,7 +6,7 @@ import os
 import sys
 from datetime import date
 from .functions import *
-from ..core.functions import chunks
+from ..core.functions import chunks, dataSanityCheck
 from ..core.api import quoteStatsBatchRequest, getHistoricalEarnings, getPriceTarget
 from ..core.output import printTable
 from ..core.export import writeCSV
@@ -45,14 +45,18 @@ for i, chunk in enumerate(chunked_tickers):
             else:
                 continue
 
-            ttmEPS = stats['ttmEPS'] if ('ttmEPS' in stats and stats['ttmEPS']) else 0
-            week52high = stats['week52high'] if ('week52high' in stats and stats['week52high']) else 0
-            changeToday = quote['changePercent'] * 100 if ('changePercent' in quote and quote['changePercent']) else 0
-            day5ChangePercent = stats['day5ChangePercent'] * 100 if ('day5ChangePercent' in stats and stats['day5ChangePercent']) else 0
-            volume = quote['volume'] if ('volume' in quote and quote['volume']) else 0
-            previousVolume = quote['previousVolume'] if ('previousVolume' in quote and quote['previousVolume']) else 0
+            ttmEPS = stats.get('ttmEPS', None)
+            day5ChangePercent = round(dataSanityCheck(stats, 'day5ChangePercent') * 100, 2)
+            month1ChangePercent = round(dataSanityCheck(stats, 'month1ChangePercent') * 100, 2)
+            ytdChangePercent = round(dataSanityCheck(stats, 'ytdChangePercent') * 100, 2)
 
-            critical = [changeToday, week52high, ttmEPS, volume, previousVolume]
+            # Critical
+            week52high = dataSanityCheck(stats, 'week52high')
+            changeToday = round(dataSanityCheck(quote, 'changePercent') * 100, 2)            
+            volume = dataSanityCheck(quote, 'volume')
+            previousVolume = dataSanityCheck(quote, 'previousVolume')
+
+            critical = [changeToday, week52high, volume, previousVolume]
 
             if ((0 in critical)):
                 continue
@@ -62,13 +66,13 @@ for i, chunk in enumerate(chunked_tickers):
             # Save Data to DB
             data_for_db = {
                 'Valuation':  {
-                    'peRatio': stats['peRatio'],
+                    'peRatio': stats.get('peRatio', None),
                 },
                 'Trend': {
                     'week52': week52high,
-                    'day5ChangePercent': stats['day5ChangePercent'],
-                    'month1ChangePercent': stats.get('month1ChangePercent', None),
-                    'ytdChangePercent': stats.get('ytdChangePercent', None),
+                    'day5ChangePercent': day5ChangePercent if day5ChangePercent else None,
+                    'month1ChangePercent': month1ChangePercent if month1ChangePercent else None,
+                    'ytdChangePercent': ytdChangePercent if ytdChangePercent else None,
                     'day50MovingAvg': stats.get('day50MovingAvg', None),
                     'day200MovingAvg': stats.get('day200MovingAvg', None),
                     'fromHigh': fromHigh
@@ -85,9 +89,9 @@ for i, chunk in enumerate(chunked_tickers):
                     if (changeToday > 12):
                         if (volume > previousVolume):
                             priceTargets = getPriceTarget(ticker)
-                            fromPriceTarget = round((price / priceTargets['priceTargetHigh']) * 100, 3) if (priceTargets and 'priceTargetLow' in priceTargets) else 0
-                            avgPricetarget = priceTargets['priceTargetAverage'] if (priceTargets and 'priceTargetAverage' in priceTargets) else None
-                            highPriceTarget = priceTargets['priceTargetHigh'] if (priceTargets and 'priceTargetHigh' in priceTargets) else None
+                            fromPriceTarget = round((price / priceTargets['priceTargetHigh']) * 100, 3) if (dataSanityCheck(priceTargets, 'priceTargetHigh')) else 0                            
+                            avgPricetarget = priceTargets['priceTargetAverage'] if (dataSanityCheck(priceTargets, 'priceTargetAverage')) else None
+                            highPriceTarget = priceTargets['priceTargetHigh'] if (dataSanityCheck(priceTargets, 'priceTargetHigh')) else None
 
 
                             # Save Trends to DB
@@ -96,21 +100,16 @@ for i, chunk in enumerate(chunked_tickers):
                                 highPriceTarget=highPriceTarget,
                                 fromPriceTarget=fromPriceTarget,
                             )
+
+                            keyStats = {}
+                            for model, data in data_for_db.items():
+                                keyStats.update(data)
                         
-                            keyStats = {
-                                'week52': stats['week52high'],
-                                'ttmEPS': ttmEPS,
-                                'peRatio': stats['peRatio'],
-                                'day5ChangePercent': day5ChangePercent,
-                                'month1ChangePercent': round(stats['month1ChangePercent'] * 100, 2) if ('month1ChangePercent' in stats) else None,
-                                'ytdChangePercent': round(stats['ytdChangePercent'] * 100, 2) if ('ytdChangePercent' in stats) else None,
-                                'day50MovingAvg': stats['day50MovingAvg'],
-                                'day200MovingAvg': stats['day200MovingAvg'],                            
+                            keyStats.update({
                                 'highPriceTarget': highPriceTarget,
                                 'fromPriceTarget': fromPriceTarget,
-                                'fromHigh': fromHigh,
-
-                            }
+                            })
+                            
                             stockData = {
                                 'ticker': ticker,
                                 'name': stock.name,

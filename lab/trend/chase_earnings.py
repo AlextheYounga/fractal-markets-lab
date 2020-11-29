@@ -6,7 +6,7 @@ import os
 import sys
 from datetime import date
 from .functions import *
-from ..core.functions import chunks, checkArray
+from ..core.functions import chunks, dataSanityCheck
 from ..core.api import quoteStatsBatchRequest, getHistoricalEarnings, getPriceTarget
 from ..core.output import printTable
 from ..core.export import writeCSV
@@ -46,11 +46,14 @@ for i, chunk in enumerate(chunked_tickers):
             else:
                 continue
 
-            ttmEPS = stats.get('ttmEPS', 0)
-            week52high = stats.get('week52high', 0)
-            changeToday = quote.get('changePercent', 0)
-            day5ChangePercent = stats.get('day5ChangePercent', 0)
+            month1ChangePercent = round(dataSanityCheck(stats, 'month1ChangePercent') * 100, 2)
+            ytdChangePercent = round(dataSanityCheck(stats, 'ytdChangePercent') * 100, 2)
 
+            # Critical
+            ttmEPS = dataSanityCheck(stats, 'ttmEPS')
+            week52high = dataSanityCheck(stats, 'week52high')
+            changeToday = round(dataSanityCheck(quote, 'changePercent') * 100, 2)
+            day5ChangePercent = round(dataSanityCheck(stats, 'day5ChangePercent') * 100, 2)
             critical = [changeToday, week52high, ttmEPS, day5ChangePercent]
 
             if ((0 in critical)):
@@ -61,13 +64,13 @@ for i, chunk in enumerate(chunked_tickers):
             # Save Data to DB
             data_for_db = {
                 'Valuation':  {
-                    'peRatio': stats['peRatio'],
+                    'peRatio': stats.get('peRatio', None),
                 },
                 'Trend': {
                     'week52': week52high,
-                    'day5ChangePercent': stats['day5ChangePercent'],
-                    'month1ChangePercent': stats.get('month1ChangePercent', None),
-                    'ytdChangePercent': stats.get('ytdChangePercent', None),
+                    'day5ChangePercent': day5ChangePercent if day5ChangePercent else None,
+                    'month1ChangePercent': month1ChangePercent if month1ChangePercent else None,
+                    'ytdChangePercent': ytdChangePercent if ytdChangePercent else None,
                     'day50MovingAvg': stats.get('day50MovingAvg', None),
                     'day200MovingAvg': stats.get('day200MovingAvg', None),
                     'fromHigh': fromHigh
@@ -93,20 +96,14 @@ for i, chunk in enumerate(chunked_tickers):
                             )
 
                             if (earningsChecked['improvement'] == True):
-                                keyStats = {
-                                    'week52': stats['week52high'],
-                                    'ttmEPS': ttmEPS,
+
+                                keyStats = {}
+                                for model, data in data_for_db.items():
+                                    keyStats.update(data)
+                                keyStats.update({
                                     'reportedEPS': earningsChecked['actual'],
                                     'reportedConsensus': earningsChecked['consensus'],
-                                    'peRatio': stats['peRatio'],
-                                    'day5ChangePercent': round(stats['day5ChangePercent'] * 100, 2) if ('day5ChangePercent' in stats) else None,
-                                    'month1ChangePercent': round(stats['month1ChangePercent'] * 100, 2) if ('month1ChangePercent' in stats) else None,
-                                    'ytdChangePercent': round(stats['ytdChangePercent'] * 100, 2) if ('ytdChangePercent' in stats) else None,
-                                    'day50MovingAvg': stats['day50MovingAvg'],
-                                    'day200MovingAvg': stats['day200MovingAvg'],
-                                    'fromHigh': fromHigh,
-
-                                }
+                                })
                                 stockData = {
                                     'ticker': ticker,
                                     'name': stock.name,
