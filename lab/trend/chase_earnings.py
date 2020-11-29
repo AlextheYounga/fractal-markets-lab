@@ -6,8 +6,8 @@ import os
 import sys
 from datetime import date
 from .functions import *
-from ..core.functions import chunks
-from ..core.api import quoteStatsBatchRequest, getEarnings, getPriceTarget
+from ..core.functions import chunks, checkArray
+from ..core.api import quoteStatsBatchRequest, getHistoricalEarnings, getPriceTarget
 from ..core.output import printTable
 from ..core.export import writeCSV
 from ..twitter.tweet import send_tweet
@@ -46,10 +46,10 @@ for i, chunk in enumerate(chunked_tickers):
             else:
                 continue
 
-            ttmEPS = stats['ttmEPS'] if ('ttmEPS' in stats and stats['ttmEPS']) else 0
-            week52high = stats['week52high'] if ('week52high' in stats and stats['week52high']) else 0
-            changeToday = quote['changePercent'] * 100 if ('changePercent' in quote and quote['changePercent']) else 0
-            day5ChangePercent = stats['day5ChangePercent'] * 100 if ('day5ChangePercent' in stats and stats['day5ChangePercent']) else 0
+            ttmEPS = stats.get('ttmEPS', 0)
+            week52high = stats.get('week52high', 0)
+            changeToday = quote.get('changePercent', 0)
+            day5ChangePercent = stats.get('day5ChangePercent', 0)
 
             critical = [changeToday, week52high, ttmEPS, day5ChangePercent]
 
@@ -81,7 +81,7 @@ for i, chunk in enumerate(chunked_tickers):
 
             if ((fromHigh < 105) and (fromHigh > 95)):
                 if (changeToday > 10):
-                    earningsData = getEarnings(ticker)
+                    earningsData = getHistoricalEarnings(ticker)
                     if (earningsData and isinstance(earningsData, dict)):
                         print('{} ---- Checking Earnings ----'.format(ticker))
                         earningsChecked = checkEarnings(earningsData)
