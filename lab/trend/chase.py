@@ -7,7 +7,7 @@ import sys
 from datetime import date
 from .functions import *
 from ..core.functions import chunks
-from ..core.api import quoteStatsBatchRequest, getEarnings, getPriceTarget
+from ..core.api import quoteStatsBatchRequest, getHistoricalEarnings, getPriceTarget
 from ..core.output import printTable
 from ..core.export import writeCSV
 from ..twitter.tweet import send_tweet

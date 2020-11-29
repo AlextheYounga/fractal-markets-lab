@@ -15,6 +15,7 @@ class Stock(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+
 class MacroTrend(models.Model):
     etf = models.ForeignKey(Stock, on_delete=models.CASCADE)
     ticker = models.CharField(max_length=30)
@@ -27,7 +28,7 @@ class MacroTrend(models.Model):
     month3ChangePercent = models.FloatField(null=True)
     ytdChangePercent = models.FloatField(null=True)
     day50MovingAvg = models.FloatField(null=True)
-    day200MovingAvg = models.FloatField(null=True)    
+    day200MovingAvg = models.FloatField(null=True)
     fromHigh = models.FloatField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -51,7 +52,7 @@ class Watchlist(models.Model):
     month1ChangePercent = models.FloatField(null=True)
     ytdChangePercent = models.FloatField(null=True)
     day50MovingAvg = models.FloatField(null=True)
-    day200MovingAvg = models.FloatField(null=True)    
+    day200MovingAvg = models.FloatField(null=True)
     highPriceTarget = models.FloatField(null=True)
     fromPriceTarget = models.FloatField(null=True)
     fromHigh = models.FloatField(null=True)
@@ -60,6 +61,7 @@ class Watchlist(models.Model):
     ttmEPS = models.FloatField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
 
 class Portfolio(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, default=0)
@@ -99,14 +101,13 @@ class Valuation(models.Model):
 
 
 class Trend(models.Model):
-
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
     week52 = models.FloatField(null=True)
     day5ChangePercent = models.FloatField(null=True)
     month1ChangePercent = models.FloatField(null=True)
     ytdChangePercent = models.FloatField(null=True)
     day50MovingAvg = models.FloatField(null=True)
-    day200MovingAvg = models.FloatField(null=True)    
+    day200MovingAvg = models.FloatField(null=True)
     avgPricetarget = models.FloatField(null=True)
     highPriceTarget = models.FloatField(null=True)
     fromPriceTarget = models.FloatField(null=True)
@@ -140,3 +141,30 @@ class Vol(models.Model):
 
     class Meta:
         verbose_name_plural = "vol"
+
+
+class Financials(models.Model):
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
+    reportDate = models.CharField(max_length=200, null=True)
+    netIncome = models.FloatField(null=True)
+    netWorth = models.FloatField(null=True)
+    shortTermDebt = models.FloatField(null=True)
+    longTermDebt = models.FloatField(null=True)
+    debtToEquity = models.FloatField(null=True)
+    priceToSales = models.FloatField(null=True)
+    EBITDA = models.FloatField(null=True)
+    freeCashFlow = models.FloatField(null=True)
+    freeCashFlowPerShare = models.FloatField(null=True)
+    freeCashFlowYield = models.FloatField(null=True)
+    longTermDebtToEquity = models.FloatField(null=True)
+
+    def __unicode__(self):              # __str__ on Python 3
+        return str(self.about_desc)
+
+    class Meta:
+        verbose_name_plural = "financials"
+
+
+class HistoricalPrices(models.Model):
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
+    prices = JSONField(null=True)
