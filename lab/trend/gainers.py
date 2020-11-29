@@ -2,12 +2,9 @@ from iexfinance.stocks import get_market_gainers
 from dotenv import load_dotenv
 from django.apps import apps
 from ..core.output import printTable
-from .functions import *
+from .functions import dynamicUpdateCreate
 import requests
 import json
-import os
-import texttable
-os.environ['DJANGO_SETTINGS_MODULE'] = 'lab.settings'
 load_dotenv()
 
 Stock = apps.get_model('database', 'Stock')

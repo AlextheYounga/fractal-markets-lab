@@ -2,9 +2,8 @@ import statistics
 import json
 import sys
 from .functions import *
-from ...core.functions import *
-from ...core.api import *
-import matplotlib.pyplot as plt
+from ...core.functions import extractData
+from ...core.api import getHistoricalData
 import numpy as np
 from tabulate import tabulate
 

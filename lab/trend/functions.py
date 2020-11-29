@@ -4,7 +4,6 @@ from django.apps import apps
 import requests
 import json
 import sys
-import os
 from dotenv import load_dotenv
 load_dotenv()
 django.setup()

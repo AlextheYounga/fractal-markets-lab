@@ -1,6 +1,6 @@
 import json
-from ..core.functions import *
-from ..core.api import *
+from ..core.functions import extractData
+from ..core.api import getHistoricalData
 import math
 import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab

@@ -2,8 +2,8 @@ import json
 import math
 import statistics
 import sys
-from ..core.api import *
-from ..core.functions import *
+from ..core.api import getHistoricalData
+from ..core.functions import extractData
 from .functions import *
 
 

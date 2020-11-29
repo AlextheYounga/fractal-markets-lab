@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-import requests
 import sys
 import json
 import csv

@@ -2,15 +2,13 @@ import django
 from django.apps import apps
 from dotenv import load_dotenv
 import json
-import os
 import sys
 from datetime import date
-from .functions import *
+from .functions import getETFs
 from ..core.functions import chunks
 from ..core.api import quoteStatsBatchRequest, getStockInfo
 from ..core.output import printTable
 from ..core.export import writeCSV
-import texttable
 load_dotenv()
 django.setup()
 
