@@ -113,3 +113,20 @@ def prompt_yes_no(question, default="yes"):
         else:
             sys.stdout.write("Please respond with 'yes' or 'no' "
                              "(or 'y' or 'n').\n")
+
+def dataSanityCheck(array, key):
+    if(array):
+        if (key in array and array[key]):
+            return array[key]
+    return 0
+
+def wordVariator(lst):
+    variations = []
+    for word in lst:
+        variations.append(word.lower())        
+        variations.append(word.upper())
+        variations.append(word.title())
+    lst.extend(variations)
+    lstset = set(lst)
+
+    return list(lstset)
