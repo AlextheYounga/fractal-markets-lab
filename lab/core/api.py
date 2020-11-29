@@ -80,7 +80,8 @@ def getCurrentPrice(ticker, sandbox=False):
         #print("Unexpected error:", sys.exc_info()[0])
         return {}
 
-    if (sandbox): os.environ['IEX_API_VERSION'] = 'v1'
+    if (sandbox):
+        os.environ['IEX_API_VERSION'] = 'v1'
     return price
 
 
@@ -96,7 +97,8 @@ def getStockInfo(ticker, sandbox=False):
         #print("Unexpected error:", sys.exc_info()[0])
         return {}
 
-    if (sandbox): os.environ['IEX_API_VERSION'] = 'v1'
+    if (sandbox):
+        os.environ['IEX_API_VERSION'] = 'v1'
     return company
 
 
@@ -152,7 +154,8 @@ def getQuoteData(ticker, sandbox=False):
     except:
         #print("Unexpected error:", sys.exc_info()[0])
         return {}
-    if (sandbox): os.environ['IEX_API_VERSION'] = 'v1'
+    if (sandbox):
+        os.environ['IEX_API_VERSION'] = 'v1'
     return quote
 
 
@@ -183,6 +186,7 @@ def getKeyStats(ticker, filterResults=False, sandbox=False):
         return None
 
     return keyStats
+
 
 def getAdvancedStats(ticker, filterResults=False, sandbox=False):
     domain = 'cloud.iexapis.com'
@@ -279,3 +283,33 @@ def getHistoricalData(ticker, timeframe, priceOnly=False, sandbox=False):
         return {}
 
     return historicalData
+
+
+def batchHistoricalData(batch, timeframe, priceOnly=False, sandbox=False):
+    domain = 'cloud.iexapis.com'
+    key = os.environ.get("IEX_TOKEN")
+    if (sandbox):
+        domain = 'sandbox.iexapis.com'
+        key = os.environ.get("IEX_SANDBOX_TOKEN")
+
+    batch = ",".join(batch)  # Convert to comma-separated string
+    try:
+        url = 'https://{}/stable/stock/market/batch?symbols={}&types=chart&range={}&token={}'.format(
+            domain,
+            batch,
+            timeframe,
+            key
+        )
+        if (priceOnly):
+            url = 'https://{}/stable/stock/market/batch?symbols={}&types=chart&range={}&chartCloseOnly=true&token={}'.format(
+                domain,
+                batch,
+                timeframe,
+                key
+            )
+        batchrequest = requests.get(url).json()
+    except:
+        #print("Unexpected error:", sys.exc_info()[0])
+        return {}
+
+    return batchrequest

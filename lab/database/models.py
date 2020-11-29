@@ -7,7 +7,7 @@ from jsonfield import JSONField
 
 class Stock(models.Model):
     ticker = models.CharField(max_length=30, unique=True)
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=300, null=True)
     lastPrice = models.FloatField(null=True)
     sector = models.CharField(max_length=300, null=True)
     industry = models.CharField(max_length=300, null=True)
@@ -177,4 +177,5 @@ class HistoricalPrices(models.Model):
         return str(self.about_desc)
 
     class Meta:
-        verbose_name_plural = "historicalprices"
+        verbose_name = "HistoricalPrice"
+        verbose_name_plural = "HistoricalPrices"
