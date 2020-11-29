@@ -1,17 +1,14 @@
-import statistics
 import json
 from ..core.functions import extractData
-from ..core.api import getHistoricalData, testHistoricalData, getCurrentPrice
+from ..core.api import getHistoricalData, getCurrentPrice
 from .export import exportDonchian
 from tabulate import tabulate
 from ..twitter.tweet import send_tweet, translate_data
-# import matplotlib.pyplot as plt
-# import numpy as np
 
 
 def calculate(ticker, tweet=False):
     # asset_data = getHistoricalData(ticker, '1m')
-    asset_data = testHistoricalData(ticker, '1m')
+    asset_data = getHistoricalData(ticker, '1m')
 
     prices = extractData(asset_data, 'close')
     highs = extractData(asset_data, 'high')

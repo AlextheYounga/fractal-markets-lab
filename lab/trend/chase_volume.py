@@ -2,16 +2,14 @@ import django
 from django.apps import apps
 from dotenv import load_dotenv
 import json
-import os
 import sys
 from datetime import date
-from .functions import *
+from .functions import dynamicUpdateCreate
 from ..core.functions import chunks, dataSanityCheck
 from ..core.api import quoteStatsBatchRequest, getPriceTarget
 from ..core.output import printTable
 from ..core.export import writeCSV
 from ..twitter.tweet import send_tweet
-import texttable
 load_dotenv()
 django.setup()
 

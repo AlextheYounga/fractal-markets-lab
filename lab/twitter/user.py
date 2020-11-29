@@ -1,16 +1,13 @@
 from django.core.cache import cache
 from datetime import datetime, timedelta
 from ..core.functions import prompt_yes_no, wordVariator
+import time
 from time import sleep
 from dotenv import load_dotenv
 import os
 import json
-import sched
-import time
-import logging
 import sys
 import tweepy
-import texttable
 load_dotenv()
 
 auth = tweepy.OAuthHandler(os.environ.get("TWITTER_API_KEY"), os.environ.get("TWITTER_SECRET_KEY"))

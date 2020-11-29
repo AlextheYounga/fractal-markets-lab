@@ -3,7 +3,6 @@ from iexfinance.stocks import Stock
 from ...core.api import syncStocks, companyBatchRequest
 from ...core.functions import chunks
 from django.apps import apps
-import requests
 import json
 import sys
 import os

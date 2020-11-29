@@ -1,11 +1,9 @@
-from iexfinance.stocks import get_historical_data
-from iexfinance.stocks import Stock
+from iexfinance.stocks import Stock, get_historical_data
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import requests
 import sys
 import json
-import csv
 import os
 load_dotenv()
 

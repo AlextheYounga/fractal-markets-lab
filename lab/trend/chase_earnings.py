@@ -2,7 +2,6 @@ import django
 from django.apps import apps
 from dotenv import load_dotenv
 import json
-import os
 import sys
 from datetime import date
 from .functions import *
@@ -11,7 +10,6 @@ from ..core.api import quoteStatsBatchRequest, getHistoricalEarnings, getPriceTa
 from ..core.output import printTable
 from ..core.export import writeCSV
 from ..twitter.tweet import send_tweet
-import texttable
 load_dotenv()
 django.setup()
 
