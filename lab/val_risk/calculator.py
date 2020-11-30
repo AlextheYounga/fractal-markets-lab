@@ -1,5 +1,5 @@
 import json
-from ..core.functions import extractData
+from ..core.functions import extract_data
 from ..core.api import getHistoricalData
 import math
 import matplotlib.pyplot as plt
@@ -13,7 +13,7 @@ from tabulate import tabulate
 def varCovar(ticker):
     asset_data = getHistoricalData(ticker, '3m')
 
-    prices = extractData(asset_data, 'close')
+    prices = extract_data(asset_data, 'close')
     series = pd.Series(prices)
     returns = series.pct_change()
     mean = np.mean(returns)

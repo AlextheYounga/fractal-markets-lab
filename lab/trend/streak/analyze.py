@@ -2,7 +2,7 @@ import statistics
 import json
 import sys
 from .functions import *
-from ...core.functions import extractData
+from ...core.functions import extract_data
 from ...core.api import getHistoricalData
 import numpy as np
 from tabulate import tabulate
@@ -12,8 +12,8 @@ from tabulate import tabulate
 def streak_analyzer(ticker):
     asset_data = list(reversed(getHistoricalData(ticker, '1y', True)))
 
-    prices = extractData(asset_data, 'close')
-    dates = extractData(asset_data, 'date')
+    prices = extract_data(asset_data, 'close')
+    dates = extract_data(asset_data, 'date')
     
     upStreaks, downStreaks = longestStretch(asset_data)
     trend_data = trendAnalysis(prices[:64])

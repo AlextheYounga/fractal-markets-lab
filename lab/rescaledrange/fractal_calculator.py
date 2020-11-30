@@ -1,7 +1,7 @@
 import statistics
 from scipy import stats
 import math
-from ..core.functions import extractData
+from ..core.functions import extract_data
 from ..core.api import getCurrentPrice, getHistoricalData, testHistoricalData
 from .functions import *
 from .output import exportFractal, outputTable
@@ -37,7 +37,7 @@ def collect_key_stats(ticker):
     """
     asset_prices = getHistoricalData(ticker, "1y", True)
     if (asset_prices):
-        prices = list(reversed(extractData(asset_prices, 'close')))
+        prices = list(reversed(extract_data(asset_prices, 'close')))
 
         count = len(prices)
 

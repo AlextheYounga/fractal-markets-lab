@@ -1,5 +1,3 @@
-import django
-from django.apps import apps
 from ..core.api import batchHistoricalData
 from ..database.functions import saveHistoricalPrices
 from ..core.functions import chunks
@@ -8,7 +6,6 @@ from django.apps import apps
 import json
 import sys
 import os
-django.setup()
 
 tickers = getETFs(tickersonly=True)
 

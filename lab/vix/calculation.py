@@ -3,14 +3,14 @@ import math
 import statistics
 import sys
 from ..core.api import getHistoricalData
-from ..core.functions import extractData
+from ..core.functions import extract_data
 from .functions import *
 
 
 def vixCalculation(ticker='SPAZF'):
     # Testing Spanish Mountain Gold Stock
     asset_data = getHistoricalData(ticker, '1y')
-    prices = list(reversed(extractData(asset_data, 'close')))
+    prices = list(reversed(extract_data(asset_data, 'close')))
     # Daily logarithmic returns, basically increase on an evenly-scaled percent change basis.
     log_returns = logReturns(prices)
     # Number of minutes until nearest option expiration date, and number of minutes until next month's expiration date.
