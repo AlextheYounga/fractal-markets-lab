@@ -6,7 +6,7 @@ from jsonfield import JSONField
 
 
 class Stock(models.Model):
-    ticker = models.CharField(max_length=30, unique=True)
+    ticker = models.CharField(db_index=True, max_length=30, unique=True)
     name = models.CharField(max_length=300, null=True)
     lastPrice = models.FloatField(null=True)
     sector = models.CharField(max_length=300, null=True)
@@ -179,3 +179,10 @@ class HistoricalPrices(models.Model):
     class Meta:
         verbose_name = "HistoricalPrice"
         verbose_name_plural = "HistoricalPrices"
+
+
+class Correlation(models.Model):
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
+    comparand =  models.CharField(max_length=10, null=True)
+    rvalue = models.FloatField(null=True)
+    

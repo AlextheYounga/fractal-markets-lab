@@ -1,5 +1,5 @@
 import json
-from ..core.functions import extractData
+from ..core.functions import extract_data
 from ..core.api import getHistoricalData, getCurrentPrice
 from .export import exportDonchian
 from tabulate import tabulate
@@ -10,10 +10,10 @@ def calculate(ticker, tweet=False):
     # asset_data = getHistoricalData(ticker, '1m')
     asset_data = getHistoricalData(ticker, '1m')
 
-    prices = extractData(asset_data, 'close')
-    highs = extractData(asset_data, 'high')
-    lows = extractData(asset_data, 'low')
-    dates = extractData(asset_data, 'date')
+    prices = extract_data(asset_data, 'close')
+    highs = extract_data(asset_data, 'high')
+    lows = extract_data(asset_data, 'low')
+    dates = extract_data(asset_data, 'date')
 
     donchian_range = {
         'donchianHigh': max(list(reversed(highs))[:16]),

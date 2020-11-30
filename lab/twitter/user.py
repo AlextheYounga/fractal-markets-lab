@@ -16,7 +16,7 @@ auth.set_access_token(os.environ.get("TWITTER_ACCESS_KEY"), os.environ.get("TWIT
 api = tweepy.API(auth)
 
 
-def autoFollowFollowers(handle, p=0):
+def followFollowers(handle, p=cache.get('auto_followers_last_page')):
     user = api.get_user(handle)
     print("Name: {}\nScreen Name: {}\nDescription: {}\n".format(user.name, user.screen_name, user.description))
 
@@ -48,7 +48,8 @@ def autoFollowFollowers(handle, p=0):
         for page in limit_handled(tweepy.Cursor(api.followers, id=user.id, page=p).pages()):
             p += 1
             current_time = datetime.now()
-            cache.set('auto_followers_last_run', current_time, 1800)
+            cache.set('auto_followers_last_run', current_time, 910)
+            cache.set('auto_followers_last_page', p, None)
 
             print('Page {}'.format(p))
             for f in page:

@@ -28,7 +28,7 @@ def burrow(data, key):
         return 'Nest level too deep to retrieve via function.'
 
 
-def extractData(data, key):
+def extract_data(data, key):
     values = []
     if (type(data) == dict):
         if (type(key) == list):
