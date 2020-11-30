@@ -34,14 +34,14 @@ def extract_data(data, key):
         if (type(key) == list):
             burrow(data, key)
         else:
-            for i, row in data.items():
+            for row in data.items():
                 value = row[key]
                 values.append(value)
     if (type(data) == list):
         if (type(key) == list):
             burrow(data[0], key)
         else:
-            for i, row in enumerate(data):
+            for row in data:
                 value = row[key]
                 values.append(value)
     if (values):
