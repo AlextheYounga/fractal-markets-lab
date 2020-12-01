@@ -82,7 +82,7 @@ for i, chunk in enumerate(chunked_tickers):
             
             dynamicUpdateCreate(data_for_db, stock)
 
-            if (price > 1):
+            if (price > 5):
                 if ((fromHigh < 105) and (fromHigh > 95)):
                     if (changeToday > 12):
                         if (volume > previousVolume):
