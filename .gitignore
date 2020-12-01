@@ -10,6 +10,7 @@ lab/core/storage/*
 lab/graveyard/
 lab/riskrange
 lab/COMMANDS.txt
-lab/correlations/output
+lab/correlations/output/*
+lab/correlations/output_json/*
 *.sqlite
 db.sqlite3
