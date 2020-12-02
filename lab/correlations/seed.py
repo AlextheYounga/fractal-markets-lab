@@ -18,7 +18,7 @@ def save_output(cleardb=False, output='json'):
     Correlations = apps.get_model('database', 'Correlation')
     if (cleardb):
         Correlations.objects.all().delete()
-        print('DB Cleared')
+        print('Database Cleared')
     if (output == 'files'):
         files = os.listdir(FILES)
 
@@ -30,7 +30,7 @@ def save_output(cleardb=False, output='json'):
                 except:
                     continue
 
-                print(ticker)
+                print("Saving {}".format(ticker))
                 with open(os.path.join(FILES, txtf), 'r') as f:
                     correlations = json.loads(f.read())
                 try:
@@ -60,24 +60,3 @@ def save_output(cleardb=False, output='json'):
                     except:
                         print('Could not save {}'.format(ticker))
 
-
-# FILES = "lab/correlations/results/files"
-# json_output = {}
-# files = os.listdir(FILES)
-# i = 0
-# for f in files:
-#     i += 1
-#     ticker = f.split('.').pop(0)
-#     print(i, ticker)
-#     if (ticker):
-#         json_output[ticker] = []
-#         with open(os.path.join(FILES, f), 'r') as txtfile:
-#             if (i == 947):
-#                 print(f)
-#             correlations = json.loads(txtfile.read())
-#         for corrs in correlations:
-#             data = {'comparand': corrs['comparand'], 'rvalue': corrs['rvalue']}
-#             json_output[ticker].append(data)
-
-# with open(os.path.join("lab/correlations/results/", "correlations.json")) as json_file:
-#     json.dump(correlations, json_file)
