@@ -11,6 +11,9 @@ lab/graveyard/
 lab/riskrange
 lab/COMMANDS.txt
 lab/correlations/output/*
-lab/correlations/output_json/*
+lab/rescaledrange/output/*
+lab/macro/output/*
+lab/trend/output/*
+lab/donchian/output/*
 *.sqlite
 db.sqlite3

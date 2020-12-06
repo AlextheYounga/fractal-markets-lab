@@ -1,7 +1,8 @@
 import texttable
 from tabulate import tabulate
 import sys
-
+import csv
+import os
 
 def setWidths(data, w='default'):
     """ 
@@ -30,7 +31,7 @@ def setWidths(data, w='default'):
     return False
 
 
-def printFullTable(data, widths='default'):
+def printFullTable(data, struct='list', widths='default'):
     """ 
     Parameters
     ----------
@@ -38,12 +39,18 @@ def printFullTable(data, widths='default'):
     """
     print("\n")
     table = texttable.Texttable()
-    if (type(data) == list):
+    if (struct == 'list' and type(data) == list):
         headers = data.pop(0)
         table.header(headers)
         table.set_cols_width(setWidths(headers, widths))
         for r in data:
             table.add_rows([r], header=False)
+    if (struct == 'dictlist' and type(data[0]) == dict):
+        headers = list(data[0].keys())
+        table.header(headers)
+        table.set_cols_width(setWidths(headers, widths))
+        for r, d in enumerate(data):
+            table.add_rows([d.values()], header=False)
 
     print(table.draw())
 
@@ -95,3 +102,26 @@ def listTable(data):
             print(dash)
         else:
             print('{:<10s}{:>4s}{:>12.1f}'.format(data[i][0], data[i][1], data[i][2]))
+
+
+# Data must be list of dicts
+def writeCSV(data, output, append=False):
+    if (not os.path.exists(output) or (append == False)):
+        with open(output, mode='w') as resultsfile:
+            write_results = csv.writer(resultsfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            write_results.writerow(
+                data[0].keys()
+            )
+            for row in data:
+                write_results.writerow(
+                    row.values()
+                )
+        return
+    else:
+        with open(output, mode='a') as resultsfile:
+            write_results = csv.writer(resultsfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            for row in data:
+                write_results.writerow(
+                    row.values()
+                )
+        return

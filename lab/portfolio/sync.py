@@ -6,7 +6,7 @@ import json
 import sys
 from .functions import *
 from ..core.functions import *
-from ..core.export import writeCSV
+from ..core.output import writeCSV
 django.setup()
 
 PORTFOLIO = 'lab/core/storage/portfolio/'

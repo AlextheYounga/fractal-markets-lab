@@ -1,9 +1,10 @@
 import django
 from django.apps import apps
 from ..core.functions import extract_data, chunks
-from ..core.output import printFullTable
-from ..core.export import writeCSV
+from ..core.output import printFullTable, writeCSV
 from datetime import datetime, timedelta
+import pandas as pd
+import numpy as np
 import json
 import sys
 import os
@@ -25,9 +26,9 @@ def is_short(n):
             return True
     return False
 
-def count_data_points(t1, t2):
+def count_data_points(t1, t2):    
     count = []
-    for t in [t1, t2]:
+    for t in [t1, t2]:        
         stock = Stock.objects.get(ticker=t)
         hp = HistoricalPrices.objects.get(stock=stock)
         count.append(len(hp.prices))
@@ -54,7 +55,7 @@ def print_correlation(corrs):
         csvdata.append(csvd)
 
     printFullTable(table_data, widths=7)
-    writeCSV(csvdata, "correlations/results.csv", append=True)
+    writeCSV(csvdata, "lab/correlations/output/lookup/results.csv", append=True)
     return 'Done'
 
 
@@ -64,15 +65,15 @@ def inverse_correlations(n, src='database'):
         print_correlation(correlations)
 
     # TODO Get it set up to run on just json, db is too slow
-    # if (src == 'json'):
-    #     results = []        
-    #     with open(JSON) as jsonfile:
-    #         correlations = json.loads(jsonfile.read())
-    #         for ticker, data in correlations.items():
-    #             stock = Stock.objects.get(ticker=ticker)
-    #             for item in data:
-    #                 print(item)
-    #                 sys.exit()
+    if (src == 'json'):
+        results = []        
+        with open(JSON) as jsonfile:
+            correlations = json.loads(jsonfile.read())
+            for ticker, data in correlations.items():
+                stock = Stock.objects.get(ticker=ticker)
+                for item in data:
+                    print(item)
+                    sys.exit()
 
 
 def positive_correlations(n, src='database'):

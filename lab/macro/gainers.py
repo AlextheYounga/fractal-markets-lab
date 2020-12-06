@@ -5,8 +5,7 @@ from .functions import getETFs
 from ..twitter.tweet import send_tweet
 from ..core.functions import chunks
 from ..core.api import quoteStatsBatchRequest, getStockInfo
-from ..core.output import printTable
-from ..core.export import writeCSV
+from ..core.output import printTable, writeCSV
 import json
 import sys
 from datetime import date
@@ -92,7 +91,7 @@ for i, chunk in enumerate(chunked_etfs):
 
 if results:
     today = date.today().strftime('%m-%d')
-    writeCSV(results, 'macro/etfs_{}.csv'.format(today))
+    writeCSV(results, 'lab/macro/output/etfs_{}.csv'.format(today))
 
     tweet = ""
     for etf in results:
