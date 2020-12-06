@@ -1,8 +1,11 @@
 import django
 from django.apps import apps
 from ..core.functions import extract_data, chunks
+from ..core.output import writeCSV
+from .functions import count_data_points
 from datetime import datetime, timedelta
 from multiprocessing import Pool, cpu_count
+import pandas as pd
 import numpy as np
 import json
 import sys
@@ -13,6 +16,7 @@ load_dotenv()
 django.setup()
 FILES = "lab/correlations/output/files"
 JSON = "lab/correlations/output/json/correlations.json"
+CSV = "lab/correlations/output/csv"
 
 HistoricalPrices = apps.get_model('database', 'HistoricalPrices')
 priceobjs = HistoricalPrices.objects.all()
@@ -20,9 +24,14 @@ badset = ['GCOW', 'FAAR']
 json_output = {}
 
 
-def scan_output_folder():
-    files = os.listdir(FILES)
-    return [f.split('.').pop(0) for f in files]
+def scan_output_folder(output):
+    if (output):
+        if (output == 'files'):
+            files = os.listdir(FILES)
+        if (output == 'csv'):
+            files = os.listdir(CSV)
+        return [f.split('.').pop(0) for f in files]
+
 
 def redundant_correlation(t1, t2, output):
     if (output == 'json'):
@@ -39,6 +48,7 @@ def redundant_correlation(t1, t2, output):
                     if (corrs['comparand'] == t2):
                         return True
         return False
+
 
 def correct_lengths(h1, h2):
     objs = [h1.prices, h2.prices]
@@ -77,21 +87,25 @@ def run_correlation(h1, output='files'):
             print("Failed to correlate {} and {}. Skipping.".format(h1.stock.ticker, h2.stock.ticker))
             continue
         rv = r[0, 1]
-        result = {'comparand': h2.stock.ticker, 'rvalue': rv}
-        if (output == 'json'):
-            json_output[h1.stock.ticker].append(result)
-        if (output == 'files'):
+        dpoints = count_data_points(h1.stock.ticker, h2.stock.ticker)
+        result = {'comparand': h2.stock.ticker, 'rvalue': rv, 'datapoints': dpoints}
+        if (output != 'json'):
             correlations.append(result)
+        else:
+            json_output[h1.stock.ticker].append(result)
+
     if (output == 'files'):
         with open(os.path.join(FILES, '{}.txt'.format(h1.stock.ticker)), 'w') as txtfile:
             json.dump(correlations, txtfile)
+    if (output == 'csv'):
+        writeCSV(correlations, 'lab/correlations/output/csv/{}.csv'.format(h1.stock.ticker))
 
 
 def scan_for_correlations(output='files'):
     print('Running...')
     for h in priceobjs:
-        if (output == 'files'):
-            if (h.stock.ticker in scan_output_folder()):
+        if (output != 'json'):
+            if (h.stock.ticker in scan_output_folder(output)):
                 continue
         if (h.stock.ticker in badset):
             continue

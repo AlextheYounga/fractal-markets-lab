@@ -7,8 +7,7 @@ from datetime import date
 from .functions import *
 from ..core.functions import chunks, dataSanityCheck
 from ..core.api import quoteStatsBatchRequest, getHistoricalEarnings, getPriceTarget
-from ..core.output import printTable
-from ..core.export import writeCSV
+from ..core.output import printTable, writeCSV
 from ..twitter.tweet import send_tweet
 load_dotenv()
 django.setup()
@@ -121,7 +120,7 @@ for i, chunk in enumerate(chunked_tickers):
 
 if results:
     today = date.today().strftime('%m-%d')
-    writeCSV(results, 'trend/trend_chasing_{}.csv'.format(today))
+    writeCSV(results, 'lab/trend/output/earnings/trend_chasing_{}.csv'.format(today))
 
     # Tweet
     tweet = ""

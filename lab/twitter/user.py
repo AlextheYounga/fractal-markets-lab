@@ -71,8 +71,6 @@ def check_bio(bio):
         'commodities',
         'data',
         'economy',
-        'bitcoin',
-        'crypto',
         'silver',
         'commodity',
         'trade',
