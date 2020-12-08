@@ -26,10 +26,12 @@ def draw_box(text):
 def send_tweet(tweet, headline=False, footer=False):
     while True:
         if (headline):
+            headline = ""
             sys.stdout.write('Write tweet headline:')
             headline = "{} \n".format(input())
             tweet = headline + tweet
         if (footer):
+            footer = ""
             sys.stdout.write('Write tweet footer:')
             footer = "\n{}".format(input())
             tweet = tweet + footer
