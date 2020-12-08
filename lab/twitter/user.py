@@ -16,39 +16,81 @@ auth.set_access_token(os.environ.get("TWITTER_ACCESS_KEY"), os.environ.get("TWIT
 api = tweepy.API(auth)
 
 
+def limit_handled(cursor):
+    while True:
+        try:
+            yield cursor.next()
+        except tweepy.RateLimitError:
+            last_run = cache.get('twitter_last_run')
+            current_time = datetime.now()
+            if (last_run):
+                next_run = (last_run + timedelta(minutes=15))
+                wait_time = (next_run - current_time).seconds + 5  # Giving it a little leeway of 5 seconds
+                print("Run Halted =", last_run.strftime("%H:%M:%S"))
+                print("Next Run = {}".format(next_run.strftime("%H:%M:%S")))
+
+                time.sleep(wait_time)
+            else:
+                print('Halt time not being cached.')
+                wait_time = (15 * 60)
+                next_run = (current_time + timedelta(minutes=15)).strftime("%H:%M:%S")
+                print("Run Stopped =", current_time.strftime("%H:%M:%S"))
+                print("Next Run = {}".format(next_run))
+
+                time.sleep(wait_time)
+
+
 def followFollowers(handle, p=cache.get('auto_followers_last_page')):
     user = api.get_user(handle)
     print("Name: {}\nScreen Name: {}\nDescription: {}\n".format(user.name, user.screen_name, user.description))
 
     if (prompt_yes_no("This user?")):
 
-        def limit_handled(cursor):
-            while True:
-                try:
-                    yield cursor.next()
-                except tweepy.RateLimitError:
-                    last_run = cache.get('auto_followers_last_run')
-                    current_time = datetime.now()
-                    if (last_run):
-                        next_run = (last_run + timedelta(minutes=15))
-                        wait_time = (next_run - current_time).seconds + 5  # Giving it a little leeway of 5 seconds
-                        print("Run Halted =", last_run.strftime("%H:%M:%S"))
-                        print("Next Run = {}".format(next_run.strftime("%H:%M:%S")))
+        def check_bio(bio):
+            base_words = [
+                'stock'
+                'market',
+                'gold',
+                'commodities',
+                'data',
+                'economy',
+                'silver',
+                'commodity',
+                'trade',
+                'trading',
+                'research',
+                'hedge',
+                'accounting',
+                'machine',
+                'learning',
+                'coding',
+                'MBA',
+                'CFA',
+                'business',
+                'capitalism',
+                'libertarian',
+                'option',
+                'developer',
+                'programmer'
+            ]
+            keywords = wordVariator(base_words)
 
-                        time.sleep(wait_time)
-                    else:
-                        print('Halt time not being cached.')
-                        wait_time = (15 * 60)
-                        next_run = (current_time + timedelta(minutes=15)).strftime("%H:%M:%S")
-                        print("Run Stopped =", current_time.strftime("%H:%M:%S"))
-                        print("Next Run = {}".format(next_run))
+            for k in keywords:
+                if (k in bio):
+                    return True
 
-                        time.sleep(wait_time)
+            return False
+
+        def screen_follower(f):
+            if (f.followers_count > 300):
+                if (check_bio(f.description)):
+                    return True
+            return False
 
         for page in limit_handled(tweepy.Cursor(api.followers, id=user.id, page=p).pages()):
             p += 1
             current_time = datetime.now()
-            cache.set('auto_followers_last_run', current_time, 910)
+            cache.set('twitter_last_run', current_time, 910)
             cache.set('auto_followers_last_page', p, None)
 
             print('Page {}'.format(p))
@@ -63,44 +105,40 @@ def followFollowers(handle, p=cache.get('auto_followers_last_page')):
                         print("{} - {} followers".format(f.screen_name, f.followers_count))
 
 
-def check_bio(bio):
-    base_words = [
-        'stock'
-        'market',
-        'gold',
-        'commodities',
-        'data',
-        'economy',
-        'silver',
-        'commodity',
-        'trade',
-        'trading',
-        'research',
-        'hedge',
-        'accounting',
-        'machine',
-        'learning',
-        'coding',
-        'MBA',
-        'CFA',
-        'business',
-        'capitalism',
-        'libertarian',
-        'option',
-        'developer',        
-        'programmer'
-    ]
-    keywords = wordVariator(base_words)
+def trimFollowers(p=cache.get('trim_followers_last_page')):
+    user = api.get_user(os.environ.get("TWITTER_HANDLE"))
 
-    for k in keywords:
-        if (k in bio):
-            return True
+    def check_bio(bio):
+        negative_words = [
+            'Trump'
+        ]
+        keywords = wordVariator(negative_words)
 
-    return False
+        for k in keywords:
+            if (k in bio):
+                return True
 
+        return False
 
-def screen_follower(f):
-    if (f.followers_count > 300):
-        if (check_bio(f.description)):
-            return True
-    return False
+    def screen_follower(f):
+        if (f.followers_count < 500):
+            if (check_bio(f.description)):
+                return True
+        return False
+
+    for page in limit_handled(tweepy.Cursor(api.friends, id=user.id, page=p).pages()):
+        p += 1
+        current_time = datetime.now()
+        cache.set('twitter_last_run', current_time, 910)
+        cache.set('trim_followers_last_page', p, None)
+
+        print('Page {}'.format(p))
+        for f in page:
+            if (screen_follower(f)):
+                try:
+                    api.destroy_friendship(f.id, screen_name=None, user_id=f.id)
+                    print("unfollowed {} - {} followers".format(f.screen_name, f.followers_count))
+                except:
+                    break
+
+                    

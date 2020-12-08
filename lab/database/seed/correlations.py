@@ -1,7 +1,7 @@
 import time
 import django
 from django.apps import apps
-from ..core.functions import extract_data, chunks
+from ...core.functions import extract_data, chunks
 from datetime import datetime, timedelta
 import json
 import sys
@@ -11,7 +11,7 @@ load_dotenv()
 django.setup()
 
 
-def save_output(cleardb=False, output='json'):
+def seed_output(cleardb=False, output='json'):
     FILES = "lab/correlations/output/files"
     JSON = "lab/correlations/output/json/correlations.json"
     Stock = apps.get_model('database', 'Stock')

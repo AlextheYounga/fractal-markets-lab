@@ -3,7 +3,12 @@ import statistics
 import math
 import pandas as pd
 import numpy as np
-# Returns a list of items from a nested object.
+
+
+def extract_data_pd(data, key):
+    """ This appears to be significantly slower than the loop """
+    df = pd.DataFrame(data, columns=data[0].keys())
+    return df[key].tolist()
 
 
 def burrow(data, key):
@@ -114,16 +119,18 @@ def prompt_yes_no(question, default="yes"):
             sys.stdout.write("Please respond with 'yes' or 'no' "
                              "(or 'y' or 'n').\n")
 
+
 def dataSanityCheck(array, key):
     if(array):
         if (key in array and array[key]):
             return array[key]
     return 0
 
+
 def wordVariator(lst):
     variations = []
     for word in lst:
-        variations.append(word.lower())        
+        variations.append(word.lower())
         variations.append(word.upper())
         variations.append(word.title())
     lst.extend(variations)
