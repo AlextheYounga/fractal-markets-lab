@@ -7,7 +7,6 @@ import sys
 
 JSON = "lab/correlations/output/json/correlations.json"
 
-
 def json_to_csv():
     output = {}
     with open(JSON) as jsonfile:
