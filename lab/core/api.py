@@ -9,6 +9,13 @@ load_dotenv()
 
 
 def syncStocks():
+    """
+    Fetches all stocks from IEX 
+
+    Returns
+    -------
+    object of all stocks 
+    """
     try:
         url = 'https://cloud.iexapis.com/stable/ref-data/iex/symbols?token={}'.format(os.environ.get("IEX_TOKEN"))
         tickers = requests.get(url).json()
@@ -20,8 +27,20 @@ def syncStocks():
 
 
 def quoteStatsBatchRequest(batch, sandbox=False):
-    # Accepts list of tickers
-    # Maximum 100
+    """
+    Fetches quotes and key stats for a batch of tickers. Max 100 tickers
+
+    Parameters
+    ----------
+    batch       :list
+                list of max 100 tickers
+    sandbox     :bool
+                Sets the IEX environment to sandbox mode to make limitless API calls for testing.
+
+    Returns
+    -------
+    dict object of quotes and key stats for 100 tickers
+    """
     domain = 'cloud.iexapis.com'
     key = os.environ.get("IEX_TOKEN")
     if (sandbox):
@@ -44,8 +63,20 @@ def quoteStatsBatchRequest(batch, sandbox=False):
 
 
 def companyBatchRequest(batch, sandbox=False):
-    # Accepts list of tickers
-    # Maximum 100
+    """
+    Fetches company info for a batch of tickers. Max 100 tickers
+
+    Parameters
+    ----------
+    batch       :list
+                list of max 100 tickers
+    sandbox     :bool
+                Sets the IEX environment to sandbox mode to make limitless API calls for testing.
+
+    Returns
+    -------
+    dict object of company info for 100 tickers
+    """
     domain = 'cloud.iexapis.com'
     key = os.environ.get("IEX_TOKEN")
     if (sandbox):
@@ -67,6 +98,19 @@ def companyBatchRequest(batch, sandbox=False):
 
 
 def getCurrentPrice(ticker, sandbox=False):
+    """
+    Fetches latest price
+
+    Parameters
+    ----------
+    ticker      :string
+    sandbox     :bool
+                Sets the IEX environment to sandbox mode to make limitless API calls for testing.
+
+    Returns
+    -------
+    latest price as float 
+    """
     key = os.environ.get("IEX_TOKEN")
     if (sandbox):
         os.environ['IEX_API_VERSION'] = 'iexcloud-sandbox'
@@ -84,6 +128,19 @@ def getCurrentPrice(ticker, sandbox=False):
 
 
 def getStockInfo(ticker, sandbox=False):
+    """
+    Fetches company info for a batch of tickers. Max 100 tickers
+
+    Parameters
+    ----------
+    ticker      :string
+    sandbox     :bool
+                Sets the IEX environment to sandbox mode to make limitless API calls for testing.
+
+    Returns
+    -------
+    latest price as float 
+    """
     key = os.environ.get("IEX_TOKEN")
     if (sandbox):
         os.environ['IEX_API_VERSION'] = 'iexcloud-sandbox'
