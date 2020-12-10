@@ -78,7 +78,7 @@ def print_lookup(corrs):
     for etf in corrs:
         if (etf.rvalue):
             # if ((etf.rvalue >= 0.98 and etf.rvalue < 1) or (etf.rvalue <= -0.98 and etf.rvalue > -1)):
-            if (etf.rvalue <= -0.93 and etf.rvalue > -1):
+            if (etf.rvalue <= -0.90 and etf.rvalue > -1):
                 comparand = Stock.objects.get(ticker=etf.comparand)
 
                 if ((not is_short(etf.stock.name)) and (not is_short(comparand.name))):
