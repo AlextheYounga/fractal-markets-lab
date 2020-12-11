@@ -129,7 +129,7 @@ def getCurrentPrice(ticker, sandbox=False):
 
 def getStockInfo(ticker, sandbox=False):
     """
-    Fetches company info for a batch of tickers. Max 100 tickers
+    Fetches company info from stock ticker.
 
     Parameters
     ----------
@@ -139,7 +139,7 @@ def getStockInfo(ticker, sandbox=False):
 
     Returns
     -------
-    latest price as float 
+    dict object of 
     """
     key = os.environ.get("IEX_TOKEN")
     if (sandbox):
