@@ -11,3 +11,4 @@ python-dotenv
 python-twitter
 tweepy
 django
+python-environ
