@@ -9,7 +9,7 @@ Must run the first time you start the project
 <b>Donchian Formulas:</b>
 
 
-```python -c 'from lab.donchian.calculator import calculate; print(calculate("CHWY"))'```
+```python -c 'from lab.donchian.range import calculate; print(calculate("CHWY"))'```
 
 <b>Value at Risk (Still figuring this out)</b>
 
