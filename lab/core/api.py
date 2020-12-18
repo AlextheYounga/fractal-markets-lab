@@ -117,7 +117,7 @@ def getCurrentPrice(ticker, sandbox=False):
         key = os.environ.get("IEX_SANDBOX_TOKEN")
     try:
         stock = Stock(ticker, token=key)
-        price = stock.get_price()
+        price = stock.get_price()[ticker].iloc[0]
     except:
         #print("Unexpected error:", sys.exc_info()[0])
         return {}
@@ -141,6 +141,7 @@ def getStockInfo(ticker, sandbox=False):
     -------
     dict object of 
     """
+    #TODO: Go redo the iex package calls cause the maintainer changed all the shit to pandas output
     key = os.environ.get("IEX_TOKEN")
     if (sandbox):
         os.environ['IEX_API_VERSION'] = 'iexcloud-sandbox'
