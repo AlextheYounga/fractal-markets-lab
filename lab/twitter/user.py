@@ -110,7 +110,8 @@ def trimFollowers(p=cache.get('trim_followers_last_page')):
 
     def check_bio(bio):
         negative_words = [
-            'Trump'
+            'Trump',
+            'God'
         ]
         keywords = wordVariator(negative_words)
 
