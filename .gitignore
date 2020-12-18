@@ -8,7 +8,7 @@ lab/__pycache__/
 lab/exports/*
 lab/core/storage/*
 lab/graveyard/
-lab/riskrange
+lab/riskrange/output/*
 lab/COMMANDS.txt
 lab/correlations/output/*
 lab/rescaledrange/output/*
