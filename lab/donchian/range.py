@@ -8,7 +8,7 @@ from ..twitter.tweet import send_tweet, translate_data
 
 
 def calculate(ticker, tweet=False):
-    asset_data = getHistoricalData(ticker, '1m', sandbox=True)
+    asset_data = getHistoricalData(ticker, '1m')
 
     prices = extract_data(asset_data, 'close')
     highs = extract_data(asset_data, 'high')
