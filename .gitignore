@@ -16,5 +16,6 @@ lab/macro/output/*
 lab/trend/output/*
 lab/donchian/output/*
 lab/twitter/user.py
+lab/twitter/notes.*
 *.sqlite
 db.sqlite3
