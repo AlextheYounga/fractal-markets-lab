@@ -79,10 +79,11 @@ def range_controller(args):
 
 def twitter_controller(subroutine, args):
     if (subroutine == 'follow'):
-        if (args and len(args) >= 2):
+        from lab.twitter.user import followFollowers
+        if (args):
             handle = args[0]
-            index = args[1]
-            from lab.twitter.user import followFollowers
+        if (args and len(args) >= 2):            
+            index = args[1]            
             if (index == 'restart'):
                 print(followFollowers(handle, 0))
 
