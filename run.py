@@ -116,6 +116,12 @@ def trend_controller(subroutine, args):
     if (subroutine == 'gainers'):
         import lab.trend.gainers
 
+def vix_controller(args):
+    if (args):
+        ticker = args[0]
+        from lab.vix.calculation import vix_calculation
+        print(vix_calculation(ticker))
+
 
 def main():
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'lab.settings')
