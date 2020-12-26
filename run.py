@@ -26,6 +26,7 @@ def list_commands():
         ['trend:earnings', 'Scans all stocks and returns todays gainers who have consistently good earnings.'],
         ['trend:volume', 'Scans all stocks and returns todays gainers with abnormally high volume.'],
         ['trend:gainers', 'Grabs todays gainers and checks their earnings.'],
+        ['vix [ticker]', 'Runs the VIX volatility equation on a ticker'],
     ]
     printTabs(commands, headers, 'simple')
     print("\n\n")
