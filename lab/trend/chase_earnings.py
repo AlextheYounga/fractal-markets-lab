@@ -7,7 +7,7 @@ from datetime import date
 from .functions import *
 from ..core.functions import chunks, dataSanityCheck
 from ..core.api import quoteStatsBatchRequest, getHistoricalEarnings, getPriceTarget
-from ..core.output import printTable, writeCSV
+from ..core.output import printFullTable, writeCSV
 from ..twitter.tweet import send_tweet
 load_dotenv()
 django.setup()
@@ -115,12 +115,13 @@ for i, chunk in enumerate(chunked_tickers):
                                 )
 
                                 print('{} saved to Watchlist'.format(ticker))
-                                results.append(stockData)
-                                printTable(stockData)
+                                results.append(stockData)                                
 
 if results:
     today = date.today().strftime('%m-%d')
     writeCSV(results, 'lab/trend/output/earnings/trend_chasing_{}.csv'.format(today))
+
+    printFullTable(results, struct='dictlist')
 
     # Tweet
     tweet = ""

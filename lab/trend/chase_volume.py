@@ -7,7 +7,7 @@ from datetime import date
 from .functions import dynamicUpdateCreate
 from ..core.functions import chunks, dataSanityCheck
 from ..core.api import quoteStatsBatchRequest, getPriceTarget
-from ..core.output import printTable, writeCSV
+from ..core.output import printFullTable, writeCSV
 from ..twitter.tweet import send_tweet
 load_dotenv()
 django.setup()
@@ -126,13 +126,14 @@ for i, chunk in enumerate(chunked_tickers):
 
                         # Removing from terminal output
                         del stockData['day50MovingAvg']
-                        del stockData['day200MovingAvg']
-                        printTable(stockData)
+                        del stockData['day200MovingAvg']                        
 
 
 if results:
     today = date.today().strftime('%m-%d')
     writeCSV(results, 'lab/trend/output/volume/trend_chasing_{}.csv'.format(today))
+
+    printFullTable(results, struct='dictlist')
 
     # Tweet
     tweet = ""
