@@ -23,6 +23,7 @@ def list_commands():
         ['twitter:follow [handle, page_number]', 'Combs through a followers of a user and follows particular people. Each loop is a *page* of 20 people.'],
         ['twitter:trim [page_number]', 'Combs through your followers and removes certain types of people.'],
         ['trend:chase', 'Scans all stocks and returns todays gainers with above certain thresholds (weeds out the penny stocks).'],
+        ['trend:search [string]', 'Scans stocks with string in stock name and looks for gainers'],
         ['trend:earnings', 'Scans all stocks and returns todays gainers who have consistently good earnings.'],
         ['trend:volume', 'Scans all stocks and returns todays gainers with abnormally high volume.'],
         ['trend:gainers', 'Grabs todays gainers and checks their earnings.'],
@@ -104,6 +105,9 @@ def trend_controller(subroutine, args):
             # TODO: Finish price targets
             from lab.trend.pricetarget import lookup
             print(lookup(args[0]))
+        if (subroutine == 'search'):
+            from lab.trend.search import search
+            print(search(args[0]))
 
     if (subroutine == 'chase'):
         import lab.trend.chase
@@ -116,6 +120,7 @@ def trend_controller(subroutine, args):
 
     if (subroutine == 'gainers'):
         import lab.trend.gainers
+    
 
 def vix_controller(args):
     if (args):
