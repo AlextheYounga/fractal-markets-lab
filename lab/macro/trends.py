@@ -7,7 +7,7 @@ from datetime import date
 from .functions import getETFs
 from ..core.functions import chunks
 from ..core.api import quoteStatsBatchRequest, getStockInfo
-from ..core.output import printTable, writeCSV
+from ..core.output import printFullTable, writeCSV
 load_dotenv()
 django.setup()
 
@@ -86,8 +86,9 @@ for i, chunk in enumerate(chunked_etfs):
                     )
                     stockData['volume'] = "{}K".format(volume / 1000)
                     results.append(stockData)
-                    printTable(stockData)
 
 if results:
     today = date.today().strftime('%m-%d')
     writeCSV(results, 'lab/macro/output/etfs_{}.csv'.format(today))
+
+    printFullTable(results, struct='dictlist')
