@@ -3,6 +3,7 @@ import statistics
 import math
 import pandas as pd
 import numpy as np
+# from translate import Translator
 
 
 def extract_data_pd(data, key):
@@ -137,3 +138,16 @@ def wordVariator(lst):
     lstset = set(lst)
 
     return list(lstset)
+
+# TODO: Figure out word translations
+# def translateWords(lst):
+    # langs = ["zh", "vi", "ja", "de", "ru", "es", "ar"]
+    # translations = []
+
+    # for lang in langs:
+    #     for phrase in lst:
+    #         translator = Translator(to_lang=lang)
+    #         translation = translator.translate(phrase)
+    #         translations.append(translation)
+    
+    # return translations
