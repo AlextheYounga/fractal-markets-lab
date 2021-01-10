@@ -3,13 +3,12 @@ import math
 import statistics
 import sys
 from ..core.api import getHistoricalData
-from ..core.functions import extract_data
+from ..core.functions import extract_data, logReturns
 from .functions import *
 
 
-def vixCalculation(ticker='SPAZF'):
-    # Testing Spanish Mountain Gold Stock
-    asset_data = getHistoricalData(ticker, '1y')
+def vix_calculation(ticker='SPY'):    
+    asset_data = getHistoricalData(ticker, '1y', True, True)
     prices = list(reversed(extract_data(asset_data, 'close')))
     # Daily logarithmic returns, basically increase on an evenly-scaled percent change basis.
     log_returns = logReturns(prices)
@@ -29,4 +28,3 @@ def vixCalculation(ticker='SPAZF'):
         )
 
     return vix
-    # Output = 21.692995685345284

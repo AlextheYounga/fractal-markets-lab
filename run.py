@@ -16,16 +16,18 @@ def list_commands():
         ['correlations:scan', 'Runs correlations on all ETFs on the market, with *every other ETF on the market. (Takes about half an hour)'],
         ['donchian [ticker]', 'Runs a donchian range calculation on a ticker'],
         ['financials [ticker]', 'Returns financials data for ticker, including some custom indicators not provided by IEX.'],
-        ['macro:trends', 'Scans all ETFs and returns the ETFs with the best short term performance.'],
+        ['macro:trends [timeperiod] [gain]', 'Scans all ETFs and returns the ETFs with the performance above an int (gain) within a timerange (5d, 1m, 3m, 1y)'],
         ['macro:gainers', 'Scans all ETFs and returns ETFs with highest day change.'],
         ['hurst [ticker]', 'Runs a rescaled range analysis on a ticker.'],
         ['range [ticker]', 'Runs a volatility range analysis on a ticker.'],
         ['twitter:follow [handle, page_number]', 'Combs through a followers of a user and follows particular people. Each loop is a *page* of 20 people.'],
         ['twitter:trim [page_number]', 'Combs through your followers and removes certain types of people.'],
         ['trend:chase', 'Scans all stocks and returns todays gainers with above certain thresholds (weeds out the penny stocks).'],
+        ['trend:search [string]', 'Scans stocks with string in stock name and looks for gainers'],
         ['trend:earnings', 'Scans all stocks and returns todays gainers who have consistently good earnings.'],
         ['trend:volume', 'Scans all stocks and returns todays gainers with abnormally high volume.'],
         ['trend:gainers', 'Grabs todays gainers and checks their earnings.'],
+        ['vix [ticker]', 'Runs the VIX volatility equation on a ticker'],
     ]
     printTabs(commands, headers, 'simple')
     print("\n\n")
@@ -53,9 +55,13 @@ def financials_controller(args):
         print(lookupFinancials(ticker))
 
 
-def macro_controller(subroutine, args=[]):
+def macro_controller(subroutine, args=[]):    
     if (subroutine == 'trends'):
-        import lab.macro.trends
+        from lab.macro.trends import calculate_trends
+        if (args):
+            print(calculate_trends(args[0], args[1]))
+        else:
+            print(calculate_trends())
 
     if (subroutine == 'gainers'):
         import lab.macro.gainers
@@ -79,21 +85,22 @@ def range_controller(args):
 
 def twitter_controller(subroutine, args):
     if (subroutine == 'follow'):
-        if (args and len(args) >= 2):
+        from lab.twitter.user import followFollowers
+        if (args):
             handle = args[0]
-            index = args[1]
-            from lab.twitter.user import followFollowers
+        if (args and len(args) >= 2):            
+            index = args[1]            
             if (index == 'restart'):
                 print(followFollowers(handle, 0))
-
-        print(followFollowers(handle))
+            else:
+                print(followFollowers(handle))
 
     if (subroutine == 'trim'):
         from lab.twitter.user import trimFollowers
         if (args and args[0] == 'restart'):
             print(trimFollowers(0))
-
-        print(trimFollowers())
+        else:
+            print(trimFollowers())
 
 
 def trend_controller(subroutine, args):
@@ -102,6 +109,9 @@ def trend_controller(subroutine, args):
             # TODO: Finish price targets
             from lab.trend.pricetarget import lookup
             print(lookup(args[0]))
+        if (subroutine == 'search'):
+            from lab.trend.search import search
+            print(search(args[0]))
 
     if (subroutine == 'chase'):
         import lab.trend.chase
@@ -114,6 +124,13 @@ def trend_controller(subroutine, args):
 
     if (subroutine == 'gainers'):
         import lab.trend.gainers
+    
+
+def vix_controller(args):
+    if (args):
+        ticker = args[0]
+        from lab.vix.calculation import vix_calculation
+        print(vix_calculation(ticker))
 
 
 def main():
