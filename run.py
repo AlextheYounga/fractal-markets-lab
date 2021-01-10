@@ -16,7 +16,7 @@ def list_commands():
         ['correlations:scan', 'Runs correlations on all ETFs on the market, with *every other ETF on the market. (Takes about half an hour)'],
         ['donchian [ticker]', 'Runs a donchian range calculation on a ticker'],
         ['financials [ticker]', 'Returns financials data for ticker, including some custom indicators not provided by IEX.'],
-        ['macro:trends', 'Scans all ETFs and returns the ETFs with the best short term performance.'],
+        ['macro:trends [timeperiod] [gain]', 'Scans all ETFs and returns the ETFs with the performance above an int (gain) within a timerange (5d, 1m, 3m, 1y)'],
         ['macro:gainers', 'Scans all ETFs and returns ETFs with highest day change.'],
         ['hurst [ticker]', 'Runs a rescaled range analysis on a ticker.'],
         ['range [ticker]', 'Runs a volatility range analysis on a ticker.'],
@@ -55,9 +55,13 @@ def financials_controller(args):
         print(lookupFinancials(ticker))
 
 
-def macro_controller(subroutine, args=[]):
+def macro_controller(subroutine, args=[]):    
     if (subroutine == 'trends'):
-        import lab.macro.trends
+        from lab.macro.trends import calculate_trends
+        if (args):
+            print(calculate_trends(args[0], args[1]))
+        else:
+            print(calculate_trends())
 
     if (subroutine == 'gainers'):
         import lab.macro.gainers
@@ -88,15 +92,15 @@ def twitter_controller(subroutine, args):
             index = args[1]            
             if (index == 'restart'):
                 print(followFollowers(handle, 0))
-
-        print(followFollowers(handle))
+            else:
+                print(followFollowers(handle))
 
     if (subroutine == 'trim'):
         from lab.twitter.user import trimFollowers
         if (args and args[0] == 'restart'):
             print(trimFollowers(0))
-
-        print(trimFollowers())
+        else:
+            print(trimFollowers())
 
 
 def trend_controller(subroutine, args):
