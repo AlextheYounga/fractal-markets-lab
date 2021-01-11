@@ -92,8 +92,8 @@ def twitter_controller(subroutine, args):
             index = args[1]            
             if (index == 'restart'):
                 print(followFollowers(handle, 0))
-            else:
-                print(followFollowers(handle))
+        else:
+            print(followFollowers(handle))
 
     if (subroutine == 'trim'):
         from lab.twitter.user import trimFollowers
