@@ -9,7 +9,6 @@ Check out the .env.example file. If you have a Twitter developer account, you ca
 
 
 ```
-DEBUG=on
 DJANGO_SETTINGS_MODULE='lab.settings'
 DJANGO_SETTINGS_MODULE=lab.settings
 IEX_TOKEN=pk_somevalue
@@ -28,3 +27,21 @@ Run this command to view available commands. All commands must be prepended with
 (Apologies if a few of these commands are broken. This is a sort of playground of mine and I'm constantly changing/adding new things.
 
 ```python run.py list```
+
+```
+Command                               Description
+------------------------------------  ----------------------------------------------------------------------------------------------------------------
+correlations:scan                     Runs correlations on all ETFs on the market, with *every other ETF on the market. (Takes about half an hour)
+donchian [ticker]                     Runs a donchian range calculation on a ticker
+financials [ticker]                   Returns financials data for ticker, including some custom indicators not provided by IEX.
+macro:trends [timeperiod] [gain]      Scans all ETFs and returns the ETFs with the performance above an int (gain) within a timerange (5d, 1m, 3m, 1y)
+macro:gainers                         Scans all ETFs and returns ETFs with highest day change.
+hurst [ticker]                        Runs a rescaled range analysis on a ticker.
+range [ticker]                        Runs a volatility range analysis on a ticker.
+trend:chase                           Scans all stocks and returns todays gainers with above certain thresholds (weeds out the penny stocks).
+trend:search [string]                 Scans stocks with string in stock name and looks for gainers
+trend:earnings                        Scans all stocks and returns todays gainers who have consistently good earnings.
+trend:volume                          Scans all stocks and returns todays gainers with abnormally high volume.
+trend:gainers                         Grabs todays gainers and checks their earnings.
+vix [ticker]                          Runs the VIX volatility equation on a ticker
+```
