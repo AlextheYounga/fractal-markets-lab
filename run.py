@@ -18,7 +18,7 @@ def list_commands():
         ['financials [ticker]', 'Returns financials data for ticker, including some custom indicators not provided by IEX.'],
         ['macro:trends [timeperiod] [gain]', 'Scans all ETFs and returns the ETFs with the performance above an int (gain) within a timerange (5d, 1m, 3m, 1y)'],
         ['macro:gainers', 'Scans all ETFs and returns ETFs with highest day change.'],
-        ['hurst [ticker]', 'Runs a rescaled range analysis on a ticker.'],
+        ['hurst [ticker] [output]', 'Runs a rescaled range analysis on a ticker. Output defaults to table.'],
         ['range [ticker]', 'Runs a volatility range analysis on a ticker.'],
         ['fintwit:follow [handle, page_number]', 'Combs through a followers of a user and follows particular people. Each loop is a *page* of 20 people.'],
         ['fintwit:trim [page_number]', 'Combs through your followers and removes certain types of people.'],
@@ -69,10 +69,13 @@ def macro_controller(subroutine, args=[]):
 
 def hurst_controller(args):
     if (args):
-        ticker = args[0]
-        output = args[1]
         from lab.rescaledrange.fractal_calculator import fractal_calculator
-        print(fractal_calculator(ticker, output))
+        ticker = args[0]
+        if (len(args) > 1):
+            output = args[1]        
+            print(fractal_calculator(ticker, output))
+        else:
+            print(fractal_calculator(ticker))
 
 
 def range_controller(args):
