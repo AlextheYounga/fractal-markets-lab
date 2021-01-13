@@ -2,7 +2,7 @@ import statistics
 from scipy import stats
 import math
 from ..core.functions import extract_data
-from ..core.api import getCurrentPrice, getHistoricalData, testHistoricalData
+from ..core.api import getCurrentPrice, getHistoricalData
 from .functions import *
 from .output import exportFractal, outputTable
 import sys
@@ -130,7 +130,7 @@ def perform_hurst_calculations(x, y):
     return results
 
 
-def fractalCalculator(ticker, output='table'):
+def fractal_calculator(ticker, output='table'):
     """
     Main process thread. Will call on collect_key_stats() and perform_hurst_calculations()
 
