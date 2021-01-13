@@ -8,7 +8,7 @@ from .functions import *
 from ..core.functions import chunks, dataSanityCheck
 from ..core.api import quoteStatsBatchRequest, getHistoricalEarnings, getPriceTarget
 from ..core.output import printFullTable, writeCSV
-from ..twitter.tweet import send_tweet
+from ..fintwit.tweet import send_tweet
 load_dotenv()
 django.setup()
 

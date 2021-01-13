@@ -15,7 +15,7 @@ lab/rescaledrange/output/*
 lab/macro/output/*
 lab/trend/output/*
 lab/donchian/output/*
-lab/twitter/user.py
-lab/twitter/notes.*
+lab/fintwit/user.py
+lab/fintwit/notes.*
 *.sqlite
 db.sqlite3

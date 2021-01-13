@@ -20,8 +20,8 @@ def list_commands():
         ['macro:gainers', 'Scans all ETFs and returns ETFs with highest day change.'],
         ['hurst [ticker]', 'Runs a rescaled range analysis on a ticker.'],
         ['range [ticker]', 'Runs a volatility range analysis on a ticker.'],
-        ['twitter:follow [handle, page_number]', 'Combs through a followers of a user and follows particular people. Each loop is a *page* of 20 people.'],
-        ['twitter:trim [page_number]', 'Combs through your followers and removes certain types of people.'],
+        ['fintwit:follow [handle, page_number]', 'Combs through a followers of a user and follows particular people. Each loop is a *page* of 20 people.'],
+        ['fintwit:trim [page_number]', 'Combs through your followers and removes certain types of people.'],
         ['trend:chase', 'Scans all stocks and returns todays gainers with above certain thresholds (weeds out the penny stocks).'],
         ['trend:search [string]', 'Scans stocks with string in stock name and looks for gainers'],
         ['trend:earnings', 'Scans all stocks and returns todays gainers who have consistently good earnings.'],
@@ -85,7 +85,7 @@ def range_controller(args):
 
 def twitter_controller(subroutine, args):
     if (subroutine == 'follow'):
-        from lab.twitter.user import followFollowers
+        from lab.fintwit.user import followFollowers
         if (args):
             handle = args[0]
         if (args and len(args) >= 2):            
@@ -96,7 +96,7 @@ def twitter_controller(subroutine, args):
             print(followFollowers(handle))
 
     if (subroutine == 'trim'):
-        from lab.twitter.user import trimFollowers
+        from lab.fintwit.user import trimFollowers
         if (args and args[0] == 'restart'):
             print(trimFollowers(0))
         else:

@@ -2,7 +2,7 @@ import django
 from django.apps import apps
 from dotenv import load_dotenv
 from .functions import getETFs
-from ..twitter.tweet import send_tweet
+from ..fintwit.tweet import send_tweet
 from ..core.functions import chunks
 from ..core.api import quoteStatsBatchRequest, getStockInfo
 from ..core.output import printFullTable, writeCSV
