@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import json
 import sys
 from datetime import date
+from ..fintwit.tweet import send_tweet
 from .functions import getETFs
 from ..core.functions import chunks
 from ..core.api import quoteStatsBatchRequest, getStockInfo
@@ -97,10 +98,18 @@ def calculate_trends(timeperiod='1m', gain=20):
                         defaults=stockData
                     )
                     stockData['volume'] = "{}K".format(volume / 1000)
+                    stockData['changeToday'] = changeToday
                     results.append(stockData)
+
 
     if results:
         today = date.today().strftime('%m-%d')
         writeCSV(results, 'lab/macro/output/etfs_{}.csv'.format(today))
 
         printFullTable(results, struct='dictlist')
+
+        tweet = ""
+        for etf in results:
+            txt = "${} +{}%\n".format(etf['ticker'], round(etf['changeToday'], 2))
+            tweet = tweet + txt
+        send_tweet(tweet, True)

@@ -6,7 +6,7 @@ import json
 import sys
 import os
 from dotenv import load_dotenv
-from ..twitter.tweet import send_tweet
+from ..fintwit.tweet import send_tweet
 load_dotenv()
 django.setup()
 

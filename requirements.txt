@@ -13,4 +13,4 @@ tweepy
 django
 python-environ
 beautifulsoup4
-python-telegram-bot  
+python-telegram-bot

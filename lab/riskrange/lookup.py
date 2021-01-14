@@ -4,7 +4,7 @@ import json
 import sys
 from .methodology import rangeRules
 from ..core.output import printTable
-from ..twitter.tweet import send_tweet
+from ..fintwit.tweet import send_tweet
 
 
 def rangeLookup(ticker, tweet=False):
@@ -23,4 +23,5 @@ def rangeLookup(ticker, tweet=False):
             percentDownside,
             percentUpside
         )
-        send_tweet(tweet)
+        
+        send_tweet(tweet, True)

@@ -2,7 +2,7 @@ import django
 from django.apps import apps
 from dotenv import load_dotenv
 from .functions import getETFs
-from ..twitter.tweet import send_tweet
+from ..fintwit.tweet import send_tweet
 from ..core.functions import chunks
 from ..core.api import quoteStatsBatchRequest, getStockInfo
 from ..core.output import printFullTable, writeCSV
@@ -46,10 +46,11 @@ for i, chunk in enumerate(chunked_etfs):
             month3ChangePercent = stats['month3ChangePercent'] * 100 if ('month3ChangePercent' in stats and stats['month3ChangePercent']) else None
             day50MovingAvg = stats['day50MovingAvg'] if ('day50MovingAvg' in stats and stats['day50MovingAvg']) else None            
             ytdChangePercent = stats['ytdChangePercent'] * 100 if ('ytdChangePercent' in stats and stats['ytdChangePercent']) else 0
-            month1ChangePercent = stats['month1ChangePercent'] * 100 if ('month1ChangePercent' in stats and stats['month1ChangePercent']) else 0
+            
             # Critical
             changeToday = quote['changePercent'] * 100 if ('changePercent' in quote and quote['changePercent']) else 0
-
+            month1ChangePercent = stats['month1ChangePercent'] * 100 if ('month1ChangePercent' in stats and stats['month1ChangePercent']) else 0
+    
             critical = [changeToday, month1ChangePercent]
 
             if ((0 in critical)):
