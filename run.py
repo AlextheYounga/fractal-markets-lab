@@ -16,10 +16,10 @@ def list_commands():
         ['correlations:scan', 'Runs correlations on all ETFs on the market, with *every other ETF on the market. (Takes about half an hour)'],
         ['donchian [ticker]', 'Runs a donchian range calculation on a ticker'],
         ['financials [ticker]', 'Returns financials data for ticker, including some custom indicators not provided by IEX.'],
-        ['macro:trends [timeperiod] [gain]', 'Scans all ETFs and returns the ETFs with the performance above an int (gain) within a timerange (5d, 1m, 3m, 1y)'],
+        ['macro:trends [timeperiod=1m] [gain=20]', 'Scans all ETFs and returns the ETFs with the performance above an int (gain) within a timerange (5d, 1m, 3m, 1y)'],
         ['macro:gainers', 'Scans all ETFs and returns ETFs with highest day change.'],
         ['hurst [ticker] [output]', 'Runs a rescaled range analysis on a ticker. Output defaults to table.'],
-        ['range [ticker]', 'Runs a volatility range analysis on a ticker.'],
+        ['range [ticker] [tweet=False]', 'Runs a volatility range analysis on a ticker.'],
         ['fintwit:follow [handle, page_number]', 'Combs through a followers of a user and follows particular people. Each loop is a *page* of 20 people.'],
         ['fintwit:trim [page_number]', 'Combs through your followers and removes certain types of people.'],
         ['trend:chase', 'Scans all stocks and returns todays gainers with above certain thresholds (weeds out the penny stocks).'],
@@ -58,8 +58,8 @@ def financials_controller(args):
 def macro_controller(subroutine, args=[]):    
     if (subroutine == 'trends'):
         from lab.macro.trends import calculate_trends
-        if (args):
-            print(calculate_trends(args[0], args[1]))
+        if (args and len(args) > 1):
+            print(calculate_trends(args[0], float(args[1])))
         else:
             print(calculate_trends())
 
@@ -79,12 +79,14 @@ def hurst_controller(args):
 
 
 def range_controller(args):
+    from lab.riskrange.lookup import rangeLookup
     if (args):
         ticker = args[0]
-        output = args[1]
-        from lab.riskrange.lookup import rangeLookup
-        print(rangeLookup(ticker, output))
-
+        if (len(args) > 1):
+            tweet = args[1]
+            print(rangeLookup(ticker, tweet))
+        else:
+            print(rangeLookup(ticker))
 
 def twitter_controller(subroutine, args):
     if (subroutine == 'follow'):

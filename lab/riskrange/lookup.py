@@ -23,4 +23,5 @@ def rangeLookup(ticker, tweet=False):
             percentDownside,
             percentUpside
         )
-        send_tweet(tweet)
+        
+        send_tweet(tweet, True)
