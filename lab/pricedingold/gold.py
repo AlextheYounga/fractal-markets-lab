@@ -1,6 +1,7 @@
 import os
 import sys
 import requests
+import datetime
 from ..core.functions import extract_data
 from ..core.imports import parseCSV
 from dotenv import load_dotenv
@@ -9,10 +10,15 @@ load_dotenv()
 
 def read_historical_gold_prices():
     data = parseCSV('lab/pricedingold/data/goldprices1970.csv', fullPath=True)  
-    gold_prices = []
+    gold_prices = {}
     for row in data:
-        d = {'Date': row['Date'], 'Close': row['Close']}
-        gold_prices.append(d)
+        date = datetime.datetime.strptime(row['Date'], '%m-%d-%Y').strftime('%Y-%m-%d')
+        gold_prices[date] = float(row['Close'].replace(',', ''))
+
+    # gold_prices = []
+    # for row in data:
+    #     d = {'Date': row['Date'], 'Close': row['Close']}
+    #     gold_prices.append(d)
 
     return gold_prices
 

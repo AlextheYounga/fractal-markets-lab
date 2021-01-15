@@ -27,6 +27,7 @@ def list_commands():
         ['trend:earnings', 'Scans all stocks and returns todays gainers who have consistently good earnings.'],
         ['trend:volume', 'Scans all stocks and returns todays gainers with abnormally high volume.'],
         ['trend:gainers', 'Grabs todays gainers and checks their earnings.'],
+        ['pricedingold [ticker][timespan=5y][test=False]', 'Graphs and assets price in gold.'],
         ['vix [ticker]', 'Runs the VIX volatility equation on a ticker'],
     ]
     printTabs(commands, headers, 'simple')
@@ -55,50 +56,75 @@ def financials_controller(args):
         print(lookupFinancials(ticker))
 
 
-def macro_controller(subroutine, args=[]):    
+def macro_controller(subroutine, args=[]):
     if (subroutine == 'trends'):
         from lab.macro.trends import calculate_trends
         if (args and len(args) > 1):
-            print(calculate_trends(args[0], float(args[1])))
-        else:
-            print(calculate_trends())
+
+            try:
+                timeperiod = args[0]
+            except IndexError:
+                timeperiod = '1m'
+
+            try:
+                gain = args[1]
+            except IndexError:
+                gain = False
+
+            print(calculate_trends(timeperiod, float(gain)))
 
     if (subroutine == 'gainers'):
         import lab.macro.gainers
+
+
+def pricedingold_controller(args):
+    if (args):
+        from lab.pricedingold.compare import price_in_gold
+        ticker = args[0]
+
+        try:
+            timespan = args[1]
+        except IndexError:
+            timespan = '5y'
+
+        try:
+            test = args[2]
+        except IndexError:
+            test = False
+
+        print(price_in_gold(ticker, timespan, test))
 
 
 def hurst_controller(args):
     if (args):
         from lab.rescaledrange.fractal_calculator import fractal_calculator
         ticker = args[0]
-        if (len(args) > 1):
-            output = args[1]        
-            print(fractal_calculator(ticker, output))
-        else:
-            print(fractal_calculator(ticker))
+        output = args[1] if (len(args) > 1) else 'table'
+
+        print(fractal_calculator(ticker, output))
+
 
 
 def range_controller(args):
     from lab.riskrange.lookup import rangeLookup
     if (args):
         ticker = args[0]
-        if (len(args) > 1):
-            tweet = args[1]
-            print(rangeLookup(ticker, tweet))
-        else:
-            print(rangeLookup(ticker))
+        tweet = args[1] if (len(args) > 1) else False
+
+        print(rangeLookup(ticker, tweet))
+
+
 
 def twitter_controller(subroutine, args):
     if (subroutine == 'follow'):
         from lab.fintwit.user import followFollowers
         if (args):
             handle = args[0]
-        if (args and len(args) >= 2):            
-            index = args[1]            
+            index = args[1] if (len(args) > 1) else 0
             if (index == 'restart'):
                 print(followFollowers(handle, 0))
-        else:
-            print(followFollowers(handle))
+            else:
+                print(followFollowers(handle, index))
 
     if (subroutine == 'trim'):
         from lab.fintwit.user import trimFollowers
@@ -129,7 +155,7 @@ def trend_controller(subroutine, args):
 
     if (subroutine == 'gainers'):
         import lab.trend.gainers
-    
+
 
 def vix_controller(args):
     if (args):
