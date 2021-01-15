@@ -22,6 +22,8 @@ def price_in_gold(ticker, timespan='5y', test=False):
     prices = []
     for day in asset_prices:
         price = float(day['close'] / gold_prices[day['date']]) if (day['date'] in gold_prices) else 0
+        if (price == 0):
+            continue
         dates.append(day['date'])
         prices.append(round(price, 3))
 
