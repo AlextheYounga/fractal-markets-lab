@@ -42,7 +42,7 @@ def parseCSV(path, fullPath=False, headers=True):
     if (fullPath == True):
         csv_path = path
     with open(csv_path, newline='', encoding='utf-8-sig') as csvfile:
-        asset_data = {}
+        asset_data = []
 
         if (headers == False):
             # TODO: Figure out how to skip headers
@@ -52,6 +52,6 @@ def parseCSV(path, fullPath=False, headers=True):
             reader = csv.DictReader(csvfile)
 
         for i, row in enumerate(reader):
-            asset_data[i] = row
+            asset_data.append(row)
 
-    return asset_data
+        return asset_data
