@@ -47,5 +47,6 @@ def scrape_news(query="best+stocks+to+buy+this+week"):
 
         time.sleep(0.5)
 
-    for stock in stocklinks:
+    print("\n")
+    for stock in stocklinks:        
         print(stock.text)
