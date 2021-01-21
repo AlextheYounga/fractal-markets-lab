@@ -18,6 +18,7 @@ def list_commands():
         ['financials [ticker]', 'Returns financials data for ticker, including some custom indicators not provided by IEX.'],
         ['macro:trends [timeperiod=1m] [gain=20]', 'Scans all ETFs and returns the ETFs with the performance above an int (gain) within a timerange (5d, 1m, 3m, 1y)'],
         ['macro:gainers', 'Scans all ETFs and returns ETFs with highest day change.'],
+        ['news:scrape [query]', 'Searches a query and searches first 10 articles for stocks mentioned in article'],
         ['hurst [ticker] [output]', 'Runs a rescaled range analysis on a ticker. Output defaults to table.'],
         ['range [ticker] [tweet=False]', 'Runs a volatility range analysis on a ticker.'],
         ['fintwit:follow [handle, page_number]', 'Combs through a followers of a user and follows particular people. Each loop is a *page* of 20 people.'],
@@ -75,6 +76,17 @@ def macro_controller(subroutine, args=[]):
 
     if (subroutine == 'gainers'):
         import lab.macro.gainers
+
+
+def news_controller(subroutine, args=[]):
+    if (subroutine == 'scrape'):
+        from lab.news.scrape_headlines import scrape_news
+        if (args):
+            query = args[0]            
+        else:
+            query="best+stocks+to+buy+this+week"
+        
+        print(scrape_news(query))
 
 
 def pricedingold_controller(args):
