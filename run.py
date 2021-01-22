@@ -127,7 +127,7 @@ def range_controller(args):
 
 
 
-def twitter_controller(subroutine, args):
+def fintwit_controller(subroutine, args):
     if (subroutine == 'follow'):
         from lab.fintwit.user import followFollowers
         if (args):
