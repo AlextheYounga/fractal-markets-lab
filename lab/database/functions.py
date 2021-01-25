@@ -19,6 +19,35 @@ def saveHistoricalPrices(ticker, api_data):
     )
     if (isinstance(api_data, list)):
         histprices, created = HistoricalPrices.objects.update_or_create(stock=stock, defaults={'prices': api_data})
-            
+
+
+def dynamicUpdateCreate(data, find):
+    """ 
+    Parameters
+    ----------
+    data :  dict
+            Data must conform to this structure:
+                data = {
+                    'Model': {
+                    'column': value
+                    },
+                }
+    find :  QuerySet object
+
+    Returns
+    -------
+    boolean|string
+    """
+    if (isinstance(data, dict)):
+        for model, values in data.items():
+            Model = apps.get_model('database', model)
+            Model.objects.update_or_create(
+                stock=find,
+                defaults=values,
+            )
+    else:
+        return 'Data must be in dict structure'
+
+    return True
 
     

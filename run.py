@@ -27,9 +27,10 @@ def list_commands():
         ['trend:chase', 'Scans all stocks and returns todays gainers with above certain thresholds (weeds out the penny stocks).'],
         ['trend:search [string]', 'Scans stocks with string in stock name and looks for gainers'],
         ['trend:earnings', 'Scans all stocks and returns todays gainers who have consistently good earnings.'],
-        ['trend:volume', 'Scans all stocks and returns todays gainers with abnormally high volume.'],
         ['trend:gainers', 'Grabs todays gainers and checks their earnings.'],
         ['pricedingold [ticker][timespan=5y][test=False]', 'Graphs and assets price in gold.'],
+        ['volume:chase', 'Scans all stocks and returns todays gainers with abnormally high volume.'],
+        ['volume:anomaly', 'Scans all stocks and returns stocks who are accumulating extremely high volume over the last week. Finds market singularities.'],
         ['vix [ticker]', 'Runs the VIX volatility equation on a ticker'],
     ]
     printTabs(commands, headers, 'simple')
@@ -178,6 +179,14 @@ def trend_controller(subroutine, args):
 
     if (subroutine == 'gainers'):
         import lab.trend.gainers
+
+
+def volume_controller(subroutine, args):
+    if (subroutine == 'chase'):
+        import lab.volume.chase
+
+    if (subroutine == 'anomaly'):
+        import lab.volume.anomaly
 
 
 def vix_controller(args):

@@ -333,9 +333,11 @@ def getHistoricalData(ticker, timeframe, priceOnly=False, sandbox=False):
                 timeframe,
                 key
             )
+        print(url)
+        sys.exit()
         historicalData = requests.get(url).json()
     except:
-        #print("Unexpected error:", sys.exc_info()[0])
+        print("Unexpected error:", sys.exc_info()[0])
         return {}
 
     return historicalData

@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import json
 import sys
 from datetime import date
-from .functions import dynamicUpdateCreate
+from ..database.functions import dynamicUpdateCreate
 from ..core.functions import chunks, dataSanityCheck
 from ..core.api import quoteStatsBatchRequest, getPriceTarget
 from ..core.output import printFullTable, writeCSV
