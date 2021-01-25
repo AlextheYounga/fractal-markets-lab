@@ -58,8 +58,10 @@ for i, chunk in enumerate(chunked_tickers):
 
             
 if results:
+    printFullTable(results, struct='dictlist')
+    
     today = date.today().strftime('%m-%d')
     writeCSV(results, 'lab/volume/output/anomalies/anomalies{}.csv'.format(today))
 
-    printFullTable(results, struct='dictlist')
+    
         
