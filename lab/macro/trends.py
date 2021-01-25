@@ -22,7 +22,7 @@ etfs = getETFs(True)
 chunked_etfs = chunks(etfs, 100)
 
 
-def calculate_trends(timeperiod='1m', gain=20):
+def calculate_trends(timeframe='1m', gain=20):
     for i, chunk in enumerate(chunked_etfs):
         batch = quoteStatsBatchRequest(chunk)
         for ticker, stockinfo in batch.items():
@@ -62,13 +62,13 @@ def calculate_trends(timeperiod='1m', gain=20):
 
                 fromHigh = round((price / week52high) * 100, 3)
 
-                if (timeperiod == '5d'):
+                if (timeframe == '5d'):
                     tchange = day5ChangePercent
-                if (timeperiod == '1m'):
+                if (timeframe == '1m'):
                     tchange = month1ChangePercent
-                if (timeperiod == '3m'):
+                if (timeframe == '3m'):
                     tchange = month3ChangePercent
-                if (timeperiod == '1y'):
+                if (timeframe == '1y'):
                     tchange = ytdChangePercent
 
                 if (float(tchange) > float(gain)):
