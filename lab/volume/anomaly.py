@@ -30,11 +30,13 @@ for i, chunk in enumerate(chunked_tickers):
         if (info.get('chart', False)):
             chart = info['chart']
             price = chart[-1].get('close', 0)
+            priceFirst = chart[0].get('close', 0)
             volumeFirst = round(dataSanityCheck(chart[0], 'volume'), 2)
             volumeToday = round(dataSanityCheck(chart[-1], 'volume'), 2)
             changeToday = round(dataSanityCheck(chart[-1], 'changePercent'), 2)
+            changePercent5d = round((priceFirst - price) / priceFirst)
 
-            if ((price) and (isinstance(price, float))):
+            if ((price) and (isinstance(price, float) and (price > 0.5))):
                 stock, created = Stock.objects.update_or_create(
                     ticker=ticker,
                     defaults={'lastPrice': price},
@@ -44,15 +46,20 @@ for i, chunk in enumerate(chunked_tickers):
             
             if (0 in [volumeFirst, volumeToday, changeToday]):
                 continue
+
+            for vol in [volumeFirst, volumeToday]:
+                if ((vol / 1000) < 1):
+                    continue
         
-            if ((volumeToday / volumeFirst) > 100):
+            if ((volumeToday / volumeFirst) > 10):
                 stockData = {
                     'ticker': ticker,
                     'lastPrice': price,
                     'volumeToday': "{}K".format(round(volumeToday / 1000, 4)),
                     'volume5dAgo': "{}K".format(round(volumeFirst / 1000, 4)),
                     'volumeIncrease': round(volumeToday / volumeFirst),
-                    'changeToday': "{}%".format(round(changeToday * 100, 2))
+                    'changeToday': "{}%".format(round(changeToday * 100, 2)),
+                    '5dPercentChange': 
                 }
                 results.append(stockData)
 
