@@ -45,21 +45,21 @@ for i, chunk in enumerate(chunked_tickers):
             if (0 in [volumeFirst, volumeToday, changeToday]):
                 continue
         
-            if ((volumeToday / volumeFirst) > 50):
+            if ((volumeToday / volumeFirst) > 100):
                 stockData = {
                     'ticker': ticker,
                     'lastPrice': price,
-                    'volumeToday': "{}K".format(round(volumeToday / 1000, 2)),
-                    'volume5dAgo': "{}K".format(round(volumeFirst / 1000, 2)),
+                    'volumeToday': "{}K".format(round(volumeToday / 1000, 4)),
+                    'volume5dAgo': "{}K".format(round(volumeFirst / 1000, 4)),
                     'volumeIncrease': round(volumeToday / volumeFirst),
-                    'changeToday': changeToday
+                    'changeToday': "{}%".format(round(changeToday * 100, 2))
                 }
                 results.append(stockData)
 
             
 if results:
     printFullTable(results, struct='dictlist')
-    
+
     today = date.today().strftime('%m-%d')
     writeCSV(results, 'lab/volume/output/anomalies/anomalies{}.csv'.format(today))
 
