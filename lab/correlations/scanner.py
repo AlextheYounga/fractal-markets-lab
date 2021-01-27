@@ -12,6 +12,8 @@ from dotenv import load_dotenv
 load_dotenv()
 django.setup()
 
+# Runs mass scan for all correlations, correlating every ETF with every other ETF
+
 FILES = "lab/correlations/output/files"
 JSON = "lab/correlations/output/json/correlations.json"
 CSV = "lab/correlations/output/csv"

@@ -1,5 +1,6 @@
 import django
 from django.apps import apps
+from datetime import datetime
 import sys
 django.setup()
 
@@ -50,4 +51,15 @@ def dynamicUpdateCreate(data, find):
 
     return True
 
-    
+
+def updatedToday(record):
+    """ 
+    Parameters
+    ----------
+    record :  Database record
+              Checks to see if the record has already been updated today.
+    Returns
+    -------
+    boolean
+    """
+    # TODO: Create function to check if record has already been updated, if so default to db records to save api requests.

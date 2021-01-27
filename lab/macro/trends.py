@@ -103,9 +103,6 @@ def calculate_trends(timeframe='1m', gain=20):
 
 
     if results:
-        today = date.today().strftime('%m-%d')
-        writeCSV(results, 'lab/macro/output/etfs_{}.csv'.format(today))
-
         printFullTable(results, struct='dictlist')
 
         tweet = ""
