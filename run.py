@@ -111,7 +111,7 @@ def pricedingold_controller(args):
     except IndexError:
         try:
             ticker = args[0]
-            print(price_in_gold(timeframe))
+            print(price_in_gold(ticker))
         except IndexError:
             print(price_in_gold)
             return
