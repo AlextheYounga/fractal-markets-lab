@@ -1,7 +1,7 @@
 import django
 from django.apps import apps
 from ..core.functions import extract_data, chunks
-from datetime import datetime, timedelta
+from datetime import datetime
 import json
 import sys
 import os

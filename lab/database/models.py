@@ -173,6 +173,8 @@ class HistoricalPrices(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
     prices = JSONField(null=True)
     datapoints = models.IntegerField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):              # __str__ on Python 3
         return str(self.about_desc)

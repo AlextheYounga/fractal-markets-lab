@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-from datetime import datetime, timedelta, date
+from datetime import datetime, date
 from ..core.api import quoteStatsBatchRequest
 from ..core.functions import dataSanityCheck
 from ..core.output import printTable, printFullTable, writeCSV
