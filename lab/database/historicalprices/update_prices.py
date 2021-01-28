@@ -49,6 +49,8 @@ def update_record_prices(stock):
                 break
             del latest_prices[i]
         
+    # TODO: Finish figuring out how to tack on remaining days to price list
+
         print(latest_prices)
         sys.exit()        
 
