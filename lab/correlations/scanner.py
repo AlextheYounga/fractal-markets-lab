@@ -1,7 +1,7 @@
 import django
 from django.apps import apps
 from ..core.functions import extract_data, chunks
-from datetime import datetime, timedelta
+from datetime import datetime
 from timeit import default_timer as timer
 from ..core.output import writeCSV
 import numpy as np

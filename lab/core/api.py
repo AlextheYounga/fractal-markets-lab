@@ -1,5 +1,5 @@
 from iexfinance.stocks import Stock, get_historical_data
-from datetime import datetime, timedelta
+from datetime import datetime
 from dotenv import load_dotenv
 import requests
 import sys
@@ -287,7 +287,7 @@ def getFinancials(ticker, sandbox=False):
         )
         financials = requests.get(url).json()
     except:
-        #print("Unexpected error:", sys.exc_info()[0])
+        # print("Unexpected error:", sys.exc_info()[0])
         return None
 
     return financials
@@ -307,10 +307,11 @@ def getCashFlow(ticker, sandbox=False):
         )
         cashflow = requests.get(url).json()
     except:
-        #print("Unexpected error:", sys.exc_info()[0])
+        # print("Unexpected error:", sys.exc_info()[0])
         return None
 
     return cashflow
+    
 
 
 def getHistoricalData(ticker, timeframe, priceOnly=False, sandbox=False):
@@ -333,7 +334,7 @@ def getHistoricalData(ticker, timeframe, priceOnly=False, sandbox=False):
                 timeframe,
                 key
             )
-            
+
         historicalData = requests.get(url).json()
     except:
         print("Unexpected error:", sys.exc_info()[0])

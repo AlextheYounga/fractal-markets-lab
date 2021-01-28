@@ -52,14 +52,24 @@ def dynamicUpdateCreate(data, find):
     return True
 
 
-def updatedToday(record):
+def model_items_to_update(model):
     """ 
     Parameters
     ----------
-    record :  Database record
-              Checks to see if the record has already been updated today.
+    record :  Database model
+              Collects all records which haven't been updated today. 
     Returns
     -------
-    boolean
+    list
     """
-    # TODO: Create function to check if record has already been updated, if so default to db records to save api requests.
+    update_needed = []
+    Model = apps.get_model('database', model)
+    for record in Model.objects.all():
+
+        updated = record.updated_at.date()
+        today = date.today()
+        if (updated == today):
+            needs_update.append(record)
+    
+    return update_needed
+
