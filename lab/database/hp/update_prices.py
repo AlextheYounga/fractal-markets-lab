@@ -3,6 +3,7 @@ from django.apps import apps
 from dotenv import load_dotenv
 from datetime import datetime, date, timedelta
 from ...core.api import getHistoricalData
+from django.core.exceptions import ObjectDoesNotExist
 import json
 import sys
 django.setup()
@@ -27,9 +28,9 @@ def calculate_range(diff):
 
 def update_record_prices(stock):
     HistoricalPrices = apps.get_model('database', 'HistoricalPrices')
-    hp = HistoricalPrices.objects.get(stock=stock)
 
-    if (hp):
+    try:
+        hp = HistoricalPrices.objects.get(stock=stock)    
         prices = hp.prices
         lastdate = datetime.strptime(prices[-1]['date'], '%Y-%m-%d')
         today = datetime.now()
@@ -40,32 +41,30 @@ def update_record_prices(stock):
             return
 
         diff = abs((today - lastdate).days)
-        api_range = datetime.strftime((lastdate + timedelta(days=1)), '%Y%m%d')
         latest_prices = getHistoricalData(stock.ticker, calculate_range(diff), priceOnly=True, sandbox=True)
         
         
-        for i, day in enumerate(list(reversed(latest_prices))):      
+        for i, day in enumerate(list(reversed(latest_prices))):
+            prices.append(day)
             if (day['date'] == prices[-1]['date']):
-                break
-            del latest_prices[i]
+                break      
+
+        hp.prices = prices
+        hp.datapoints = len(hp.prices)
+        hp.save()
+
+        return hp
         
-    # TODO: Finish figuring out how to tack on remaining days to price list
+    except ObjectDoesNotExist:
+        prices = getHistoricalData(stock.ticker, '5y', priceOnly=True, sandbox=True)
+        hp = HistoricalPrices.objects.create(
+            stock=stock,
+            prices=prices,
+            datapoints=len(prices)
+        )
 
-        print(latest_prices)
-        sys.exit()        
+        return hp
 
-    else:
-        print('else')
-            
-        
-        
-
-Stock = apps.get_model('database', 'Stock')
-update_record_prices(Stock.objects.get(id=3517))
-
-
-    
-# python -c 'from lab.database.historicalprices.update_prices import update_record_prices; print(update_record_prices("EDV"))'
 
 
 
