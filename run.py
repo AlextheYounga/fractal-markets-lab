@@ -27,6 +27,7 @@ def list_commands():
         ['trend:chase', 'Scans all stocks and returns todays gainers with above certain thresholds (weeds out the penny stocks).'],
         ['trend:search [string]', 'Scans stocks with string in stock name and looks for gainers'],
         ['trend:earnings', 'Scans all stocks and returns todays gainers who have consistently good earnings.'],
+        ['trend:pricetarget [ticker]', 'Grabs price targets'],
         ['trend:gainers', 'Grabs todays gainers and checks their earnings.'],
         ['pricedingold [ticker][timespan=5y][test=False]', 'Graphs and assets price in gold.'],
         ['volume:chase', 'Scans all stocks and returns todays gainers with abnormally high volume.'],
@@ -174,11 +175,13 @@ def trend_controller(subroutine, args):
     if (subroutine == 'earnings'):
         import lab.trend.chase_earnings
 
-    if (subroutine == 'volume'):
-        import lab.trend.chase_volume
-
     if (subroutine == 'gainers'):
         import lab.trend.gainers
+
+    if (subroutine == 'pricetarget'):
+        from lab.trend.pricetarget import lookup
+        if (args):
+            print(lookup(args[0]))
 
 
 def volume_controller(subroutine, args):

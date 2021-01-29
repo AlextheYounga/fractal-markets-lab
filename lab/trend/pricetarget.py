@@ -6,7 +6,8 @@ import os
 import sys
 from datetime import date
 from .functions import *
-from ..core.api import quoteStatsBatchRequest
+from ..core.api import quoteStatsBatchRequest, getPriceTarget
+from ..core.output import printFullTable
 load_dotenv()
 django.setup()
 
@@ -18,4 +19,4 @@ def lookup(ticker):
     
     priceTargets = getPriceTarget(ticker)
     if (priceTargets):
-        
+        printFullTable(priceTargets)
