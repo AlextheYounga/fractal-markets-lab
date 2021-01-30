@@ -3,7 +3,7 @@ from django.apps import apps
 from dotenv import load_dotenv
 import json
 import sys
-from .methodology import formula
+from .methodology import calculate
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib import pylab
@@ -13,8 +13,14 @@ django.setup()
 
 
 
-def run():
-    index = formula()
+# def run(update=False):
+#     index = calculate(update)
+
+    
+        
+
+def graph(update=False):
+    index = calculate(update)
 
     x = index.keys()
     y = index.values()
@@ -29,5 +35,3 @@ def run():
 
 
     plt.show()
-        
-

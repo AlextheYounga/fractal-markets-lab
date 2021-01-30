@@ -20,9 +20,9 @@ def calculate_range(diff):
     if (diff < 365):
         return '1y'
     if (diff < 730):
-        return '1y'
+        return '2y'
     if (diff < 1825):
-        return '1y'
+        return '5y'
 
 
 def batch_refresh_prices(batch, timeframe):
@@ -37,7 +37,7 @@ def batch_refresh_prices(batch, timeframe):
         stock, created = Stock.objects.update_or_create(
             ticker=ticker
         )
-        
+
         defaults = {
             'prices': stats['chart'],
             'datapoints': len(stats['chart'])
@@ -58,10 +58,11 @@ def update_prices(stock):
         lastdate = datetime.strptime(prices[-1]['date'], '%Y-%m-%d')
         today = datetime.now()
 
-        if (today.date() == lastdate.date()):
+        diff = abs((today - lastdate).days)
+
+        if (diff <= 3):
             return
 
-        diff = abs((today - lastdate).days)
         latest_prices = getHistoricalData(stock.ticker, calculate_range(diff), priceOnly=True)
 
         for i, day in enumerate(list(reversed(latest_prices))):
@@ -86,7 +87,7 @@ def refresh_one(ticker, timeframe='max'):
     """
     There appears to be a bug in IEX console where some tickers are not available on batch requests.
     I made this as a workaround.
-    
+
     Command:
     python -c 'from lab.database.hp.update_prices import refresh_one; print(refresh_one("XOP"))'
     """
@@ -96,12 +97,12 @@ def refresh_one(ticker, timeframe='max'):
     prices = getHistoricalData(ticker, timeframe, priceOnly=True)
 
     stock = Stock.objects.get(ticker=ticker)
-    
+
     defaults = {
         'prices': prices,
         'datapoints': len(prices)
     }
-    
+
     hp, created = HistoricalPrices.objects.update_or_create(
         stock=stock,
         defaults=defaults

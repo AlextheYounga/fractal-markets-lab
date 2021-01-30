@@ -23,8 +23,9 @@ def list_commands():
         ['range [ticker] [tweet=False]', 'Runs a volatility range analysis on a ticker.'],
         ['fintwit:follow [handle, page_number]', 'Combs through a followers of a user and follows particular people. Each loop is a *page* of 20 people.'],
         ['fintwit:trim [page_number]', 'Combs through your followers and removes certain types of people.'],
-        ['inflation:measure', 'Inflation index using etfs'],
-        ['inflation:functions [refresh]', 'Grabs max historical prices for all etfs in sectors list, updates with fresh data.'],
+        ['inflation:calculate [update=False]', 'Inflation index using etfs'],
+        ['inflation:graph [update=False]', 'Graph inflation index using etfs'],
+        ['inflation:functions [refresh]', 'Grabs max historical prices for all etfs in sectors list, updates with fresh data.'],        
         ['trend:chase', 'Scans all stocks and returns todays gainers with above certain thresholds (weeds out the penny stocks).'],
         ['trend:search [string]', 'Scans stocks with string in stock name and looks for gainers'],
         ['trend:earnings', 'Scans all stocks and returns todays gainers who have consistently good earnings.'],
@@ -55,9 +56,13 @@ def donchian_controller(args):
 
 
 def inflation_controller(subroutine, args=[]):
-    if (subroutine == 'measure'):
-        from lab.inflation.measure import run
-        print(run())
+    if (subroutine == 'graph'):
+        from lab.inflation.measure import graph
+        try:
+            update = True if (args[0] == 'update') else False
+            print(graph(update))
+        except IndexError:
+            print(graph())
 
     if (subroutine == 'functions'):
         if (args[0] == 'refresh'):

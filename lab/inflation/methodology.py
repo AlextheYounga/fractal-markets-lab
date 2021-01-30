@@ -24,9 +24,11 @@ def sectors():
         'XLV',
         'XLI',
         'XLB',
-        'XLRE',
+        'IYR',
+        # 'XLRE',
         'XLK',
-        'XLC',
+        # 'XLC',
+        'IXP',
         'XLU',
         'XME',
         'VNQ',
@@ -59,7 +61,16 @@ def trim_data(data):
     return trimmed
 
 
-def collect_data(update=False):
+def formula(data):
+    index = {}
+    for day, prices in data.items():
+        avg = statistics.mean(prices)
+        index[day] = avg
+    
+    
+    return index
+
+def calculate(update):
     HistoricalPrices = apps.get_model('database', 'HistoricalPrices')
     Stock = apps.get_model('database', 'Stock')
 
@@ -83,15 +94,7 @@ def collect_data(update=False):
 
     data = trim_data(data)
 
-    return data
+    return formula(data)
 
 
-def formula():
-    index = {}
-    data = collect_data()
-    for day, prices in data.items():
-        avg = statistics.mean(prices)
-        index[day] = avg
-    
-    
-    return index
+
