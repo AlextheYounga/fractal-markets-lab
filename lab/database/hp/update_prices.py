@@ -95,17 +95,16 @@ def refresh_one(ticker, timeframe='max'):
 
     prices = getHistoricalData(ticker, timeframe, priceOnly=True)
 
-    stock, created = Stock.objects.update_or_create(
-        ticker=ticker
-    )
+    stock = Stock.objects.get(ticker=ticker)
     
     defaults = {
         'prices': prices,
         'datapoints': len(prices)
     }
-
-    print('Saving {}'.format(ticker))
-    hp = HistoricalPrices.objects.update_or_create(
+    
+    hp, created = HistoricalPrices.objects.update_or_create(
         stock=stock,
         defaults=defaults
     )
+
+    print('Saved {}, Created: {}'.format(ticker, created))

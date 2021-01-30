@@ -3,23 +3,31 @@ from django.apps import apps
 from dotenv import load_dotenv
 import json
 import sys
-from datetime import date
-from ..fintwit.tweet import send_tweet
-from .methodology import SECTORS
-from ..core.functions import chunks, extract_data
-from ..core.api import batchHistoricalData, getStockInfo
-from ..core.output import printFullTable, writeCSV
+from .methodology import formula
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+from matplotlib import pylab
+import numpy as np
 load_dotenv()
 django.setup()
 
 
 
-def fetch_prices(timeframe='1y'):
-    prices = {}
-    batch = batchHistoricalData(SECTORS, timeframe, priceOnly=True, sandbox=True)
-    for ticker, etf in batch.items():
-        prices[ticker] = extract_data(etf['chart'], 'close')
+def run():
+    index = formula()
 
-    return prices
+    x = index.keys()
+    y = index.values()
+
+    fig = plt.subplots(figsize=(12, 6))
+
+    plt.plot(x, y, label='Index Value')  # etc.    
+    plt.xlabel('x Date')
+    plt.ylabel('y Value')
+    plt.title("Inflation Index")
+    plt.xticks(np.arange(0, len(x)+1, 126))
+
+
+    plt.show()
         
 

@@ -17,34 +17,34 @@ django.setup()
 
 def sectors():
     return [
-        # 'XLY',
-        # 'XLP',
-        # 'XLE',
-        # 'XLF',
-        # 'XLV',
-        # 'XLI',
-        # 'XLB',
-        # 'XLRE',
-        # 'XLK',
-        # 'XLC',
-        # 'XLU',
-        # 'XME',
-        # 'VNQ',
-        # 'GDX',
-        # 'AMLP',
-        # 'ITB',
-        # 'OIH',
-        # 'KRE',
-        # 'XRT',
-        # 'MOO',
-        # 'FDN',
-        # 'IBB',
-        # 'SMH',
-        'ХОР',
-        # 'PBW',
-        # 'KIE',
-        # 'PHO',
-        # 'IGV'
+        'XLY',
+        'XLP',
+        'XLE',
+        'XLF',
+        'XLV',
+        'XLI',
+        'XLB',
+        'XLRE',
+        'XLK',
+        'XLC',
+        'XLU',
+        'XME',
+        'VNQ',
+        'GDX',
+        'AMLP',
+        'ITB',
+        'OIH',
+        'KRE',
+        'XRT',
+        'MOO',
+        'FDN',
+        'IBB',
+        'SMH',
+        'XOP',
+        'PBW',
+        'KIE',
+        'PHO',
+        'IGV'
     ]
 
 
@@ -67,9 +67,9 @@ def collect_data(update=False):
 
     for ticker in sectors():
         print(ticker)
-        stock, created = Stock.objects.update_or_create(
-            ticker=ticker
-        )
+
+        stock = Stock.objects.get(ticker=ticker)
+
         if (update):
             update_prices(stock)
         
@@ -94,8 +94,4 @@ def formula():
         index[day] = avg
     
     
-    print(json.dumps(index, indent=1))
-    sys.exit()
-
-
-# formula()
+    return index
