@@ -23,6 +23,7 @@ def list_commands():
         ['range [ticker] [tweet=False]', 'Runs a volatility range analysis on a ticker.'],
         ['fintwit:follow [handle, page_number]', 'Combs through a followers of a user and follows particular people. Each loop is a *page* of 20 people.'],
         ['fintwit:trim [page_number]', 'Combs through your followers and removes certain types of people.'],
+        ['historicalprices:get [ticker]', 'Fetches historical prices for a ticker and saves them to db.'],
         ['inflation:calculate [update=False]', 'Inflation index using etfs'],
         ['inflation:graph [update=False]', 'Graph inflation index using etfs'],
         ['inflation:functions [refresh]', 'Grabs max historical prices for all etfs in sectors list, updates with fresh data.'],        
@@ -53,6 +54,13 @@ def donchian_controller(args):
         tweet = True if (args and (args[0] == 'tweet')) else False
         from lab.donchian.range import calculate
         print(calculate(ticker, tweet))
+
+
+def historicalprices_controller(subroutine, args):
+    if (subroutine == 'get'):
+        if (args):
+            from lab.database.hp.update_prices import refresh_one
+            print(refresh_one(args[0]))
 
 
 def inflation_controller(subroutine, args=[]):
