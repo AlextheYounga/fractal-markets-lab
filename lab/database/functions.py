@@ -70,6 +70,7 @@ def model_items_to_update(model):
         today = date.today()
         if (updated == today):
             needs_update.append(record)
-    
+
     return update_needed
+
 

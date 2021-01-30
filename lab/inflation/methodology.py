@@ -1,10 +1,13 @@
 import django
 from django.apps import apps
 from dotenv import load_dotenv
+import pandas as pd
+import numpy as np
+import statistics
 import json
 import sys
 from datetime import date
-from ..database.hp.update_prices import update_record_prices
+from ..database.hp.update_prices import update_prices, batch_refresh_prices
 from ..core.functions import chunks
 from ..core.api import quoteStatsBatchRequest, getStockInfo
 from ..core.output import printFullTable, writeCSV
@@ -12,56 +15,87 @@ load_dotenv()
 django.setup()
 
 
-SECTORS = [
-    'XLY',
-    'XLP',
-    'XLE',
-    'XLF',
-    'XLV',
-    'XLI',
-    'XLB',
-    'XLRE',
-    'XLK',
-    'XLC',
-    'XLU',
-    'XME',
-    'VNQ',
-    'GDX',
-    'AMLP',
-    'ITB',
-    'OIH',
-    'KRE',
-    'XRT',
-    'MOO',
-    'FDN',
-    'IBB',
-    'SMH',
-    'ХОР',
-    'PBW',
-    'KIE',
-    'PHO',
-    'IGV'
-]
+def sectors():
+    return [
+        # 'XLY',
+        # 'XLP',
+        # 'XLE',
+        # 'XLF',
+        # 'XLV',
+        # 'XLI',
+        # 'XLB',
+        # 'XLRE',
+        # 'XLK',
+        # 'XLC',
+        # 'XLU',
+        # 'XME',
+        # 'VNQ',
+        # 'GDX',
+        # 'AMLP',
+        # 'ITB',
+        # 'OIH',
+        # 'KRE',
+        # 'XRT',
+        # 'MOO',
+        # 'FDN',
+        # 'IBB',
+        # 'SMH',
+        'ХОР',
+        # 'PBW',
+        # 'KIE',
+        # 'PHO',
+        # 'IGV'
+    ]
 
-def collect_data():
+
+def trim_data(data):
+    trimmed = {}
+    COUNT = len(sectors())
+    for date, prices in data.items():
+        if (len(prices) != COUNT):
+            continue
+        trimmed[date] = prices
+
+    return trimmed
+
+
+def collect_data(update=False):
     HistoricalPrices = apps.get_model('database', 'HistoricalPrices')
     Stock = apps.get_model('database', 'Stock')
 
-    data = []
+    data = {}    
 
-    for ticker in SECTORS:
+    for ticker in sectors():
         print(ticker)
-        stock = Stock.objects.get(ticker=ticker)
-        hp = update_record_prices(stock)  
+        stock, created = Stock.objects.update_or_create(
+            ticker=ticker
+        )
+        if (update):
+            update_prices(stock)
         
-        prices = {}
+        hp = HistoricalPrices.objects.get(stock=stock)
+
         for row in hp.prices:
-            prices[row['date']] = row['close']
-              
+            if (row['date'] not in data):
+                data[row['date']] = []
 
-        data[ticker] = prices
+            data[row['date']].append(row['close'])
 
-    print(json.dumps(data, indent=1))
-        
+    data = trim_data(data)
 
-collect_data()
+    return data
+
+
+def formula():
+    index = {}
+    data = collect_data()
+    for day, prices in data.items():
+        avg = statistics.mean(prices)
+        index[day] = avg
+    
+    
+    print(json.dumps(index, indent=1))
+    sys.exit()
+
+
+# formula()

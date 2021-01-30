@@ -2,8 +2,7 @@ import django
 from django.apps import apps
 from dotenv import load_dotenv
 from datetime import datetime, date, timedelta
-from ...core.api import getHistoricalData
-from django.core.exceptions import ObjectDoesNotExist
+from ...core.api import getHistoricalData, batchHistoricalData
 import json
 import sys
 django.setup()
@@ -26,45 +25,87 @@ def calculate_range(diff):
         return '1y'
 
 
-def update_record_prices(stock):
+def batch_refresh_prices(batch, timeframe):
+    print('Running...')
+    HistoricalPrices = apps.get_model('database', 'HistoricalPrices')
+    Stock = apps.get_model('database', 'Stock')
+    data = batchHistoricalData(batch, timeframe, priceOnly=True)
+
+    for ticker, stats in data.items():
+        print('Saving {}'.format(ticker))
+
+        stock, created = Stock.objects.update_or_create(
+            ticker=ticker
+        )
+        
+        defaults = {
+            'prices': stats['chart'],
+            'datapoints': len(stats['chart'])
+        }
+
+        hp = HistoricalPrices.objects.update_or_create(
+            stock=stock,
+            defaults=defaults
+        )
+
+
+def update_prices(stock):
     HistoricalPrices = apps.get_model('database', 'HistoricalPrices')
 
-    try:
-        hp = HistoricalPrices.objects.get(stock=stock)    
+    if (HistoricalPrices.objects.filter(stock=stock).count() != 0):
+        hp = HistoricalPrices.objects.get(stock=stock)
         prices = hp.prices
         lastdate = datetime.strptime(prices[-1]['date'], '%Y-%m-%d')
         today = datetime.now()
-
-        print(prices[-1]['date'])
 
         if (today.date() == lastdate.date()):
             return
 
         diff = abs((today - lastdate).days)
-        latest_prices = getHistoricalData(stock.ticker, calculate_range(diff), priceOnly=True, sandbox=True)
-        
-        
+        latest_prices = getHistoricalData(stock.ticker, calculate_range(diff), priceOnly=True)
+
         for i, day in enumerate(list(reversed(latest_prices))):
             prices.append(day)
             if (day['date'] == prices[-1]['date']):
-                break      
+                break
 
         hp.prices = prices
         hp.datapoints = len(hp.prices)
         hp.save()
 
-        return hp
-        
-    except ObjectDoesNotExist:
-        prices = getHistoricalData(stock.ticker, '5y', priceOnly=True, sandbox=True)
+    else:
+        prices = getHistoricalData(stock.ticker, 'max', priceOnly=True)
         hp = HistoricalPrices.objects.create(
             stock=stock,
             prices=prices,
             datapoints=len(prices)
         )
 
-        return hp
 
+def refresh_one(ticker, timeframe='max'):
+    """
+    There appears to be a bug in IEX console where some tickers are not available on batch requests.
+    I made this as a workaround.
+    
+    Command:
+    python -c 'from lab.database.hp.update_prices import refresh_one; print(refresh_one("XOP"))'
+    """
+    HistoricalPrices = apps.get_model('database', 'HistoricalPrices')
+    Stock = apps.get_model('database', 'Stock')
 
+    prices = getHistoricalData(ticker, timeframe, priceOnly=True)
 
+    stock, created = Stock.objects.update_or_create(
+        ticker=ticker
+    )
+    
+    defaults = {
+        'prices': prices,
+        'datapoints': len(prices)
+    }
 
+    print('Saving {}'.format(ticker))
+    hp = HistoricalPrices.objects.update_or_create(
+        stock=stock,
+        defaults=defaults
+    )
