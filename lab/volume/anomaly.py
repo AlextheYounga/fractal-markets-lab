@@ -58,7 +58,7 @@ for i, chunk in enumerate(chunked_tickers):
                     'volumeToday': "{}K".format(round(volumeToday / 1000, 4)),
                     'volume5dAgo': "{}K".format(round(volumeFirst / 1000, 4)),
                     'volumeIncrease': round(volumeToday / volumeFirst),
-                    'changeToday': "{}%".format(round(changeToday * 100, 2)),
+                    'changeToday': "{}%".format(round((changeToday * 100), 2)),
                     '5dPercentChange': "{}%".format(round(((price - priceFirst) / priceFirst) * 100, 2))
                 }
                 results.append(stockData)
