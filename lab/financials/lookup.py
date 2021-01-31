@@ -1,13 +1,11 @@
 from ..core.api import getCashFlow, getFinancials, getKeyStats, getAdvancedStats, getCurrentPrice
 from ..core.output import printTable
 from ..core.functions import dataSanityCheck
-import django
-from django.apps import apps
+from ..redisdb.controller import rdb_save_stock
 import json
 import sys
 from dotenv import load_dotenv
 load_dotenv()
-django.setup()
 
 
 def lookupFinancials(ticker):
@@ -35,8 +33,8 @@ def lookupFinancials(ticker):
         longTermDebtToEquity = longTermDebt / shareholderEquity if (longTermDebt and shareholderEquity) else 0
         netWorth = totalAssets - totalLiabilities if (totalAssets and totalLiabilities) else 0
 
-        financialData = {
-            'ticker': ticker,
+        data = {
+            'price': price,
             'reportDate': financials['reportDate'],
             'netIncome': financials['netIncome'],
             'netWorth': netWorth,
@@ -52,21 +50,10 @@ def lookupFinancials(ticker):
             'freeCashFlowYield': freeCashFlowYield,
             'longTermDebtToEquity': longTermDebtToEquity,
         }
-        printTable(financialData)
-
-        Stock = apps.get_model('database', 'Stock')
-        Financials = apps.get_model('database', 'Financials')
-
-        del financialData['ticker']
-        stock, created = Stock.objects.update_or_create(
-            ticker=ticker,
-            defaults={'lastPrice': price},
-        )
-
+        # Save to rdb
+        rdb_save_stock(ticker, data)
         
-        Financials.objects.update_or_create(
-            stock=stock,
-            defaults=financialData,
-        )
+        printTable(data)
+
     else:
         print('Could not fetch financials')
