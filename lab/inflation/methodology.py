@@ -71,28 +71,4 @@ def formula(data):
     return index
 
 
-def calculate(update):
-    HistoricalPrices = apps.get_model('database', 'HistoricalPrices')
-    Stock = apps.get_model('database', 'Stock')
 
-    data = {}
-
-    for ticker in sectors():
-        print(ticker)
-
-        stock = Stock.objects.get(ticker=ticker)
-
-        if (update):
-            update_prices(stock)
-
-        hp = HistoricalPrices.objects.get(stock=stock)
-
-        for row in hp.prices:
-            if (row['date'] not in data):
-                data[row['date']] = []
-
-            data[row['date']].append(row['close'])
-
-    data = trim_data(data)
-
-    return formula(data)

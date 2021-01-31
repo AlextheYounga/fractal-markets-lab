@@ -12,15 +12,6 @@ def uniqueField(model, table, field):
     return rows
 
 
-def saveHistoricalPrices(ticker, api_data):
-    Stock = apps.get_model('database', 'Stock')
-    HistoricalPrices = apps.get_model('database', 'HistoricalPrices')
-    stock, created = Stock.objects.update_or_create(
-        ticker=ticker
-    )
-    if (isinstance(api_data, list)):
-        histprices, created = HistoricalPrices.objects.update_or_create(stock=stock, defaults={'prices': api_data})
-
 
 def dynamicUpdateCreate(data, find):
     """ 
