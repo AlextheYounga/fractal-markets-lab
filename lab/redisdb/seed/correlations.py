@@ -16,6 +16,7 @@ HistoricalPrices = apps.get_model('database', 'HistoricalPrices')
 correlations = Correlation.objects.all()
 stocks = Stock.objects.all()
 
+# TODO: Add multiprocessing to this file
 def calculate_datapoints(corr):
     h1 = HistoricalPrices.objects.get(stock=corr.stock)
     s2 = Stock.objects.get(ticker=corr.comparand)
