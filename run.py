@@ -14,6 +14,7 @@ def list_commands():
 
     commands = [
         ['correlations:scan', 'Runs correlations on all ETFs on the market, with *every other ETF on the market. (Takes about half an hour)'],
+        ['correlations:lookup [t1, t2]', 'Fetches correlation between two tickers'],
         ['donchian [ticker]', 'Runs a donchian range calculation on a ticker'],
         ['financials [ticker]', 'Returns financials data for ticker, including some custom indicators not provided by IEX.'],
         ['macro:trends [timeframe=1m] [gain=20]', 'Scans all ETFs and returns the ETFs with the performance above an int (gain) within a timerange (5d, 1m, 3m, 1y)'],
@@ -42,10 +43,13 @@ def list_commands():
 
 
 def correlations_controller(subroutine, args=[]):
-    # TODO Figure out the rest of correlations.
     if (subroutine == 'scan'):
         from lab.correlations.scanner import scanner
         print(scanner())
+    if (subroutine == 'lookup'):
+        from lab.correlations.analyze import lookup
+        if (args and len(args) == 2):
+            print(lookup(args[0], args[1]))
 
 
 def donchian_controller(args):

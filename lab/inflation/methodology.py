@@ -24,10 +24,7 @@ def sectors():
         'XLV',
         'XLI',
         'XLB',
-        # 'IYR',
-        # 'XLRE',
         'XLK',
-        # 'XLC',
         'IXP',
         'USRT',
         'XLU',
@@ -48,6 +45,9 @@ def sectors():
         'KIE',
         'PHO',
         'IGV'
+        # 'XLC',
+        # 'IYR',
+        # 'XLRE',
     ]
 
 
@@ -67,15 +67,15 @@ def formula(data):
     for day, prices in data.items():
         avg = statistics.mean(prices)
         index[day] = avg
-    
-    
+
     return index
+
 
 def calculate(update):
     HistoricalPrices = apps.get_model('database', 'HistoricalPrices')
     Stock = apps.get_model('database', 'Stock')
 
-    data = {}    
+    data = {}
 
     for ticker in sectors():
         print(ticker)
@@ -84,7 +84,7 @@ def calculate(update):
 
         if (update):
             update_prices(stock)
-        
+
         hp = HistoricalPrices.objects.get(stock=stock)
 
         for row in hp.prices:
@@ -96,6 +96,3 @@ def calculate(update):
     data = trim_data(data)
 
     return formula(data)
-
-
-

@@ -188,4 +188,5 @@ class Correlation(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
     comparand =  models.CharField(max_length=10, null=True)
     rvalue = models.FloatField(null=True)
+    datapoints = models.IntegerField(null=True)
     
