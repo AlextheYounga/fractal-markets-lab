@@ -16,7 +16,6 @@ HistoricalPrices = apps.get_model('database', 'HistoricalPrices')
 correlations = Correlation.objects.all()
 stocks = Stock.objects.all()
 
-# TODO: Add multiprocessing to this file
 def calculate_datapoints(corr):
     h1 = HistoricalPrices.objects.get(stock=corr.stock)
     s2 = Stock.objects.get(ticker=corr.comparand)
@@ -27,11 +26,16 @@ def calculate_datapoints(corr):
 
     return dp
 
-def save_data(corr):    
+
+for corr in correlations:    
     t1 = corr.stock.ticker
     t2 = corr.comparand
     rv = corr.rvalue
-    dp = calculate_datapoints(corr)
+    if (corr.datapoints):
+        dp = corr.datapoints
+    else:
+        dp = calculate_datapoints(corr)
+        
     print(t1+'-'+t2)
 
     r.set('correlation-'+t1+'-'+t2+'-rvalue', (corr.rvalue if corr.rvalue else ""))
