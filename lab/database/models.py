@@ -10,7 +10,6 @@ class Stock(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 class Watchlist(models.Model):
-    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, default=0)
     ticker = models.CharField(max_length=30)
     name = models.CharField(max_length=200)
     lastPrice = models.FloatField(null=True)

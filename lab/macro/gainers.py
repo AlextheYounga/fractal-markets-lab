@@ -1,21 +1,17 @@
-import django
-from django.apps import apps
 from dotenv import load_dotenv
 from .functions import getETFs
 from ..fintwit.tweet import send_tweet
 from ..core.functions import chunks
 from ..core.api import quoteStatsBatchRequest, getStockInfo
-from ..core.output import printFullTable, writeCSV
+from ..core.output import printFullTable
+from ..redisdb.controller import rdb_save_stock
 import json
 import sys
 from datetime import date
 load_dotenv()
-django.setup()
 
 
 Stock = apps.get_model('database', 'Stock')
-MacroTrends = apps.get_model('database', 'MacroTrend')
-Watchlist = apps.get_model('database', 'Watchlist')
 
 results = []
 etfs = getETFs(True)
@@ -31,68 +27,58 @@ for i, chunk in enumerate(chunked_etfs):
             price = quote.get('latestPrice', 0)
 
             if ((price) and (isinstance(price, float)) and (price > 10)):
-                etf, created = Stock.objects.update_or_create(
-                    ticker=ticker,
-                    defaults={'lastPrice': price},
-                )
-            else:
-                continue
 
-            day5ChangePercent = stats['day5ChangePercent'] * 100 if ('day5ChangePercent' in stats and stats['day5ChangePercent']) else None            
-            previousVolume = quote['previousVolume'] if ('previousVolume' in quote and quote['previousVolume']) else 0            
-            volume = quote['volume'] if ('volume' in quote and quote['volume']) else 0
-            avg30Volume = stats['avg30Volume'] if ('avg30Volume' in stats and stats['avg30Volume']) else None
-            week52high = stats['week52high'] if ('week52high' in stats and stats['week52high']) else 0
-            month3ChangePercent = stats['month3ChangePercent'] * 100 if ('month3ChangePercent' in stats and stats['month3ChangePercent']) else None
-            day50MovingAvg = stats['day50MovingAvg'] if ('day50MovingAvg' in stats and stats['day50MovingAvg']) else None            
-            ytdChangePercent = stats['ytdChangePercent'] * 100 if ('ytdChangePercent' in stats and stats['ytdChangePercent']) else 0
-            
-            # Critical
-            changeToday = quote['changePercent'] * 100 if ('changePercent' in quote and quote['changePercent']) else 0
-            month1ChangePercent = stats['month1ChangePercent'] * 100 if ('month1ChangePercent' in stats and stats['month1ChangePercent']) else 0
-    
-            critical = [changeToday, month1ChangePercent]
 
-            if ((0 in critical)):
-                continue
+                day5ChangePercent = stats['day5ChangePercent'] * 100 if ('day5ChangePercent' in stats and stats['day5ChangePercent']) else None            
+                previousVolume = quote['previousVolume'] if ('previousVolume' in quote and quote['previousVolume']) else 0            
+                volume = quote['volume'] if ('volume' in quote and quote['volume']) else 0
+                avg30Volume = stats['avg30Volume'] if ('avg30Volume' in stats and stats['avg30Volume']) else None
+                week52high = stats['week52high'] if ('week52high' in stats and stats['week52high']) else 0
+                month3ChangePercent = stats['month3ChangePercent'] * 100 if ('month3ChangePercent' in stats and stats['month3ChangePercent']) else None
+                day50MovingAvg = stats['day50MovingAvg'] if ('day50MovingAvg' in stats and stats['day50MovingAvg']) else None            
+                ytdChangePercent = stats['ytdChangePercent'] * 100 if ('ytdChangePercent' in stats and stats['ytdChangePercent']) else 0
+                
+                # Critical
+                changeToday = quote['changePercent'] * 100 if ('changePercent' in quote and quote['changePercent']) else 0
+                month1ChangePercent = stats['month1ChangePercent'] * 100 if ('month1ChangePercent' in stats and stats['month1ChangePercent']) else 0
+        
+                critical = [changeToday, month1ChangePercent]
 
-            fromHigh = round((price / week52high) * 100, 3)
+                if ((0 in critical)):
+                    continue
 
-            if (changeToday > 5):
-                if (volume > avg30Volume):
-                    keyStats = {
-                        'week52': stats['week52high'],
-                        'day5ChangePercent': stats['day5ChangePercent'],
-                        'month3ChangePercent': stats['month3ChangePercent'],
-                        'ytdChangePercent': ytdChangePercent,                            
-                        'avg30Volume': "{}K".format(round(avg30Volume / 1000, 3)),
-                        'month1ChangePercent': month1ChangePercent,
-                        'month3ChangePercent': month3ChangePercent,
-                        'day50MovingAvg': day50MovingAvg,
-                        'day200MovingAvg': stats['day200MovingAvg'],
-                        'fromHigh': fromHigh,
-                    }
+                fromHigh = round((price / week52high) * 100, 3)
 
-                    stockData = {
-                        'ticker': ticker,
-                        'name': etf.name,
-                        'lastPrice': price
-                    }
-                    stockData.update(keyStats)
+                if (changeToday > 5):
+                    if (volume > avg30Volume):
+                        keyStats = {
+                            'name': quote['companyName'],
+                            'price': price,
+                            'week52': stats['week52high'],
+                            'day5ChangePercent': stats['day5ChangePercent'],
+                            'month3ChangePercent': stats['month3ChangePercent'],
+                            'ytdChangePercent': ytdChangePercent,                            
+                            'avg30Volume': "{}K".format(round(avg30Volume / 1000, 3)),
+                            'month1ChangePercent': month1ChangePercent,
+                            'month3ChangePercent': month3ChangePercent,
+                            'day50MovingAvg': day50MovingAvg,
+                            'day200MovingAvg': stats['day200MovingAvg'],
+                            'fromHigh': fromHigh,
+                        }
 
-                    # Save to Macro
-                    MacroTrends.objects.update_or_create(
-                        etf=etf,
-                        defaults=stockData
-                    )
-                    stockData['volume'] = "{}K".format(volume / 1000)
-                    stockData['changeToday'] = changeToday
-                    results.append(stockData)
+                        rdb_save_stock(ticker, keyStats)
+
+                        stockData = {
+                            'ticker': ticker,                        
+                        }
+                        stockData.update(keyStats)
+
+                        stockData['volume'] = "{}K".format(volume / 1000)
+                        stockData['changeToday'] = changeToday
+                        results.append(stockData)
 
 if results:
     today = date.today().strftime('%m-%d')
-    writeCSV(results, 'lab/macro/output/etfs_{}.csv'.format(today))
-
     printFullTable(results, struct='dictlist')
 
     tweet = ""

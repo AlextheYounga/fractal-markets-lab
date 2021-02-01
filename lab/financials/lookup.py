@@ -1,5 +1,4 @@
 from ..core.api import getCashFlow, getFinancials, getKeyStats, getAdvancedStats, getCurrentPrice
-from ..core.output import printTable
 from ..core.functions import dataSanityCheck
 from ..redisdb.controller import rdb_save_stock
 import json
@@ -52,8 +51,10 @@ def lookupFinancials(ticker):
         }
         # Save to rdb
         rdb_save_stock(ticker, data)
-        
-        printTable(data)
+
+        for k, v in data.items():
+            print(k +': '+str(v))
+
 
     else:
         print('Could not fetch financials')

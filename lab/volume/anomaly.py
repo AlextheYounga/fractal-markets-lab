@@ -1,5 +1,3 @@
-import django
-from django.apps import apps
 from dotenv import load_dotenv
 import json
 import sys
@@ -13,7 +11,6 @@ load_dotenv()
 django.setup()
 
 Stock = apps.get_model('database', 'Stock')
-Trend = apps.get_model('database', 'Trend')
 Watchlist = apps.get_model('database', 'Watchlist')
 
 print('Running...')
@@ -37,31 +34,25 @@ for i, chunk in enumerate(chunked_tickers):
             changePercent5d = round((priceFirst - price) / priceFirst)
 
             if ((price) and (isinstance(price, float))):
-                stock, created = Stock.objects.update_or_create(
-                    ticker=ticker,
-                    defaults={'lastPrice': price},
-                )
-            else:
-                continue
             
-            if (0 in [volumeFirst, volumeToday, changeToday]):
-                continue
-
-            for vol in [volumeFirst, volumeToday]:
-                if ((vol / 1000) < 1):
+                if (0 in [volumeFirst, volumeToday, changeToday]):
                     continue
-        
-            if ((volumeToday / volumeFirst) > 50):
-                stockData = {
-                    'ticker': ticker,
-                    'lastPrice': price,
-                    'volumeToday': "{}K".format(round(volumeToday / 1000, 4)),
-                    'volume5dAgo': "{}K".format(round(volumeFirst / 1000, 4)),
-                    'volumeIncrease': round(volumeToday / volumeFirst),
-                    'changeToday': "{}%".format(round((changeToday * 100), 2)),
-                    '5dPercentChange': "{}%".format(round(((price - priceFirst) / priceFirst) * 100, 2))
-                }
-                results.append(stockData)
+
+                for vol in [volumeFirst, volumeToday]:
+                    if ((vol / 1000) < 1):
+                        continue
+            
+                if ((volumeToday / volumeFirst) > 50):
+                    stockData = {
+                        'ticker': ticker,
+                        'lastPrice': price,
+                        'volumeToday': "{}K".format(round(volumeToday / 1000, 4)),
+                        'volume5dAgo': "{}K".format(round(volumeFirst / 1000, 4)),
+                        'volumeIncrease': round(volumeToday / volumeFirst),
+                        'changeToday': "{}%".format(round((changeToday * 100), 2)),
+                        '5dPercentChange': "{}%".format(round(((price - priceFirst) / priceFirst) * 100, 2))
+                    }
+                    results.append(stockData)
 
             
 if results:

@@ -43,9 +43,10 @@ def list_commands():
 
 
 def correlations_controller(subroutine, args=[]):
-    if (subroutine == 'scan'):
-        from lab.correlations.scanner import scanner
-        print(scanner())
+    # if (subroutine == 'scan'):
+    # TODO: Fix the scanner
+    #     from lab.correlations.scanner import scanner
+    #     print(scanner())
     if (subroutine == 'lookup'):
         from lab.correlations.analyze import lookup
         if (args and len(args) == 2):
@@ -60,11 +61,12 @@ def donchian_controller(args):
         print(calculate(ticker, tweet))
 
 
-def historicalprices_controller(subroutine, args):
-    if (subroutine == 'get'):
-        if (args):
-            from lab.database.hp.update_prices import refresh_one
-            print(refresh_one(args[0]))
+# def historicalprices_controller(subroutine, args):
+    # TODO Switch to redisdb here
+    # if (subroutine == 'get'):
+    #     if (args):
+    #         from lab.database.hp.update_prices import refresh_one
+    #         print(refresh_one(args[0]))
 
 
 def inflation_controller(subroutine, args=[]):
