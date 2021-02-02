@@ -99,7 +99,7 @@ def scrape_news(query="best+stocks+to+buy+this+week"):
     soup = BeautifulSoup(results.text, 'html.parser')
     links = soup.find_all("a", {"class": "title"})
 
-    for link in links[:10]:
+    for link in links:
         if (blacklist(link['href'])):
             continue
 
