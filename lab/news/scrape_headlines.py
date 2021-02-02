@@ -86,7 +86,7 @@ def print_results(tickers):
         # send_tweet(tweet, True)
 
 
-def scrape_news(query="best+stocks+to+buy+this+week"):
+def scrape_news(query="best+stocks+to+buy"):
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
     tickers = []
 
