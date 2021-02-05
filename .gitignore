@@ -7,7 +7,6 @@ lab/*/__pycache__
 lab/database/*/__pycache__/
 lab/__pycache__/
 lab/exports/*
-lab/core/storage/*
 lab/graveyard/
 lab/riskrange/output/*
 lab/COMMANDS.txt
@@ -22,4 +21,5 @@ lab/donchian/news/*
 lab/fintwit/user.py
 lab/fintwit/notes.*
 *.sqlite
+settings.json
 db.sqlite3

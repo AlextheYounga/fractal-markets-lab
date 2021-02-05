@@ -1,10 +1,12 @@
 from iexfinance.stocks import Stock, get_historical_data
-from datetime import datetime
+from datetime import datetime, time, timedelta
 from dotenv import load_dotenv
 import requests
 import sys
 import json
 import os
+import http.client
+import mimetypes
 load_dotenv()
 
 
@@ -176,7 +178,7 @@ def getStockInfo(ticker, sandbox=False):
     -------
     dict object of 
     """
-    #TODO: Go redo the iex package calls cause the maintainer changed all the shit to pandas output
+    # TODO: Go redo the iex package calls cause the maintainer changed all the shit to pandas datatables output
     key = os.environ.get("IEX_TOKEN")
     if (sandbox):
         os.environ['IEX_API_VERSION'] = 'iexcloud-sandbox'
@@ -346,7 +348,6 @@ def getCashFlow(ticker, sandbox=False):
         return None
 
     return cashflow
-    
 
 
 def getHistoricalData(ticker, timeframe, priceOnly=False, sandbox=False):
@@ -408,3 +409,48 @@ def batchHistoricalData(batch, timeframe, priceOnly=False, sandbox=False):
         return {}
 
     return batchrequest
+
+
+def goldApi(timeframe='today'):
+
+    def goldapi_io_fetch(date):
+        conn = http.client.HTTPSConnection("www.goldapi.io")
+        payload = ''
+        headers = {
+            'x-access-token': 'goldapi-2lnukkrw5r58-io',
+            'Content-Type': 'application/json'
+        }
+        conn.request("GET", "/api/XAU/USD/"+date, payload, headers)
+        res = conn.getresponse()
+        data = res.read()
+        return data.decode("utf-8")
+
+    if (timeframe == 'today'):
+        date = datetime.today().strftime('%Y%m%d')
+        return goldapi_io_fetch(date)
+    else:
+        today = datetime.today()
+        specified = time
+
+
+    # Taken directly from goldapi.io
+
+    
+# def metalsApi():
+    # Not sure about this one.
+    # base_currency = 'USD'
+    # symbol = 'XAU'
+    # endpoint = '1999-12-24'
+    # access_key = os.environ.get("METALS_API_KEY")
+
+    # url = 'https://metals-api.com/api/'+endpoint+'?access_key='+access_key+'&base='+base_currency+'&symbols='+symbol
+    # print(url)
+    # sys.exit()
+
+    # try:
+    #     gold_price = requests.get(url).json()
+    # except:
+    #     print("Unexpected error:", sys.exc_info()[0])
+    #     return None
+
+    # return gold_price

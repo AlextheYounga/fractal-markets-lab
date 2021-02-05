@@ -61,12 +61,13 @@ def trim_data(data):
 
 
 def formula(data):
-    index = {}
+    avgs = {}
     for day, prices in data.items():
         avg = statistics.mean(prices)
-        index[day] = avg
+        avgs[day] = avg
+    
 
-    return index
+    return avgs
 
 
 def calculate(update):

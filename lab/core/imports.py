@@ -21,7 +21,6 @@ def parseIndexDateClose(file):
     return asset_data
 
 
-
 def parseCSV(path, fullPath=False, headers=True):
     """
     Parameters
@@ -55,3 +54,24 @@ def parseCSV(path, fullPath=False, headers=True):
             asset_data.append(row)
 
         return asset_data
+
+
+def read_historical_gold_prices(datepriceOnly=True):
+    data = parseCSV('lab/core/storage/gold/goldprices1970.csv', fullPath=True)
+    gold_prices = {}
+    if (datepriceOnly):
+        for row in data:
+            date = datetime.strptime(row['Date'], "%m/%d/%y").strftime('%Y-%m-%d')
+            gold_prices[date] = float(row['Close'].replace(',', ''))
+    else:
+        for row in data:
+            date = datetime.strptime(row['Date'], "%m/%d/%y").strftime('%Y-%m-%d')
+            gold_prices[date] = {
+                'close': float(row['Close'].replace(',', '')),
+                'open': float(row['Open'].replace(',', '')),
+                'low': float(row['Low'].replace(',', '')),
+                'high': float(row['High'].replace(',', '')),
+            }
+            
+
+    return gold_prices
