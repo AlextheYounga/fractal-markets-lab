@@ -32,7 +32,7 @@ def lookupFinancials(ticker):
         longTermDebtToEquity = longTermDebt / shareholderEquity if (longTermDebt and shareholderEquity) else 0
         netWorth = totalAssets - totalLiabilities if (totalAssets and totalLiabilities) else 0
 
-        # TODO: Something is coming in as 'None' here and throwing redis errors.
+
         data = {
             'price': price,
             'reportDate': financials['reportDate'],
