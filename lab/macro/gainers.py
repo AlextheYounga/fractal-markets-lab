@@ -10,12 +10,12 @@ import sys
 from datetime import date
 load_dotenv()
 
-
-Stock = apps.get_model('database', 'Stock')
-
 results = []
 etfs = getETFs(True)
 chunked_etfs = chunks(etfs, 100)
+saved = 0
+failed = 0
+
 for i, chunk in enumerate(chunked_etfs):
     batch = quoteStatsBatchRequest(chunk)
     for ticker, stockinfo in batch.items():
@@ -65,8 +65,12 @@ for i, chunk in enumerate(chunked_etfs):
                             'day200MovingAvg': stats['day200MovingAvg'],
                             'fromHigh': fromHigh,
                         }
-
-                        rdb_save_stock(ticker, keyStats)
+                        
+                        try:
+                            rdb_save_stock(ticker, keyStats)
+                            saved = (saved + 1)
+                        except:
+                            failed = (failed + 1)
 
                         stockData = {
                             'ticker': ticker,                        
@@ -78,6 +82,8 @@ for i, chunk in enumerate(chunked_etfs):
                         results.append(stockData)
 
 if results:
+    print('Saved: '+saved)
+    print('Did not Save: '+failed)
     today = date.today().strftime('%m-%d')
     printFullTable(results, struct='dictlist')
 
