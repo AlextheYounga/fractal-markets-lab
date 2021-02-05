@@ -13,8 +13,13 @@ load_dotenv()
 django.setup()
 
 Stock = apps.get_model('database', 'Stock')
-Trend = apps.get_model('database', 'Trend')
 Watchlist = apps.get_model('database', 'Watchlist')
+
+tsaved = 0
+tfailed = 0
+statSaved = 0
+statFailed = 0
+
 
 # Main Thread Start
 print('Running...')
@@ -55,7 +60,7 @@ for i, chunk in enumerate(chunked_tickers):
                 fromHigh = round((price / week52high) * 100, 3)
 
                 # Save Data to DB
-                rdb_data = {
+                keyStats = {
                     'peRatio': stats.get('peRatio', None),
                     'week52': week52high,
                     'day5ChangePercent': day5ChangePercent if day5ChangePercent else None,
@@ -67,7 +72,11 @@ for i, chunk in enumerate(chunked_tickers):
                     'ttmEPS': ttmEPS
                 }
 
-                rdb_save_stock(ticker, rdb_data)
+                try:
+                    rdb_save_stock(ticker, keyStats)
+                    statSaved = (statSaved + 1)
+                except:
+                    statFailed = (statFailed + 1)
 
                 if ((fromHigh < 100) and (fromHigh > 80)):
                     if (changeToday > 5):
@@ -83,11 +92,12 @@ for i, chunk in enumerate(chunked_tickers):
                                 'highPriceTarget': highPriceTarget,
                                 'fromPriceTarget': fromPriceTarget,
                             }
-                            rdb_save_stock(ticker, trend_data)
 
-                            keyStats = {}
-                            for model, data in rdb_data.items():
-                                keyStats.update(data)
+                            try:                                    
+                                rdb_save_stock(ticker, trend_data)
+                                vsaved = (vsaved + 1)
+                            except:
+                                vfailed = (vfailed + 1)
 
                             keyStats.update({
                                 'highPriceTarget': highPriceTarget,
@@ -121,6 +131,9 @@ for i, chunk in enumerate(chunked_tickers):
 
 
 if results:
+    print('Stocks Saved: '+str(statSaved)+' Trends Saved: '+str(statFailed))
+    print('Stocks Not Saved: '+str(vsaved)+' Trends Not Saved: '+str(vfailed))
+
     today = date.today().strftime('%m-%d')
     writeCSV(results, 'lab/trend/output/volume/trend_chasing_{}.csv'.format(today))
 
