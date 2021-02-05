@@ -412,8 +412,9 @@ def batchHistoricalData(batch, timeframe, priceOnly=False, sandbox=False):
 
 
 def goldApi(timeframe='today'):
-
+    # TODO Finish gold api fetches
     def goldapi_io_fetch(date):
+        # Taken directly from goldapi.io        
         conn = http.client.HTTPSConnection("www.goldapi.io")
         payload = ''
         headers = {
@@ -430,10 +431,10 @@ def goldApi(timeframe='today'):
         return goldapi_io_fetch(date)
     else:
         today = datetime.today()
-        specified = time
+        # specified = time
 
 
-    # Taken directly from goldapi.io
+    
 
     
 # def metalsApi():

@@ -15,7 +15,7 @@ gold_prices = read_historical_gold_prices(datepriceOnly=False)
 
 for day, g in gold_prices.items():
     print('Saved {} - {}'.format(day, g['close']))
-    r.set('gold-'+day+'-close', (g['close'] if g['close'] else ""))
-    r.set('gold-'+day+'-open', (g['open'] if g['open'] else ""))
-    r.set('gold-'+day+'-high', (g['high'] if g['high'] else ""))
-    r.set('gold-'+day+'-low', (g['low'] if g['low'] else ""))
+    r.set('gold-'+day+'-close', g['close'])
+    r.set('gold-'+day+'-open',g['open'])
+    r.set('gold-'+day+'-high', g['high'])
+    r.set('gold-'+day+'-low', g['low'])

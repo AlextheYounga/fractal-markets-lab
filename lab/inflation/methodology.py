@@ -62,12 +62,20 @@ def trim_data(data):
 
 def formula(data):
     avgs = {}
+    index = {}
+    r = redis.Redis(host='localhost', port=6379, db=0, charset="utf-8", decode_responses=True)
+
     for day, prices in data.items():
         avg = statistics.mean(prices)
         avgs[day] = avg
     
+    for day, a in avgs.items():
+        gold_price = r.get('gold-'+day+'-close')        
+        if (gold_price):
+            price = round(float(gold_price) / float(a), 3)
+            index[day] = price
 
-    return avgs
+    return index
 
 
 def calculate(update):
