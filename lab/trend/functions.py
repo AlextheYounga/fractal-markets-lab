@@ -1,42 +1,9 @@
-import django
 from ..core.api import getCurrentPrice
-from django.apps import apps
 import requests
 import json
 import sys
 from dotenv import load_dotenv
 load_dotenv()
-django.setup()
-
-
-def dynamicUpdateCreate(data, find):
-    """ 
-    Parameters
-    ----------
-    data :  dict
-            Data must conform to this structure:
-                data = {
-                    'Model': {
-                    'column': value
-                    },
-                }
-    find :  QuerySet object
-
-    Returns
-    -------
-    boolean|string
-    """
-    if (isinstance(data, dict)):
-        for model, values in data.items():
-            Model = apps.get_model('database', model)
-            Model.objects.update_or_create(
-                stock=find,
-                defaults=values,
-            )
-    else:
-        return 'Data must be in dict structure'
-
-    return True
 
 
 def checkEarnings(earnings):

@@ -10,9 +10,9 @@ from..core.api import getHistoricalData
 load_dotenv()
 
 
-def price_in_gold(ticker, timespan='5y', test=False):
-    if (test):
-        asset_prices = getHistoricalData(ticker, timespan, False, sandbox=True)
+def price_in_gold(ticker, timespan='5y', sandbox=False):
+    if (sandbox):
+        asset_prices = getHistoricalData(ticker, timespan, sandbox=True)
     else:
         asset_prices = getHistoricalData(ticker, timespan)
 
@@ -29,11 +29,19 @@ def price_in_gold(ticker, timespan='5y', test=False):
 
 
     x = dates
+    y = prices
 
-    plt.plot(x, prices, label='price/oz')  # etc.    
+    fig = plt.subplots(figsize=(12, 7))
+
+    plt.plot(x, prices, label='price/oz')
     plt.xlabel('x Date')
     plt.ylabel('y Price')
     plt.title("{} Priced in Gold".format(ticker))
-    plt.legend()
+    plt.xticks(np.arange(0, len(x)+1, 126))
+    plt.xticks(rotation=45)
 
-    plt.show()
+    # plt.show()
+    plt.draw()
+    plt.pause(1)
+    input("<Hit Enter To Close>")
+    plt.close()

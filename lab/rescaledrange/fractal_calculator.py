@@ -171,4 +171,3 @@ def fractal_calculator(ticker, output='table'):
 
     # TODO: Think of a way to tweet this complicated data.
     # if (tweet):
-    #     tweet = ""

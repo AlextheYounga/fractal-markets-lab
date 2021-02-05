@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-from datetime import datetime, timedelta, date
+from datetime import datetime, date
 from ..core.api import quoteStatsBatchRequest
 from ..core.functions import dataSanityCheck
 from ..core.output import printTable, printFullTable, writeCSV
@@ -86,7 +86,7 @@ def print_results(tickers):
         # send_tweet(tweet, True)
 
 
-def scrape_news(query="best+stocks+to+buy+this+week"):
+def scrape_news(query="best+stocks+to+buy"):
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
     tickers = []
 
@@ -99,7 +99,7 @@ def scrape_news(query="best+stocks+to+buy+this+week"):
     soup = BeautifulSoup(results.text, 'html.parser')
     links = soup.find_all("a", {"class": "title"})
 
-    for link in links[:10]:
+    for link in links:
         if (blacklist(link['href'])):
             continue
 

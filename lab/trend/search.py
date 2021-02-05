@@ -1,30 +1,27 @@
-import django
-from django.apps import apps
 from dotenv import load_dotenv
 import json
 import sys
 from datetime import date
-from .functions import dynamicUpdateCreate
+from ..redisdb.controller import rdb_save_stock
 from ..core.functions import chunks, dataSanityCheck
 from ..core.api import quoteStatsBatchRequest, getHistoricalEarnings, getPriceTarget
 from ..core.output import printTable, printFullTable, writeCSV
 from ..fintwit.tweet import send_tweet
 load_dotenv()
-django.setup()
 
 Stock = apps.get_model('database', 'Stock')
-Trend = apps.get_model('database', 'Trend')
 Watchlist = apps.get_model('database', 'Watchlist')
 
 # Main Thread Start
 print('Running...')
+
 
 def search(string):
     if (string):
         results = []
         stocks = Stock.objects.all()
         tickers = []
-        
+
         for stock in stocks:
             if (string in stock.name):
                 tickers.append(stock.ticker)
@@ -56,7 +53,7 @@ def search(string):
 
                     # Critical
                     week52high = dataSanityCheck(stats, 'week52high')
-                    changeToday = round(dataSanityCheck(quote, 'changePercent') * 100, 2)            
+                    changeToday = round(dataSanityCheck(quote, 'changePercent') * 100, 2)
                     volume = dataSanityCheck(quote, 'volume')
                     previousVolume = dataSanityCheck(quote, 'previousVolume')
 
@@ -68,51 +65,44 @@ def search(string):
                     fromHigh = round((price / week52high) * 100, 3)
 
                     # Save Data to DB
-                    data_for_db = {
-                        'Valuation':  {
-                            'peRatio': stats.get('peRatio', None),
-                        },
-                        'Trend': {
-                            'week52': week52high,
-                            'day5ChangePercent': day5ChangePercent if day5ChangePercent else None,
-                            'month1ChangePercent': month1ChangePercent if month1ChangePercent else None,
-                            'ytdChangePercent': ytdChangePercent if ytdChangePercent else None,
-                            'day50MovingAvg': stats.get('day50MovingAvg', None),
-                            'day200MovingAvg': stats.get('day200MovingAvg', None),
-                            'fromHigh': fromHigh
-                        },
-                        'Earnings': {
-                            'ttmEPS': ttmEPS
-                        },
+                    rdb_data = {
+                        'peRatio': stats.get('peRatio', None),
+                        'week52': week52high,
+                        'day5ChangePercent': day5ChangePercent if day5ChangePercent else None,
+                        'month1ChangePercent': month1ChangePercent if month1ChangePercent else None,
+                        'ytdChangePercent': ytdChangePercent if ytdChangePercent else None,
+                        'day50MovingAvg': stats.get('day50MovingAvg', None),
+                        'day200MovingAvg': stats.get('day200MovingAvg', None),
+                        'fromHigh': fromHigh,
+                        'ttmEPS': ttmEPS
                     }
-                    
-                    dynamicUpdateCreate(data_for_db, stock)
 
+                    rdb_save_stock(ticker, rdb_data)
 
                     if (changeToday > 12):
                         if (volume > previousVolume):
                             priceTargets = getPriceTarget(ticker)
-                            fromPriceTarget = round((price / priceTargets['priceTargetHigh']) * 100, 3) if (dataSanityCheck(priceTargets, 'priceTargetHigh')) else 0                            
+                            fromPriceTarget = round((price / priceTargets['priceTargetHigh']) * 100, 3) if (dataSanityCheck(priceTargets, 'priceTargetHigh')) else 0
                             avgPricetarget = priceTargets['priceTargetAverage'] if (dataSanityCheck(priceTargets, 'priceTargetAverage')) else None
                             highPriceTarget = priceTargets['priceTargetHigh'] if (dataSanityCheck(priceTargets, 'priceTargetHigh')) else None
 
-
                             # Save Trends to DB
-                            Trend.objects.filter(stock=stock).update(                            
-                                avgPricetarget=avgPricetarget,
-                                highPriceTarget=highPriceTarget,
-                                fromPriceTarget=fromPriceTarget,
-                            )
+                            trend_data = {
+                                'avgPricetarget': avgPricetarget,
+                                'highPriceTarget': highPriceTarget,
+                                'fromPriceTarget': fromPriceTarget,
+                            }
+                            rdb_save_stock(ticker, trend_data)
 
                             keyStats = {}
-                            for model, data in data_for_db.items():
+                            for model, data in rdb_data.items():
                                 keyStats.update(data)
-                        
+
                             keyStats.update({
                                 'highPriceTarget': highPriceTarget,
                                 'fromPriceTarget': fromPriceTarget,
                             })
-                            
+
                             stockData = {
                                 'ticker': ticker,
                                 'name': stock.name,
@@ -122,11 +112,11 @@ def search(string):
 
                             # Save to Watchlist
                             Watchlist.objects.update_or_create(
-                                stock=stock,
+                                ticker=ticker,
                                 defaults=stockData
                             )
 
-                            stockData['changeToday'] = changeToday                        
+                            stockData['changeToday'] = changeToday
                             print('{} saved to Watchlist'.format(ticker))
                             results.append(stockData)
 

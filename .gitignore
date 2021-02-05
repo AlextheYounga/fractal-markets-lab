@@ -4,6 +4,7 @@ lab/database/.env
 lab/key.py
 lab/__pycache__
 lab/*/__pycache__
+lab/database/*/__pycache__/
 lab/__pycache__/
 lab/exports/*
 lab/core/storage/*
@@ -15,6 +16,8 @@ lab/rescaledrange/output/*
 lab/macro/output/*
 lab/trend/output/*
 lab/donchian/output/*
+lab/news/output/*
+lab/volume/output/*
 lab/donchian/news/*
 lab/fintwit/user.py
 lab/fintwit/notes.*

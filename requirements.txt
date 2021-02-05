@@ -14,3 +14,5 @@ django
 python-environ
 beautifulsoup4
 python-telegram-bot
+jsonfield
+redis

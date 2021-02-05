@@ -14,7 +14,6 @@ django.setup()
 
 
 Stock = apps.get_model('database', 'Stock')
-MacroTrends = apps.get_model('database', 'MacroTrend')
 Watchlist = apps.get_model('database', 'Watchlist')
 
 results = []
@@ -22,7 +21,7 @@ etfs = getETFs(True)
 chunked_etfs = chunks(etfs, 100)
 
 
-def calculate_trends(timeperiod='1m', gain=20):
+def calculate_trends(timeframe='1m', gain=20):
     for i, chunk in enumerate(chunked_etfs):
         batch = quoteStatsBatchRequest(chunk)
         for ticker, stockinfo in batch.items():
@@ -34,78 +33,64 @@ def calculate_trends(timeperiod='1m', gain=20):
                 price = quote.get('latestPrice', 0)
 
                 if ((price) and (isinstance(price, float)) and (price > 10)):
-                    etf, created = Stock.objects.update_or_create(
-                        ticker=ticker,
-                        defaults={'lastPrice': price},
-                    )
-                else:
-                    continue
 
-                changeToday = quote['changePercent'] * 100 if ('changePercent' in quote and quote['changePercent']) else 0
-                previousVolume = quote['previousVolume'] if ('previousVolume' in quote and quote['previousVolume']) else 0
-                volume = quote['volume'] if ('volume' in quote and quote['volume']) else 0
-                avg30Volume = stats['avg30Volume'] if ('avg30Volume' in stats and stats['avg30Volume']) else None
+                    changeToday = quote['changePercent'] * 100 if ('changePercent' in quote and quote['changePercent']) else 0
+                    previousVolume = quote['previousVolume'] if ('previousVolume' in quote and quote['previousVolume']) else 0
+                    volume = quote['volume'] if ('volume' in quote and quote['volume']) else 0
+                    avg30Volume = stats['avg30Volume'] if ('avg30Volume' in stats and stats['avg30Volume']) else None
 
-                day50MovingAvg = stats['day50MovingAvg'] if ('day50MovingAvg' in stats and stats['day50MovingAvg']) else None
+                    day50MovingAvg = stats['day50MovingAvg'] if ('day50MovingAvg' in stats and stats['day50MovingAvg']) else None
 
-                # Critical
-                week52high = stats['week52high'] if ('week52high' in stats and stats['week52high']) else 0
-                day5ChangePercent = float(stats['day5ChangePercent']) * 100 if ('day5ChangePercent' in stats and stats['day5ChangePercent']) else None
-                month3ChangePercent = float(stats['month3ChangePercent']) * 100 if ('month3ChangePercent' in stats and stats['month3ChangePercent']) else None
-                ytdChangePercent = float(stats['ytdChangePercent']) * 100 if ('ytdChangePercent' in stats and stats['ytdChangePercent']) else 0
-                month1ChangePercent = float(stats['month1ChangePercent']) * 100 if ('month1ChangePercent' in stats and stats['month1ChangePercent']) else 0
+                    # Critical
+                    week52high = stats['week52high'] if ('week52high' in stats and stats['week52high']) else 0
+                    day5ChangePercent = float(stats['day5ChangePercent']) * 100 if ('day5ChangePercent' in stats and stats['day5ChangePercent']) else None
+                    month3ChangePercent = float(stats['month3ChangePercent']) * 100 if ('month3ChangePercent' in stats and stats['month3ChangePercent']) else None
+                    ytdChangePercent = float(stats['ytdChangePercent']) * 100 if ('ytdChangePercent' in stats and stats['ytdChangePercent']) else 0
+                    month1ChangePercent = float(stats['month1ChangePercent']) * 100 if ('month1ChangePercent' in stats and stats['month1ChangePercent']) else 0
 
-                critical = [month3ChangePercent, ytdChangePercent, month1ChangePercent, week52high]
+                    critical = [month3ChangePercent, ytdChangePercent, month1ChangePercent, week52high]
 
-                if (0 in critical):
-                    continue
+                    if (0 in critical):
+                        continue
 
-                fromHigh = round((price / week52high) * 100, 3)
+                    fromHigh = round((price / week52high) * 100, 3)
 
-                if (timeperiod == '5d'):
-                    tchange = day5ChangePercent
-                if (timeperiod == '1m'):
-                    tchange = month1ChangePercent
-                if (timeperiod == '3m'):
-                    tchange = month3ChangePercent
-                if (timeperiod == '1y'):
-                    tchange = ytdChangePercent
+                    if (timeframe == '5d'):
+                        tchange = day5ChangePercent
+                    if (timeframe == '1m'):
+                        tchange = month1ChangePercent
+                    if (timeframe == '3m'):
+                        tchange = month3ChangePercent
+                    if (timeframe == '1y'):
+                        tchange = ytdChangePercent
 
-                if (float(tchange) > float(gain)):
-                    keyStats = {
-                        'week52': stats['week52high'],
-                        'day5ChangePercent': stats['day5ChangePercent'],
-                        'month3ChangePercent': stats['month3ChangePercent'],
-                        'ytdChangePercent': ytdChangePercent,
-                        'avg30Volume': "{}K".format(round(avg30Volume / 1000, 3)),
-                        'month1ChangePercent': month1ChangePercent,
-                        'month3ChangePercent': month3ChangePercent,
-                        'day50MovingAvg': day50MovingAvg,
-                        'day200MovingAvg': stats['day200MovingAvg'],
-                        'fromHigh': fromHigh,
-                    }
+                    if (float(tchange) > float(gain)):
+                        keyStats = {
+                            'week52': stats['week52high'],
+                            'day5ChangePercent': stats['day5ChangePercent'],
+                            'month3ChangePercent': stats['month3ChangePercent'],
+                            'ytdChangePercent': ytdChangePercent,
+                            'avg30Volume': "{}K".format(round(avg30Volume / 1000, 3)),
+                            'month1ChangePercent': month1ChangePercent,
+                            'month3ChangePercent': month3ChangePercent,
+                            'day50MovingAvg': day50MovingAvg,
+                            'day200MovingAvg': stats['day200MovingAvg'],
+                            'fromHigh': fromHigh,
+                        }
 
-                    stockData = {
-                        'ticker': ticker,
-                        'name': etf.name,
-                        'lastPrice': price
-                    }
-                    stockData.update(keyStats)
+                        stockData = {
+                            'ticker': ticker,
+                            'name': quote['companyName'],
+                            'lastPrice': price
+                        }
+                        stockData.update(keyStats)
 
-                    # Save to Macro
-                    MacroTrends.objects.update_or_create(
-                        etf=etf,
-                        defaults=stockData
-                    )
-                    stockData['volume'] = "{}K".format(volume / 1000)
-                    stockData['changeToday'] = changeToday
-                    results.append(stockData)
+                        stockData['volume'] = "{}K".format(volume / 1000)
+                        stockData['changeToday'] = changeToday
+                        results.append(stockData)
 
 
     if results:
-        today = date.today().strftime('%m-%d')
-        writeCSV(results, 'lab/macro/output/etfs_{}.csv'.format(today))
-
         printFullTable(results, struct='dictlist')
 
         tweet = ""

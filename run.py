@@ -14,21 +14,28 @@ def list_commands():
 
     commands = [
         ['correlations:scan', 'Runs correlations on all ETFs on the market, with *every other ETF on the market. (Takes about half an hour)'],
+        ['correlations:lookup [t1, t2]', 'Fetches correlation between two tickers'],
         ['donchian [ticker]', 'Runs a donchian range calculation on a ticker'],
         ['financials [ticker]', 'Returns financials data for ticker, including some custom indicators not provided by IEX.'],
-        ['macro:trends [timeperiod=1m] [gain=20]', 'Scans all ETFs and returns the ETFs with the performance above an int (gain) within a timerange (5d, 1m, 3m, 1y)'],
+        ['macro:trends [timeframe=1m] [gain=20]', 'Scans all ETFs and returns the ETFs with the performance above an int (gain) within a timerange (5d, 1m, 3m, 1y)'],
         ['macro:gainers', 'Scans all ETFs and returns ETFs with highest day change.'],
         ['news:scrape [query]', 'Searches a query and searches first 10 articles for stocks mentioned in article'],
         ['hurst [ticker] [output]', 'Runs a rescaled range analysis on a ticker. Output defaults to table.'],
         ['range [ticker] [tweet=False]', 'Runs a volatility range analysis on a ticker.'],
         ['fintwit:follow [handle, page_number]', 'Combs through a followers of a user and follows particular people. Each loop is a *page* of 20 people.'],
         ['fintwit:trim [page_number]', 'Combs through your followers and removes certain types of people.'],
+        ['historicalprices:get [ticker]', 'Fetches historical prices for a ticker and saves them to db.'],
+        ['inflation:calculate [update=False]', 'Inflation index using etfs'],
+        ['inflation:graph [update=False]', 'Graph inflation index using etfs'],
+        ['inflation:functions [refresh]', 'Grabs max historical prices for all etfs in sectors list, updates with fresh data.'],        
         ['trend:chase', 'Scans all stocks and returns todays gainers with above certain thresholds (weeds out the penny stocks).'],
         ['trend:search [string]', 'Scans stocks with string in stock name and looks for gainers'],
         ['trend:earnings', 'Scans all stocks and returns todays gainers who have consistently good earnings.'],
-        ['trend:volume', 'Scans all stocks and returns todays gainers with abnormally high volume.'],
+        ['trend:pricetarget [ticker]', 'Grabs price targets'],
         ['trend:gainers', 'Grabs todays gainers and checks their earnings.'],
         ['pricedingold [ticker][timespan=5y][test=False]', 'Graphs and assets price in gold.'],
+        ['volume:chase', 'Scans all stocks and returns todays gainers with abnormally high volume.'],
+        ['volume:anomaly', 'Scans all stocks and returns stocks who are accumulating extremely high volume over the last week. Finds market singularities.'],
         ['vix [ticker]', 'Runs the VIX volatility equation on a ticker'],
     ]
     printTabs(commands, headers, 'simple')
@@ -36,10 +43,14 @@ def list_commands():
 
 
 def correlations_controller(subroutine, args=[]):
-    # TODO Figure out the rest of correlations.
-    if (subroutine == 'scan'):
-        from lab.correlations.scanner import scanner
-        print(scanner())
+    # if (subroutine == 'scan'):
+    # TODO: Fix the scanner
+    #     from lab.correlations.scanner import scanner
+    #     print(scanner())
+    if (subroutine == 'lookup'):
+        from lab.correlations.analyze import lookup
+        if (args and len(args) == 2):
+            print(lookup(args[0], args[1]))
 
 
 def donchian_controller(args):
@@ -48,6 +59,29 @@ def donchian_controller(args):
         tweet = True if (args and (args[0] == 'tweet')) else False
         from lab.donchian.range import calculate
         print(calculate(ticker, tweet))
+
+
+# def historicalprices_controller(subroutine, args):
+    # TODO Switch to redisdb here
+    # if (subroutine == 'get'):
+    #     if (args):
+    #         from lab.database.hp.update_prices import refresh_one
+    #         print(refresh_one(args[0]))
+
+
+def inflation_controller(subroutine, args=[]):
+    if (subroutine == 'graph'):
+        from lab.inflation.measure import graph
+        try:
+            update = True if (args[0] == 'update') else False
+            print(graph(update))
+        except IndexError:
+            print(graph())
+
+    if (subroutine == 'functions'):
+        if (args[0] == 'refresh'):
+            from lab.inflation.functions import refresh_sector_prices
+            print(refresh_sector_prices())
 
 
 def financials_controller(args):
@@ -60,19 +94,18 @@ def financials_controller(args):
 def macro_controller(subroutine, args=[]):
     if (subroutine == 'trends'):
         from lab.macro.trends import calculate_trends
-        if (args and len(args) > 1):
 
+        try:
+            timeframe = args[0]
+            gain = args[1]
+            print(calculate_trends(timeframe, gain))
+        except IndexError:
             try:
-                timeperiod = args[0]
+                timeframe = args[0]
+                print(calculate_trends(timeframe))
             except IndexError:
-                timeperiod = '1m'
-
-            try:
-                gain = args[1]
-            except IndexError:
-                gain = False
-
-            print(calculate_trends(timeperiod, float(gain)))
+                print(calculate_trends)
+                return
 
     if (subroutine == 'gainers'):
         import lab.macro.gainers
@@ -81,40 +114,41 @@ def macro_controller(subroutine, args=[]):
 def news_controller(subroutine, args=[]):
     if (subroutine == 'scrape'):
         from lab.news.scrape_headlines import scrape_news
-        if (args):
-            query = args[0]            
-        else:
-            query="best+stocks+to+buy+this+week"
-        
-        print(scrape_news(query))
+
+        try:
+            query = args[0]
+            print(scrape_news(query))
+        except IndexError:
+            print(scrape_news())
+            return
 
 
 def pricedingold_controller(args):
-    if (args):
-        from lab.pricedingold.compare import price_in_gold
+    from lab.pricedingold.compare import price_in_gold
+    try:
         ticker = args[0]
-
+        timeframe = args[1]
+        print(price_in_gold(ticker, timeframe))
+    except IndexError:
         try:
-            timespan = args[1]
+            ticker = args[0]
+            print(price_in_gold(ticker))
         except IndexError:
-            timespan = '5y'
-
-        try:
-            test = args[2]
-        except IndexError:
-            test = False
-
-        print(price_in_gold(ticker, timespan, test))
+            print(price_in_gold)
+            return
 
 
 def hurst_controller(args):
     if (args):
         from lab.rescaledrange.fractal_calculator import fractal_calculator
         ticker = args[0]
-        output = args[1] if (len(args) > 1) else 'table'
 
-        print(fractal_calculator(ticker, output))
-
+        try:
+            output = args[1]
+            print(fractal_calculator(ticker, output))
+        except IndexError:
+            print(fractal_calculator(ticker))
+            return
 
 
 def range_controller(args):
@@ -126,8 +160,7 @@ def range_controller(args):
         print(rangeLookup(ticker, tweet))
 
 
-
-def twitter_controller(subroutine, args):
+def fintwit_controller(subroutine, args):
     if (subroutine == 'follow'):
         from lab.fintwit.user import followFollowers
         if (args):
@@ -162,11 +195,21 @@ def trend_controller(subroutine, args):
     if (subroutine == 'earnings'):
         import lab.trend.chase_earnings
 
-    if (subroutine == 'volume'):
-        import lab.trend.chase_volume
-
     if (subroutine == 'gainers'):
         import lab.trend.gainers
+
+    if (subroutine == 'pricetarget'):
+        from lab.trend.pricetarget import lookup
+        if (args):
+            print(lookup(args[0]))
+
+
+def volume_controller(subroutine, args):
+    if (subroutine == 'chase'):
+        import lab.volume.chase
+
+    if (subroutine == 'anomaly'):
+        import lab.volume.anomaly
 
 
 def vix_controller(args):

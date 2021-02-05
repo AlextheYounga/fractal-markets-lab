@@ -1,5 +1,5 @@
 from iexfinance.stocks import Stock, get_historical_data
-from datetime import datetime, timedelta
+from datetime import datetime
 from dotenv import load_dotenv
 import requests
 import sys
@@ -85,6 +85,41 @@ def companyBatchRequest(batch, sandbox=False):
     try:
         batch = ",".join(batch)  # Convert to comma-separated string
         url = 'https://{}/stable/stock/market/batch?symbols={}&types=quote,company&token={}'.format(
+            domain,
+            batch,
+            key
+        )
+        batch_request = requests.get(url).json()
+    except:
+        #print("Unexpected error:", sys.exc_info()[0])
+        return {}
+
+    return batch_request
+
+
+def batchQuote(batch, sandbox=False):
+    """
+    Fetches company info for a batch of tickers. Max 100 tickers
+
+    Parameters
+    ----------
+    batch       :list
+                list of max 100 tickers
+    sandbox     :bool
+                Sets the IEX environment to sandbox mode to make limitless API calls for testing.
+
+    Returns
+    -------
+    dict object of company info for 100 tickers
+    """
+    domain = 'cloud.iexapis.com'
+    key = os.environ.get("IEX_TOKEN")
+    if (sandbox):
+        domain = 'sandbox.iexapis.com'
+        key = os.environ.get("IEX_SANDBOX_TOKEN")
+    try:
+        batch = ",".join(batch)  # Convert to comma-separated string
+        url = 'https://{}/stable/stock/market/batch?symbols={}&types=quote&token={}'.format(
             domain,
             batch,
             key
@@ -287,7 +322,7 @@ def getFinancials(ticker, sandbox=False):
         )
         financials = requests.get(url).json()
     except:
-        #print("Unexpected error:", sys.exc_info()[0])
+        # print("Unexpected error:", sys.exc_info()[0])
         return None
 
     return financials
@@ -307,10 +342,11 @@ def getCashFlow(ticker, sandbox=False):
         )
         cashflow = requests.get(url).json()
     except:
-        #print("Unexpected error:", sys.exc_info()[0])
+        # print("Unexpected error:", sys.exc_info()[0])
         return None
 
     return cashflow
+    
 
 
 def getHistoricalData(ticker, timeframe, priceOnly=False, sandbox=False):
@@ -333,9 +369,10 @@ def getHistoricalData(ticker, timeframe, priceOnly=False, sandbox=False):
                 timeframe,
                 key
             )
+
         historicalData = requests.get(url).json()
     except:
-        #print("Unexpected error:", sys.exc_info()[0])
+        print("Unexpected error:", sys.exc_info()[0])
         return {}
 
     return historicalData
@@ -363,9 +400,11 @@ def batchHistoricalData(batch, timeframe, priceOnly=False, sandbox=False):
                 timeframe,
                 key
             )
+        print(url)
+        sys.exit()
         batchrequest = requests.get(url).json()
     except:
-        #print("Unexpected error:", sys.exc_info()[0])
+        # print("Unexpected error:", sys.exc_info()[0])
         return {}
 
     return batchrequest
