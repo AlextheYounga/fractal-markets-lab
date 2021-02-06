@@ -1,7 +1,9 @@
 from iexfinance.stocks import Stock, get_historical_data
 from datetime import datetime, time, timedelta
+import time
 from dotenv import load_dotenv
 import requests
+import redis
 import sys
 import json
 import os
@@ -411,32 +413,46 @@ def batchHistoricalData(batch, timeframe, priceOnly=False, sandbox=False):
     return batchrequest
 
 
-def goldApi(timeframe='today'):
-    # TODO Finish gold api fetches
+def syncGoldPrices():
+    r = redis.Redis(host='localhost', port=6379, db=0, charset="utf-8", decode_responses=True)
+
     def goldapi_io_fetch(date):
-        # Taken directly from goldapi.io        
+        # Taken directly from goldapi.io
         conn = http.client.HTTPSConnection("www.goldapi.io")
         payload = ''
+
         headers = {
             'x-access-token': os.environ.get("GOLDAPI_KEY"),
             'Content-Type': 'application/json'
         }
+
         conn.request("GET", "/api/XAU/USD/"+date, payload, headers)
         res = conn.getresponse()
-        data = res.read()
-        return data.decode("utf-8")
+        data = res.read().decode("utf-8")
+        saveDate = datetime.strptime(date, '%Y%m%d').strftime('%Y-%m-%d')
+        r.set('gold-'+saveDate+'-close', data['price'])
 
-    if (timeframe == 'today'):
-        date = datetime.today().strftime('%Y%m%d')
-        return goldapi_io_fetch(date)
-    else:
-        today = datetime.today()
-        # specified = time
+        return True
+
+    today = datetime.today()
+    i = 0
+    while True:
+        day = (today - timedelta(days=i))
+        gprice = r.get('gold-'+day.strftime('%Y-%m-%d')+'-close')
+
+        if (gprice):
+            break
+
+        try:
+            goldapi_io_fetch(day.strftime('%Y%m%d'))
+            print('Saved {} - '.format(day.strftime('%Y%m%d')))
+        except:
+            print('Could not fetch gold price for '+day.strftime('%Y%m%d'))
+
+        time.sleep(0.5)
+        i += 1
 
 
-    
-
-    
 # def metalsApi():
     # Not sure about this one.
     # base_currency = 'USD'
