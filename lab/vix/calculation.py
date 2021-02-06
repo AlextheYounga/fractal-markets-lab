@@ -43,6 +43,10 @@ def vix_explanation():
     (526,600) divided by the number of minutes in 30 days (43,200).
 
     7. The square root of that number multiplied by 100 equals the VIX.
+
+
+    For more, see the VIX Whitepaper:
+    https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx
     """
 
 
@@ -60,26 +64,22 @@ def vix_calculation(ticker='SPY', sandbox=False):
     -------
     vix         :float
     """
-    # asset_data = getHistoricalData(ticker, '1y', priceOnly=True, sandbox=sandbox)
-    # prices = list(reversed(extract_data(asset_data, 'close')))
 
-    # Daily logarithmic returns, basically increase on an evenly-scaled percent change basis.
-    # log_returns = logReturns(prices)
+    # Step 1
+    # Find the "near-term" and next term option expirations
+    # See function optionExpirationMinutes() for more info here.
+    # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx (slide 4)
+    expirations = calculateOptionExpirations(ticker)
 
-    # Number of minutes until nearest option expiration date, and number of minutes until next month's expiration date.
-    this_month_option, next_month_option = optionExpirationMinutes(ticker)
+    # Step 2
+    # Calculate F, where F is the: "forward SPX {but in our case, any ticker} level, by identifying the strike price at which the 
+    # absolute difference between the call and put prices is smallest."
+    # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx (slide 5)
 
-    # This is a part I don't entirely understand: "The result is multiplied by the volatility of the option". 
-    # It will take more research and perhaps access to better data. 
-    # I originally tried using the beta obtained from IEX, but instead used the stdev of the log returns using arbitrary 16 & 44
-    # day lengths.
+    f1, f2 = calculateF(ticker, expirations, sandbox)
 
-    # volatility of 16 days and 44 days
-    # vol3Weeks = statistics.stdev(log_returns[:16])
-    # monthVol = statistics.stdev(log_returns[:44])
+    
 
-    # Beta
-    # beta = getKeyStats(ticker, filterResults=['beta'], sandbox=sandbox)['beta']
 
 
     # minutes in year, minutes in month
