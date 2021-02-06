@@ -418,7 +418,7 @@ def goldApi(timeframe='today'):
         conn = http.client.HTTPSConnection("www.goldapi.io")
         payload = ''
         headers = {
-            'x-access-token': 'goldapi-2lnukkrw5r58-io',
+            'x-access-token': os.environ.get("GOLDAPI_KEY"),
             'Content-Type': 'application/json'
         }
         conn.request("GET", "/api/XAU/USD/"+date, payload, headers)
