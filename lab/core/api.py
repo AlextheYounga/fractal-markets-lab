@@ -413,11 +413,24 @@ def batchHistoricalData(batch, timeframe, priceOnly=False, sandbox=False):
     return batchrequest
 
 
+def goldForexPrice():
+    """
+    Real time forex gold price
+    """
+    url = 'https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/XAU/USD'
+    futures = requests.get(url).json()
+    price = futures[0]['spreadProfilePrices'][0]['bid']
+
+    return price
+
+
 def syncGoldPrices():
     r = redis.Redis(host='localhost', port=6379, db=0, charset="utf-8", decode_responses=True)
 
     def goldapi_io_fetch(date):
-        # Taken directly from goldapi.io
+        """
+        Taken directly from goldapi.io
+        """
         conn = http.client.HTTPSConnection("www.goldapi.io")
         payload = ''
 
@@ -441,6 +454,7 @@ def syncGoldPrices():
         gprice = r.get('gold-'+day.strftime('%Y-%m-%d')+'-close')
 
         if (gprice):
+            print('Gold prices up to date.')
             break
 
         try:
