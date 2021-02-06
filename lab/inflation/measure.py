@@ -2,6 +2,9 @@ from dotenv import load_dotenv
 import json
 import sys
 from .methodology import calculate
+from datetime import datetime
+from lab.core.output import printTabs
+import statistics
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
@@ -11,11 +14,35 @@ load_dotenv()
 
 
 
-# def run(update=False):
-#     index = calculate(update)
+def annual(update=False):
+    index = calculate(update)
+    annualPrices = {}
+    annualDelta = {}
+
+    for day, price in index.items():
+        year = datetime.strptime(day, '%Y-%m-%d').year
+
+        if (year not in annualPrices):
+            annualPrices[year] = []
+
+        annualPrices[year].append(price)
+    
+    for yr, prices in annualPrices.items():
+        annualDelta[yr] = ((prices[-1] - prices[0]) / prices[0] * 100)
+
+    avg =  round(statistics.mean(annualDelta.values()), 3)
+
+    print("\n")
+    printTabs(annualDelta)
+    print("\n")
+    print('Total Average: '+str(avg)+'%')
+    print("\n")
 
 
-# TODO Fix Matplotlib
+
+
+
+
 def graph(update=False):
     index = calculate(update)
 

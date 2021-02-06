@@ -8,7 +8,7 @@ import sys
 from datetime import date
 from ..redisdb.controller import update_prices
 from ..core.functions import chunks
-from ..core.api import quoteStatsBatchRequest, getStockInfo
+from ..core.api import quoteStatsBatchRequest, syncGoldPrices 
 from ..core.output import printFullTable, writeCSV
 load_dotenv()
 
@@ -28,7 +28,6 @@ def sectors():
         'XLU',
         'XME',
         'VNQ',
-        'GDX',
         'AMLP',
         'ITB',
         'OIH',
@@ -69,6 +68,8 @@ def formula(data):
         avg = statistics.mean(prices)
         avgs[day] = avg
     
+    syncGoldPrices()
+
     for day, a in avgs.items():
         gold_price = r.get('gold-'+day+'-close')        
         if (gold_price):
