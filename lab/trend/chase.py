@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import json
 import sys
 from datetime import date
+import time
 from ..redisdb.controller import rdb_save_stock
 from ..core.functions import chunks, dataSanityCheck
 from ..core.api import quoteStatsBatchRequest, getHistoricalEarnings, getPriceTarget
@@ -14,6 +15,10 @@ django.setup()
 
 Stock = apps.get_model('database', 'Stock')
 Watchlist = apps.get_model('database', 'Watchlist')
+tsaved = 0
+tfailed = 0
+statSaved = 0
+statFailed = 0
 
 # Main Thread Start
 print('Running...')
@@ -23,6 +28,7 @@ tickers = Stock.objects.all().values_list('ticker', flat=True)
 
 chunked_tickers = chunks(tickers, 100)
 for i, chunk in enumerate(chunked_tickers):
+    time.sleep(1)
     batch = quoteStatsBatchRequest(chunk)
 
     for ticker, stockinfo in batch.items():
@@ -53,7 +59,7 @@ for i, chunk in enumerate(chunked_tickers):
                 fromHigh = round((price / week52high) * 100, 3)
 
                 # Save Data to DB
-                rdb_data = {
+                keyStats = {
                     'peRatio': stats.get('peRatio', None),
                     'week52': week52high,
                     'day5ChangePercent': day5ChangePercent if day5ChangePercent else None,
@@ -65,7 +71,11 @@ for i, chunk in enumerate(chunked_tickers):
                     'ttmEPS': ttmEPS
                 }
 
-                rdb_save_stock(ticker, rdb_data)
+                try:
+                    rdb_save_stock(ticker, keyStats)
+                    statSaved = (statSaved + 1)
+                except:
+                    statFailed = (statFailed + 1)
 
                 if (price > 5):
                     if ((fromHigh < 105) and (fromHigh > 95)):
@@ -82,11 +92,13 @@ for i, chunk in enumerate(chunked_tickers):
                                     'highPriceTarget': highPriceTarget,
                                     'fromPriceTarget': fromPriceTarget,
                                 }
-                                rdb_save_stock(ticker, trend_data)
 
-                                keyStats = {}
-                                for model, data in rdb_data.items():
-                                    keyStats.update(data)
+                                try:                                    
+                                    rdb_save_stock(ticker, trend_data)
+                                    tsaved = (tsaved + 1)
+                                except:
+                                    tfailed = (tfailed + 1)
+
 
                                 keyStats.update({
                                     'highPriceTarget': highPriceTarget,
@@ -110,7 +122,10 @@ for i, chunk in enumerate(chunked_tickers):
                                 print('{} saved to Watchlist'.format(ticker))
                                 results.append(stockData)
 
+
 if results:
+    print('Stocks Saved: '+str(statSaved)+' Trends Saved: '+str(statFailed))
+    print('Stocks Not Saved: '+str(tsaved)+' Trends Not Saved: '+str(tfailed))
     today = date.today().strftime('%m-%d')
     writeCSV(results, 'lab/trend/output/chase/trend_chasing_{}.csv'.format(today))
 
