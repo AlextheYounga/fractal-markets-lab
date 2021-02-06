@@ -50,7 +50,7 @@ def getStockInfo(ticker, sandbox=False):
 
     Returns
     -------
-    dict object of 
+    dict object of IEX results
     """
     # TODO: Go redo the iex package calls cause the maintainer changed all the shit to pandas datatables output
     key = os.environ.get("IEX_TOKEN")
@@ -105,14 +105,28 @@ def getQuoteData(ticker, sandbox=False):
     return quote
 
 
-def getKeyStats(ticker, filterResults=False, sandbox=False):
+def getKeyStats(ticker, filterResults=[], sandbox=False):
+    """
+    Fetches company info from stock ticker.
+
+    Parameters
+    ----------
+    ticker          :string
+    filterResults   :list
+    sandbox         :bool
+                    Sets the IEX environment to sandbox mode to make limitless API calls for testing.
+
+    Returns
+    -------
+    dict object of IEX results
+    """
     domain = 'cloud.iexapis.com'
     key = os.environ.get("IEX_TOKEN")
     if (sandbox):
         domain = 'sandbox.iexapis.com'
         key = os.environ.get("IEX_SANDBOX_TOKEN")
     if (filterResults):
-        filters = ",".join(filterResults)
+        filters = ",".join(filterResults) if (len(filterResults) > 1) else filterResults[0]
     try:
         url = 'https://{}/stable/stock/{}/stats?token={}'.format(
             domain,
@@ -134,14 +148,28 @@ def getKeyStats(ticker, filterResults=False, sandbox=False):
     return keyStats
 
 
-def getAdvancedStats(ticker, filterResults=False, sandbox=False):
+def getAdvancedStats(ticker, filterResults=[], sandbox=False):
+    """
+    Fetches company info from stock ticker.
+
+    Parameters
+    ----------
+    ticker          :string
+    filterResults   :list
+    sandbox         :bool
+                    Sets the IEX environment to sandbox mode to make limitless API calls for testing.
+
+    Returns
+    -------
+    dict object of IEX results
+    """
     domain = 'cloud.iexapis.com'
     key = os.environ.get("IEX_TOKEN")
     if (sandbox):
         domain = 'sandbox.iexapis.com'
         key = os.environ.get("IEX_SANDBOX_TOKEN")
     if (filterResults):
-        filters = ",".join(filterResults)
+        filters = ",".join(filterResults) if (len(filterResults) > 1) else filterResults[0]
     try:
         url = 'https://{}/stable/stock/{}/advanced-stats?token={}'.format(
             domain,
