@@ -21,5 +21,6 @@ lab/donchian/news/*
 lab/fintwit/user.py
 lab/fintwit/notes.*
 *.sqlite
+.vscode
 settings.json
 db.sqlite3
