@@ -1,4 +1,4 @@
-from datetime import datetime, time, timedelta
+import datetime
 from dotenv import load_dotenv
 import requests
 import sys
@@ -56,8 +56,8 @@ def getOptionChain(ticker, date, sandbox=False):
     list of option expiration dates
     """
     def formatDate(date):
-        if (type(date) == 'datetime.datetime'):
-            fdate = datetime.strftime(date, '%Y%m%d')
+        if (isinstance(date, datetime.datetime)):
+            fdate = datetime.datetime.strftime(date, '%Y%m%d')
             return fdate
         else:
             print('Failure in getOptionChain(). Date param must be of type datetime.datetime. Closing program...')
@@ -70,7 +70,7 @@ def getOptionChain(ticker, date, sandbox=False):
     if (sandbox):
         domain = 'sandbox.iexapis.com'
         key = os.environ.get("IEX_SANDBOX_TOKEN")
-            
+
     try:
         url = 'https://{}/stable/stock/{}/options/{}?token={}'.format(
             domain,
@@ -78,6 +78,8 @@ def getOptionChain(ticker, date, sandbox=False):
             fdate,
             key
         )
+        print(url)
+        sys.exit()
         chain = requests.get(url).json()
     except:
         #print("Unexpected error:", sys.exc_info()[0])
@@ -85,3 +87,54 @@ def getOptionChain(ticker, date, sandbox=False):
 
     return chain
 
+
+def getOptionChainTD(ticker, timeRange, optionRange):
+    """
+    Fetches the option chain (calls and puts), for a ticker from TD Ameritrade.
+
+    Parameters
+    ----------
+    ticker      :string
+    timeRange   :list
+                List containing [fromDate, toDate], each as datetime.datetime 
+    optionRange :str
+                Sets the option range to 'In the money', 'Out of the money', etc.
+                Example: OTM
+
+    Returns
+    -------
+    list of option expiration dates
+    """
+    def formatDate(dates):
+        results = []
+        for date in dates:
+            if (isinstance(date, datetime.datetime)):
+                fdate = datetime.datetime.strftime(date, '%Y-%m-%d')
+                results.append(fdate)
+            else:
+                print('Failure in getOptionChain(). Date param must be of type datetime.datetime. Closing program...')
+                sys.exit()
+        return tuple(results)
+
+    fromDate, toDate = formatDate(timeRange)
+    domain = 'api.tdameritrade.com/v1/marketdata'
+    key = os.environ.get("TDAMER_KEY")
+    # https://api.tdameritrade.com/v1/marketdata/chains
+    # GET /v1/marketdata/chains?apikey=BZCRGMNKWRR4AOGRFXXXNVBF1EBPLMTC&symbol=SPY&range=OTM&fromDate=2021-02-01&toDate=2021-03-30 HTTP/1.1
+    try:
+        url = 'https://{}/chains?apikey={}&symbol={}&range={}&fromDate={}&toDate={}'.format(
+            domain,
+            key,
+            ticker,
+            optionRange,
+            fromDate,
+            toDate
+        )
+        print(url)
+        sys.exit()
+        chain = requests.get(url).json()
+    except:
+        #print("Unexpected error:", sys.exc_info()[0])
+        return None
+
+    return chain

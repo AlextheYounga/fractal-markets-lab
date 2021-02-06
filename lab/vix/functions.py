@@ -1,6 +1,8 @@
 import json
 import sys
 import datetime
+import time
+import calendar
 from pytz import timezone
 from dateutil.relativedelta import relativedelta
 from ..core.api.options import *
@@ -9,77 +11,91 @@ import numpy as np
 import calendar
 
 
-def calculateOptionExpirations(ticker):
+def calculateOptionExpirations(ticker, testing=False):
     """
     1. Fetches all option expiration dates from IEX api. 
     2. Finds this month's expiration and next months expiration (the near-term and next-term expirations).
-    3. Calculates and returns a dict containing the expiration dates, the time-to-expiration in days as well as 
-    seconds.
+    3. Calculates and returns a dict containing the near-term and next-term expiration dates, along with the 
+    option chain for those dates. 
     """
 
-    today = timezone('US/Central').localize(datetime.now())
+    today = datetime.datetime.now()
     # "...and reflect prices observed at the open of trading – 8:30 a.m. Chicago time."
     # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx
-
-    # Step 1: Fetch all expiration dates from IEX
-    optionExps = getExpirations(ticker, sandbox=True)
 
     # Just some simple variables we will need.
     year = today.year
     month = today.month
     next_month = (today + relativedelta(months=+1)).month
+    next_month_year = (today + relativedelta(months=+1)).year
+    next_month_end = calendar.monthrange(next_month_year, next_month)[1]
     near_term_options = {}
     next_term_options = {}
-    results = {}
 
-    # Step 2: Finding this and next month's closest option expiration dates in Chicago Central Time.
-    for exp in optionExps:
-        expDate = datetime.strptime(exp, '%Y%m%d')
-        expMonth = expDate.month
-        expYear = expDate.year
+    # Building a timerange to send to TD Ameritrade's API
+    fromDate = today
+    toDate = datetime.datetime(next_month_year, next_month, next_month_end)
+    timeRange = [fromDate, toDate]
 
-        if ((month == expMonth) and (year == expYear)):
-            option = timezone('US/Central').localize(expDate).replace(hour=8, minute=30)  # Forcing expiration date to 8:30am
+    # Step 1: Fetch the chain from TD Ameritrade
+    # chain = getOptionChainTD(ticker, timeRange, 'OTM')
 
-            # “Near-term” options must have at least one week to expiration; a requirement
-            # intended to minimize pricing anomalies that might occur close to expiration.
-            # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx
+    # Testing purposes
+    JSON = 'lab/vix/optionData/response.json'
+    with open(JSON) as jsonfile:
+        chain = json.loads(jsonfile.read())
+        for optionSide in ['callExpDateMap', 'putExpDateMap']:
+            for expir, strikes in chain[optionSide].items():
+                expDate = datetime.datetime.strptime(expir.split(':')[0], '%Y-%m-%d')
+                expMonth = expDate.month
+                expYear = expDate.year
 
-            timeDiff = option - today
-            days = abs(timeDiff.days)
+                if ((month == expMonth) and (year == expYear)):                    
+                    firstStrike = next(iter(strikes.values()))[0]
+                    daysToExpiration = int(firstStrike['daysToExpiration'])
+                    preciseExpiration = int(firstStrike['expirationDate'])
 
-            if (days > 7):  # Must be at least 7 days from expiration.
-                seconds = int((timeDiff.total_seconds() // 60) - 1440)
+                    # “Near-term” options must have at least one week to expiration; a requirement
+                    # intended to minimize pricing anomalies that might occur close to expiration.
+                    # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx
 
-                # Adding date and timeInDays to list of next month's options using seconds as key.
-                near_term_options[seconds] = [option, days]
+                    if (daysToExpiration > 7): # Must be at least 7 days from expiration.
 
-        if ((next_month == expMonth) and (year == expYear)):
-            option = timezone('US/Central').localize(expDate).replace(hour=8, minute=30)  # Forcing expiration date to 8:30am
-            timeDiff = option - today
-            days = abs(timeDiff.days)
-            seconds = int((timeDiff.total_seconds() // 60) - 1440)
+                        # The following division by 1000 is simply a workaround for Windows. Windows doesn't seem to play nice 
+                        # with timestamps in miliseconds. 
 
-            if (days > 30):  # Generally at least 30 days from expiration.
-                seconds = int((timeDiff.total_seconds() // 60) - 1440)
+                        expirationObj = datetime.datetime.fromtimestamp(float(preciseExpiration / 1000)) #Windows workaround
+                        timeDiff = abs(expirationObj - today)
+                        secondsToExpiration = int((timeDiff.total_seconds() // 60) - 1440) #Calulcating time in seconds
 
-                # Adding date and timeInDays to list of next month's options using seconds as key.
-                next_term_options[seconds] = [option, days]
+                        near_term_options[preciseExpiration] = {
+                            'daysToExpiration': daysToExpiration,
+                            'secondsToExpiration': secondsToExpiration,
+                            'preciseExpiration': preciseExpiration,
+                            'chain': strikes,
+                        }
 
-    # Step 3: Calculating the nearest option of each group of options, finding min() value of each group's keys, which
-    # again, are the time to expiration in seconds.
+                if ((next_month == expMonth) and (next_month_year == expYear)):                    
+                    firstStrike = next(iter(strikes.values()))[0]
+                    daysToExpiration = int(firstStrike['daysToExpiration'])
+                    preciseExpiration = int(firstStrike['expirationDate'])
 
+                    if (daysToExpiration >= 30): # Generally around or more than 30 days to expiration.
+
+                        expirationObj = datetime.datetime.fromtimestamp(float(preciseExpiration / 1000)) #Windows workaround
+                        timeDiff = abs(expirationObj - today)
+                        secondsToExpiration = int((timeDiff.total_seconds() // 60) - 1440) #Calulcating time in seconds
+
+                        next_term_options[preciseExpiration] = {
+                            'daysToExpiration': daysToExpiration,
+                            'secondsToExpiration': secondsToExpiration,
+                            'preciseExpiration': preciseExpiration,
+                            'chain': strikes,
+                        }
+    
     results = {
-        'nearTerm': {
-            'expirationDate': near_term_options[min(near_term_options.keys())][0],
-            'timeInSeconds': min(near_term_options.keys()),
-            'timeInDays': near_term_options[min(near_term_options.keys())][1]
-        },
-        'nextTerm': {
-            'expirationDate': next_term_options[min(next_term_options.keys())][0],
-            'timeInSeconds': min(next_term_options.keys()),
-            'timeInDays': next_term_options[min(next_term_options.keys())][1]
-        }
+        'nearTerm': near_term_options[min(near_term_options.keys())],
+        'nextTerm': next_term_options[min(next_term_options.keys())],
     }
 
     return results
@@ -91,10 +107,11 @@ def calculateF(ticker, expirations, sandbox=False):
     """
     nearTermExpir = expirations['nearTerm']['expirationDate']
     nextTermExpir = expirations['nextTerm']['expirationDate']
-    print(type(nearTermExpir))
+    print(nearTermExpir)
 
     chain = getOptionChain(ticker, nearTermExpir, sandbox)
-    print(json.dumps(chain, indent=1))
+    print(chain)
+    sys.exit()
 
     # for term in [nearTermExpir, nextTermExpir]:
     #     chain = getOptionChain(ticker, term, sandbox)
