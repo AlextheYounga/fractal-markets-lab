@@ -8,7 +8,7 @@ import sys
 from datetime import date
 from ..redisdb.controller import update_prices
 from ..core.functions import chunks
-from ..core.api import quoteStatsBatchRequest, getStockInfo
+from ..core.api import quoteStatsBatchRequest, syncGoldPrices 
 from ..core.output import printFullTable, writeCSV
 load_dotenv()
 
@@ -28,7 +28,6 @@ def sectors():
         'XLU',
         'XME',
         'VNQ',
-        'GDX',
         'AMLP',
         'ITB',
         'OIH',
@@ -61,10 +60,27 @@ def trim_data(data):
 
 
 def formula(data):
+    """
+    Take an average of each etf sector and divide that avg by the price of gold.
+    Gold is used as the denominator here due to its relative stability throughout history, 
+    though I certainly understand it's not perfect. The results are quite astounding.
+    Theoretically, this should represent 'real' US asset inflation over the last 10 years.
+    """
+    avgs = {}
     index = {}
+    r = redis.Redis(host='localhost', port=6379, db=0, charset="utf-8", decode_responses=True)
+
     for day, prices in data.items():
         avg = statistics.mean(prices)
-        index[day] = avg
+        avgs[day] = avg
+    
+    syncGoldPrices()
+
+    for day, a in avgs.items():
+        gold_price = r.get('gold-'+day+'-close')        
+        if (gold_price):
+            price = round(float(gold_price) / float(a), 3)
+            index[day] = price
 
     return index
 

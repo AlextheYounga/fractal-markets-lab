@@ -73,15 +73,18 @@ def inflation_controller(subroutine, args=[]):
     if (subroutine == 'graph'):
         from lab.inflation.measure import graph
         try:
-            update = True if (args[0] == 'update') else False
+            update = True if (args and args[0] == 'update') else False
             print(graph(update))
         except IndexError:
             print(graph())
 
-    if (subroutine == 'functions'):
-        if (args[0] == 'refresh'):
-            from lab.inflation.functions import refresh_sector_prices
-            print(refresh_sector_prices())
+    if (subroutine == 'calculate'):
+        from lab.inflation.measure import annual
+        try:
+            update = True if (args[0] == 'update') else False
+            print(annual(update))
+        except IndexError:
+             print(annual())
 
 
 def financials_controller(args):

@@ -63,5 +63,3 @@ def model_items_to_update(model):
             needs_update.append(record)
 
     return update_needed
-
-

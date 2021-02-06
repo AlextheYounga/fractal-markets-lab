@@ -21,7 +21,13 @@ def rdb_schema():
     'stock-'+ticker+'-employees' 
     'stock-'+ticker+'-price' 
     'stock-'+ticker+'-sector' 
-    'stock-'+ticker+'-description' 
+    'stock-'+ticker+'-description'
+
+    # Gold
+    'gold-'+date+'-open' 
+    'gold-'+date+'-low' 
+    'gold-'+date+'-high' 
+    'gold-'+date+'-close' 
 
     # Earnings
     'stock-'+ticker+'-ttmEPS' 

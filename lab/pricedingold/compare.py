@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import pylab
-from .gold import read_historical_gold_prices
+from ..core.imports import read_historical_gold_prices
 from ..core.functions import extract_data
 import os
 import sys
