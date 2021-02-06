@@ -44,13 +44,15 @@ def calculateOptionExpirations(ticker, testing=False):
     JSON = 'lab/vix/optionData/response.json'
     with open(JSON) as jsonfile:
         chain = json.loads(jsonfile.read())
+
+        # Step 2: Finding this and next month's closest option expiration dates.
         for optionSide in ['callExpDateMap', 'putExpDateMap']:
             for expir, strikes in chain[optionSide].items():
                 expDate = datetime.datetime.strptime(expir.split(':')[0], '%Y-%m-%d')
                 expMonth = expDate.month
                 expYear = expDate.year
 
-                if ((month == expMonth) and (year == expYear)):                    
+                if ((month == expMonth) and (year == expYear)):
                     firstStrike = next(iter(strikes.values()))[0]
                     daysToExpiration = int(firstStrike['daysToExpiration'])
                     preciseExpiration = int(firstStrike['expirationDate'])
@@ -59,14 +61,14 @@ def calculateOptionExpirations(ticker, testing=False):
                     # intended to minimize pricing anomalies that might occur close to expiration.
                     # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx
 
-                    if (daysToExpiration > 7): # Must be at least 7 days from expiration.
+                    if (daysToExpiration > 7):  # Must be at least 7 days from expiration.
 
-                        # The following division by 1000 is simply a workaround for Windows. Windows doesn't seem to play nice 
-                        # with timestamps in miliseconds. 
+                        # The following division by 1000 is simply a workaround for Windows. Windows doesn't seem to play nice
+                        # with timestamps in miliseconds.
 
-                        expirationObj = datetime.datetime.fromtimestamp(float(preciseExpiration / 1000)) #Windows workaround
+                        expirationObj = datetime.datetime.fromtimestamp(float(preciseExpiration / 1000))  # Windows workaround
                         timeDiff = abs(expirationObj - today)
-                        secondsToExpiration = int((timeDiff.total_seconds() // 60) - 1440) #Calulcating time in seconds
+                        secondsToExpiration = int((timeDiff.total_seconds() // 60) - 1440)  # Calulcating time in seconds
 
                         near_term_options[preciseExpiration] = {
                             'daysToExpiration': daysToExpiration,
@@ -75,16 +77,16 @@ def calculateOptionExpirations(ticker, testing=False):
                             'chain': strikes,
                         }
 
-                if ((next_month == expMonth) and (next_month_year == expYear)):                    
+                if ((next_month == expMonth) and (next_month_year == expYear)):
                     firstStrike = next(iter(strikes.values()))[0]
                     daysToExpiration = int(firstStrike['daysToExpiration'])
                     preciseExpiration = int(firstStrike['expirationDate'])
 
-                    if (daysToExpiration >= 30): # Generally around or more than 30 days to expiration.
+                    if (daysToExpiration >= 30):  # Generally around or more than 30 days to expiration.
 
-                        expirationObj = datetime.datetime.fromtimestamp(float(preciseExpiration / 1000)) #Windows workaround
+                        expirationObj = datetime.datetime.fromtimestamp(float(preciseExpiration / 1000))  # Windows workaround
                         timeDiff = abs(expirationObj - today)
-                        secondsToExpiration = int((timeDiff.total_seconds() // 60) - 1440) #Calulcating time in seconds
+                        secondsToExpiration = int((timeDiff.total_seconds() // 60) - 1440)  # Calulcating time in seconds
 
                         next_term_options[preciseExpiration] = {
                             'daysToExpiration': daysToExpiration,
@@ -92,7 +94,10 @@ def calculateOptionExpirations(ticker, testing=False):
                             'preciseExpiration': preciseExpiration,
                             'chain': strikes,
                         }
-    
+
+    # Step 3: Calculating the nearest option of each group of options, finding min() value of each group's keys, which
+    # again, are the time to expiration in seconds.
+
     results = {
         'nearTerm': near_term_options[min(near_term_options.keys())],
         'nextTerm': next_term_options[min(next_term_options.keys())],
