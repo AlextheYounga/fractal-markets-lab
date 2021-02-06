@@ -2,7 +2,7 @@ import json
 import math
 import statistics
 import sys
-from ..core.api import getHistoricalData
+from ..core.api.historical import getHistoricalData
 from ..core.functions import extract_data, logReturns
 from .functions import *
 

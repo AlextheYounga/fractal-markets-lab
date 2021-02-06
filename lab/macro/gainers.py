@@ -2,7 +2,8 @@ from dotenv import load_dotenv
 from .functions import getETFs
 from ..fintwit.tweet import send_tweet
 from ..core.functions import chunks
-from ..core.api import quoteStatsBatchRequest, getStockInfo
+from ..core.api.batch import quoteStatsBatchRequest
+from ..core.api.stats import getStockInfo
 from ..core.output import printFullTable
 from ..redisdb.controller import rdb_save_stock
 import json

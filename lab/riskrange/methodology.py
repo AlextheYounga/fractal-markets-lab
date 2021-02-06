@@ -3,7 +3,8 @@ import sys
 import math
 import json
 from ..core.functions import extract_data, removeZeroes
-from ..core.api import getHistoricalData, getCurrentPrice
+from ..core.api.historical import getHistoricalData
+from ..core.api.stats import getCurrentPrice
 from datetime import datetime
 
 
