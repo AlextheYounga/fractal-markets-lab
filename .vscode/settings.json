@@ -1,8 +1,0 @@
-{
-    "gitflow4code.hotfixes": [
-        {
-            "name": "hotfix/trend-clean",
-            "base": "master"
-        }
-    ]
-}
