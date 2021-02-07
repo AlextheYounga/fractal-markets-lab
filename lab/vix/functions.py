@@ -98,6 +98,7 @@ def calculateOptionExpirations(ticker, testing=False):
     # Step 3: Calculating the nearest option of each group of options, finding min() value of each group's keys, which
     # again, are the time to expiration in seconds.
 
+    # TODO: Get both call and put options
     results = {
         'nearTerm': near_term_options[min(near_term_options.keys())],
         'nextTerm': next_term_options[min(next_term_options.keys())],
@@ -106,10 +107,15 @@ def calculateOptionExpirations(ticker, testing=False):
     return results
 
 
-def calculateF(ticker, expirations, sandbox=False):
+def calculateF(expirations):
     """
-    Test
+    "Determine the forward SPX level, F, by identifying the strike price at which the
+    absolute difference between the call and put prices is smallest."
+    https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx
+
     """
+
+
     nearTermExpir = expirations['nearTerm']['expirationDate']
     nextTermExpir = expirations['nextTerm']['expirationDate']
     print(nearTermExpir)

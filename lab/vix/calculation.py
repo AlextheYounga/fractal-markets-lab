@@ -70,6 +70,7 @@ def vix_calculation(ticker='SPY', sandbox=False):
     # See function optionExpirationMinutes() for more info here.
     # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx (slide 4)
     expirations = calculateOptionExpirations(ticker)
+    print(expirations['nearTerm'])
 
     # Step 2
     # Calculate F, where F is the: "forward SPX {but in our case, any ticker} level, by identifying the strike price at which the 
