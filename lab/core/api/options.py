@@ -88,7 +88,7 @@ def getOptionChain(ticker, date, sandbox=False):
     return chain
 
 
-def getOptionChainTD(ticker, timeRange, optionRange):
+def getOptionChainTD(ticker, timeRange):
     """
     Fetches the option chain (calls and puts), for a ticker from TD Ameritrade.
 
@@ -122,11 +122,10 @@ def getOptionChainTD(ticker, timeRange, optionRange):
     # https://api.tdameritrade.com/v1/marketdata/chains
     # GET /v1/marketdata/chains?apikey=BZCRGMNKWRR4AOGRFXXXNVBF1EBPLMTC&symbol=SPY&range=OTM&fromDate=2021-02-01&toDate=2021-03-30 HTTP/1.1
     try:
-        url = 'https://{}/chains?apikey={}&symbol={}&range={}&fromDate={}&toDate={}'.format(
+        url = 'https://{}/chains?apikey={}&symbol={}&fromDate={}&toDate={}'.format(
             domain,
             key,
             ticker,
-            optionRange,
             fromDate,
             toDate
         )
