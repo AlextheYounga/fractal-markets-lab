@@ -21,13 +21,28 @@ def blacklist(link):
     return skip
 
 
+def exchanges():
+    return [
+        'NYSE',
+        'NASDAQ',
+        'LSE',
+        'TSX',
+        'NSE',
+        'ASX',
+        'BSE',
+        'TYO',
+        'SSE',
+        'OTC',
+        'OTCMKTS'
+    ]
+
+
 def print_results(tickers):
     print("\n")
     results = []
     batch = quoteStatsBatchRequest(tickers)
 
     for ticker, stockinfo in batch.items():
-
         if (stockinfo.get('quote', False) and stockinfo.get('stats', False)):
             quote = stockinfo.get('quote')
             stats = stockinfo.get('stats')
@@ -62,7 +77,7 @@ def print_results(tickers):
                 'day5ChangePercent': day5ChangePercent if day5ChangePercent else None,
                 'month1ChangePercent': month1ChangePercent if month1ChangePercent else None,
                 'ytdChangePercent': ytdChangePercent if ytdChangePercent else None,
-                'volumeChangeDay':  "{}%".format(round(volumeChangeDay, 2)),                
+                'volumeChangeDay':  "{}%".format(round(volumeChangeDay, 2)),
                 'fromHigh': fromHigh,
                 'ttmEPS': ttmEPS
             }
@@ -86,6 +101,17 @@ def print_results(tickers):
         # send_tweet(tweet, True)
 
 
+def clean_tickers(tickers):
+    cleaned = []
+    for t in tickers:
+        if(' ' in t):
+            continue
+        if (t not in cleaned):
+            cleaned.append(t)
+
+    return cleaned
+
+
 def scrape_news(query="best+stocks+to+buy"):
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
     tickers = []
@@ -107,14 +133,18 @@ def scrape_news(query="best+stocks+to+buy"):
 
         page = requests.get(link['href'], headers=headers)
         soup = BeautifulSoup(page.text, 'html.parser')
-        all_links = soup.find_all("a")
+        all_links = soup.find_all("a", href=True)
 
         for l in all_links:
-            if ('NASDAQ:' in l.text):
-                tickers.append(l.text.split(':')[1])
-            if ('NYSE:' in l.text):
-                tickers.append(l.text.split(':')[1])
+            for exc in exchanges():
+                searchstr = exc+':'
+                if (searchstr in l.text):
+                    tickers.append(l.text.split(':')[1])
+                if ((l.get('href', False)) and ('quote' in l['href'])):
+                    tickers.append(l.text)
 
         time.sleep(1)
-
-    print_results(tickers)
+        
+    if (tickers):
+        tickers = clean_tickers(tickers)
+        print_results(tickers)
