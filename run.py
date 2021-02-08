@@ -223,8 +223,8 @@ def volume_controller(subroutine, args):
 def vix_controller(args):
     if (args):
         ticker = args[0]
-        from lab.vix.calculation import vix_calculation
-        print(vix_calculation(ticker))
+        from lab.vix.equation import vix_equation
+        print(vix_equation(ticker))
 
 
 def main():

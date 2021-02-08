@@ -11,11 +11,6 @@ import numpy as np
 import calendar
 
 
-def calculateT():
-    """
-    Step 2 of VIX equation
-    """
-
 def collectOptionExpirations(ticker, testing=False):
     """
     Step 1 of VIX equation.
@@ -65,7 +60,7 @@ def collectOptionExpirations(ticker, testing=False):
 
                 """ Near-Term Options """
                 if ((month == expMonth) and (year == expYear)):
-                    firstStrike = next(iter(strikes.values()))[0] #Just grabbing the first row of the strikes dict.
+                    firstStrike = next(iter(strikes.values()))[0]  # Just grabbing the first row of the strikes dict.
                     daysToExpiration = int(firstStrike['daysToExpiration'])
                     preciseExpiration = int(firstStrike['expirationDate'])
 
@@ -74,39 +69,17 @@ def collectOptionExpirations(ticker, testing=False):
                     # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx
 
                     if (daysToExpiration > 7):  # Must be at least 7 days from expiration.
-
-                        # The following division by 1000 is simply a workaround for Windows. Windows doesn't seem to play nice
-                        # with timestamps in miliseconds.
-
-                        expirationObj = datetime.datetime.fromtimestamp(float(preciseExpiration / 1000))  # Windows workaround
-                        timeDiff = abs(expirationObj - today)
-                        secondsToExpiration = int((timeDiff.total_seconds() // 60) - 1440)  # Calulcating time in seconds
-
-                        options['nearTerm'][optionSide][preciseExpiration] = {
-                            'daysToExpiration': daysToExpiration,
-                            'secondsToExpiration': secondsToExpiration,
-                            'preciseExpiration': preciseExpiration,
-                            'chain': strikes,
-                        }
+                        options['nearTerm'][optionSide][preciseExpiration] = strikes
 
                 """ Next-Term Options """
                 if ((next_month == expMonth) and (next_month_year == expYear)):
-                    firstStrike = next(iter(strikes.values()))[0] #Just grabbing the first row of the strikes dict.
+                    firstStrike = next(iter(strikes.values()))[0]  # Just grabbing the first row of the strikes dict.
                     daysToExpiration = int(firstStrike['daysToExpiration'])
                     preciseExpiration = int(firstStrike['expirationDate'])
 
                     if (daysToExpiration >= 30):  # Generally around or more than 30 days to expiration.
 
-                        expirationObj = datetime.datetime.fromtimestamp(float(preciseExpiration / 1000))  # Windows workaround
-                        timeDiff = abs(expirationObj - today)
-                        secondsToExpiration = int((timeDiff.total_seconds() // 60) - 1440)  # Calulcating time in seconds
-
-                        options['nextTerm'][optionSide][preciseExpiration] = {
-                            'daysToExpiration': daysToExpiration,
-                            'secondsToExpiration': secondsToExpiration,
-                            'preciseExpiration': preciseExpiration,
-                            'chain': strikes,
-                        }
+                        options['nextTerm'][optionSide][preciseExpiration] = strikes
 
     """
     Step 3: Calculating the nearest option of each group of options, 
@@ -126,14 +99,85 @@ def collectOptionExpirations(ticker, testing=False):
     # Finding associated put options from call expirations; making sure we have both the call and put options for the same
     # expiration date.
     for term, call in results.items():
-        key = results[term]['call']['preciseExpiration']
+        key = next(iter(results[term]['call'].values()))[0]['expirationDate']  # Grabbing expiration date from call
         results[term]['put'] = options[term]['putExpDateMap'][key]
 
     return results
 
 
+def selectStrikes(expirations):
+    """
+    Step 2
+    "Determine the forward SPX level, F, by identifying the strike price at which the
+    absolute difference between the call and put prices is smallest."
+    https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx
+
+    """
+    strikes = {
+        'nearTerm': {},
+        'nextTerm': {}
+    }
+
+    priceDiffs = {
+        'nearTerm': {},
+        'nextTerm': {}
+    }
+
+    # Collecting prices on call and put options with strike price as key.
+    for term, options in expirations.items():
+        for side, option in options.items():
+            for strike, details in option.items():
+                
+
+                if (not strikes[term].get(strike, False)):
+                    strikes[term][strike] = []
+                strikes[term][strike].append(details[0]['last'])
+
+    # Collect price differences from call and put options.
+    for term, strike in strikes.items():
+        for strprice, prices in strike.items():
+            if (len(prices) == 2):
+                p1 = prices[0]
+                p2 = prices[1]
+
+                if ((0 in [p1, p2]) == False):
+                    diff = abs(p1 - p2)
+                    priceDiffs[term][diff] = strprice
+
+    # Select the smallest price difference out of the bunch.
+    nearTermStrike = priceDiffs['nearTerm'][min(priceDiffs['nearTerm'].keys())]
+    nextTermStrike = priceDiffs['nextTerm'][min(priceDiffs['nextTerm'].keys())]
+
+    results = {
+        'nearTerm': [
+            expirations['nearTerm']['call'][nearTermStrike],
+            expirations['nearTerm']['put'][nearTermStrike],
+        ],
+        'nextTerm': [
+            expirations['nextTerm']['call'][nearTermStrike],
+            expirations['nextTerm']['put'][nearTermStrike],
+        ]
+    }
+
+    return results
+
+
+
+# def calculateT(strikes):
+#     """
+#     Step 2 of VIX equation
+#     """
+#     # Some variables we will need
+#     minutesToMidnight = 
+#     print(json.dumps(strikes, indent=1))
+#     for term, contract in strikes.items():
+#         print(contract)
+#         sys.exit()
+
+
 def calculateF(expirations):
     """
+    Step 3
     "Determine the forward SPX level, F, by identifying the strike price at which the
     absolute difference between the call and put prices is smallest."
     https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx
@@ -157,14 +201,13 @@ def calculateF(expirations):
     # Collecting prices on call and put options with strike price as key.
     for term, options in expirations.items():
         for side, option in options.items():
-            for strike, details in option['chain'].items():
+            for strike, details in option.items():
                 # print(side+' - '+strike)
                 if (not strikes[term].get(strike, False)):
                     strikes[term][strike] = []
                 strikes[term][strike].append(details[0]['last'])
 
-
-    # Collect price differnces from call and put options. 
+    # Collect price differnces from call and put options.
     for term, strike in strikes.items():
         for strprice, prices in strike.items():
             if (len(prices) == 2):
@@ -176,13 +219,24 @@ def calculateF(expirations):
                     priceDiffs[term][diff] = strprice
 
     # Select the smallest price difference out of the bunch.
-    f1 = 
-    
+    # f1 =
+
     print(json.dumps(priceDiffs, indent=1))
     sys.exit()
 
-    # print(json.dumps(strikes, indent=1))
-    # sys.exit()
 
-    # for term in [nearTermExpir, nextTermExpir]:
-    #     chain = getOptionChain(ticker, term, sandbox)
+#
+# for later
+# The following division by 1000 is simply a workaround for Windows. Windows doesn't seem to play nice
+# with timestamps in miliseconds.
+
+# expirationObj = datetime.datetime.fromtimestamp(float(preciseExpiration / 1000))  # Windows workaround
+# timeDiff = abs(expirationObj - today)
+# secondsToExpiration = int((timeDiff.total_seconds() // 60) - 1440)  # Calulcating time in seconds
+
+# options['nextTerm'][optionSide][preciseExpiration] = {
+#     'daysToExpiration': daysToExpiration,
+#     'secondsToExpiration': secondsToExpiration,
+#     'preciseExpiration': preciseExpiration,
+#     'chain': strikes,
+# }

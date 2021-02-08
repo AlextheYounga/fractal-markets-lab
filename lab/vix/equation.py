@@ -50,7 +50,7 @@ def vix_explanation():
     """
 
 
-def vix_calculation(ticker='SPY', sandbox=False):
+def vix_equation(ticker='SPY', sandbox=False):
     """
     Runs the VIX equation on a ticker.
 
@@ -65,14 +65,21 @@ def vix_calculation(ticker='SPY', sandbox=False):
     vix         :float
     """
 
-    # Step 1 & Step 2
-    # 1. Find the proper "near-term" and "next-term" option expirations. See collectOptionExpirations() in functions.py.
-    # 2. Calculate T1 and T2, for near-term and next-term options respectively. See calculateT() in functions.py for more.
-    #
+    # Step 1
+    # Find the proper "near-term" and "next-term" option expirations. See collectOptionExpirations() in functions.py.
     # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx (slide 4)
     expirations = collectOptionExpirations(ticker)
 
+    # Step 2
+    # Select the strike price to be used in calculating F. A lot of our data is tied to the strike price due to
+    # the TD Ameritrade API.
+    strikes = selectStrikes(expirations)
+
     # Step 3
+    # Calculate T1 and T2, for near-term and next-term options respectively. See calculateT() in functions.py for more.
+    t1, t2 = calculateT(strikes)
+
+    # Step 4
     # Calculate F, where F is the: "forward SPX {but in our case, any ticker} level, by identifying the strike price at which the 
     # absolute difference between the call and put prices is smallest."
     # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx (slide 5)
