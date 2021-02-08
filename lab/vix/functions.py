@@ -104,7 +104,7 @@ def collectOptionExpirations(ticker, testing=False):
     return results
 
 
-def forwardLevel(expirations):
+def calculateForwardLevel(expirations):
     """
     "Determine the forward SPX level, F, by identifying the strike price at which the
     absolute difference between the call and put prices is smallest."
@@ -196,8 +196,6 @@ def calculateT(strikes):
     t1 = (minutesToMidnight + mSettlementDay + nrMinutesToExpire) / minutesYear
     t2 = (minutesToMidnight + mSettlementDay + nxtMinutesToExpire) / minutesYear
 
-    print(t1, t2)
-    sys.exit()
     return t1, t2
 
 
@@ -209,6 +207,13 @@ def calculateF(t1, t2, r, forwardLevel):
     https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx
 
     """
+
+    # Near-Term
+    strikePrice = forwardLevel['nearTerm'][0]['strikePrice']
+    
+
+    print(forwardLevel)
+    sys.exit()
 
 
 #

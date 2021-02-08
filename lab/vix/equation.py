@@ -74,7 +74,7 @@ def vix_equation(ticker='SPY', sandbox=False):
     # Step 2
     # Determine the forward SPX level, F, by identifying the strike price at which the
     # absolute difference between the call and put prices is smallest
-    forwardLevel = forwardLevel(expirations)
+    forwardLevel = calculateForwardLevel(expirations)
 
     # Step 3
     # Calculate R
