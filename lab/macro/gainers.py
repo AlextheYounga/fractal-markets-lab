@@ -6,6 +6,7 @@ from ..core.api import quoteStatsBatchRequest, getStockInfo
 from ..core.output import printFullTable
 from ..redisdb.controller import rdb_save_stock
 import json
+import time
 import sys
 from datetime import date
 load_dotenv()
@@ -17,6 +18,7 @@ saved = 0
 failed = 0
 
 for i, chunk in enumerate(chunked_etfs):
+    time.sleep(1)
     batch = quoteStatsBatchRequest(chunk)
     for ticker, stockinfo in batch.items():
         print('Chunk {}: {}'.format(i, ticker))
@@ -82,8 +84,8 @@ for i, chunk in enumerate(chunked_etfs):
                         results.append(stockData)
 
 if results:
-    print('Saved: '+saved)
-    print('Did not Save: '+failed)
+    print('Saved: '+str(saved))
+    print('Did not Save: '+str(failed))
     today = date.today().strftime('%m-%d')
     printFullTable(results, struct='dictlist')
 

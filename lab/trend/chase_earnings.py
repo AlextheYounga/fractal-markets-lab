@@ -2,6 +2,7 @@ import django
 from django.apps import apps
 from dotenv import load_dotenv
 import json
+import time
 import sys
 from datetime import date
 from .functions import *
@@ -24,6 +25,7 @@ tickers = Stock.objects.all().values_list('ticker', flat=True)
 
 chunked_tickers = chunks(tickers, 100)
 for i, chunk in enumerate(chunked_tickers):
+    time.sleep(1)
     batch = quoteStatsBatchRequest(chunk)
 
     for ticker, stockinfo in batch.items():
