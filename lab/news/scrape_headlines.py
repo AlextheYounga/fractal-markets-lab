@@ -43,6 +43,7 @@ def print_results(tickers):
     batch = quoteStatsBatchRequest(tickers)
 
     for ticker, stockinfo in batch.items():
+        print(stockinfo)
         if (stockinfo.get('quote', False) and stockinfo.get('stats', False)):
             quote = stockinfo.get('quote')
             stats = stockinfo.get('stats')
@@ -59,7 +60,7 @@ def print_results(tickers):
             # Critical
             week52high = dataSanityCheck(stats, 'week52high')
 
-            critical = [week52high, volume, previousVolume]
+            critical = [price, week52high]
 
             if ((0 in critical)):
                 continue
@@ -106,6 +107,10 @@ def clean_tickers(tickers):
     for t in tickers:
         if(' ' in t):
             continue
+        if (t == ''):
+            continue
+        if (':' in t):
+            t = t.split(':')[1]
         if (t not in cleaned):
             cleaned.append(t)
 
