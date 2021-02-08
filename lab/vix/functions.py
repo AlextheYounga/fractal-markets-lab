@@ -203,51 +203,12 @@ def calculateT(strikes):
 
 def calculateF(t1, t2, r, forwardLevel):
     """
+    F = Strike Price + eRT × (Call Price – Put Price)
     "Determine the forward SPX level, F, by identifying the strike price at which the
     absolute difference between the call and put prices is smallest."
     https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx
 
     """
-    strikes = {
-        'nearTerm': {},
-        'nextTerm': {}
-    }
-
-    priceDiffs = {
-        'nearTerm': {},
-        'nextTerm': {}
-    }
-
-    results = {
-        'nearTerm': {},
-        'nextTerm': {}
-    }
-
-    # Collecting prices on call and put options with strike price as key.
-    for term, options in expirations.items():
-        for side, option in options.items():
-            for strike, details in option.items():
-                # print(side+' - '+strike)
-                if (not strikes[term].get(strike, False)):
-                    strikes[term][strike] = []
-                strikes[term][strike].append(details[0]['last'])
-
-    # Collect price differnces from call and put options.
-    for term, strike in strikes.items():
-        for strprice, prices in strike.items():
-            if (len(prices) == 2):
-                p1 = prices[0]
-                p2 = prices[1]
-
-                if ((0 in [p1, p2]) == False):
-                    diff = abs(p1 - p2)
-                    priceDiffs[term][diff] = strprice
-
-    # Select the smallest price difference out of the bunch.
-    # f1 =
-
-    print(json.dumps(priceDiffs, indent=1))
-    sys.exit()
 
 
 #
