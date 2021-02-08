@@ -80,6 +80,12 @@ def vix_equation(ticker='SPY', sandbox=False):
     t1, t2 = calculateT(strikes)
 
     # Step 4
+    # Calculate R
+    # The risk-free interest rate, R, is the bond-equivalent yield of the U.S. T-bill maturing
+    # closest to the expiration dates of relevant SPX options. As such, the VIX calculation may
+    # use different risk-free interest rates for near- and next-term options. 
+
+    # Step 4
     # Calculate F, where F is the: "forward SPX {but in our case, any ticker} level, by identifying the strike price at which the 
     # absolute difference between the call and put prices is smallest."
     # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx (slide 5)
