@@ -43,7 +43,6 @@ def print_results(tickers):
     batch = quoteStatsBatchRequest(tickers)
 
     for ticker, stockinfo in batch.items():
-        print(stockinfo)
         if (stockinfo.get('quote', False) and stockinfo.get('stats', False)):
             quote = stockinfo.get('quote')
             stats = stockinfo.get('stats')
