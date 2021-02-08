@@ -13,7 +13,6 @@ import calendar
 
 def collectOptionExpirations(ticker, testing=False):
     """
-    Step 1 of VIX equation.
     1. Fetches all option expiration dates from IEX api. 
     2. Finds this month's expiration and next months expiration (the near-term and next-term expirations).
     3. Calculates and returns a dict containing the near-term and next-term expiration dates, along with the 
@@ -105,9 +104,8 @@ def collectOptionExpirations(ticker, testing=False):
     return results
 
 
-def selectStrikes(expirations):
+def forwardLevel(expirations):
     """
-    Step 2
     "Determine the forward SPX level, F, by identifying the strike price at which the
     absolute difference between the call and put prices is smallest."
     https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx
@@ -127,7 +125,6 @@ def selectStrikes(expirations):
     for term, options in expirations.items():
         for side, option in options.items():
             for strike, details in option.items():
-                
 
                 if (not strikes[term].get(strike, False)):
                     strikes[term][strike] = []
@@ -162,10 +159,8 @@ def selectStrikes(expirations):
     return results
 
 
-
 def calculateT(strikes):
     """
-    Step 2 of VIX equation
     T = {MCurrent day + MSettlement day + MOther days}/ Minutes in a year 
     https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx
     """
@@ -176,27 +171,27 @@ def calculateT(strikes):
 
     # Some variables we will need
     now = timezone('US/Central').localize(datetime.datetime.now())
-    midnight =  (now + datetime.timedelta(days=1)).replace(hour=0, minute=0)
-    minutesToMidnight = ((midnight - now).seconds / 60) #MCurrentDay
-    mSettlementDay = 510 # minutes from midnight until 8:30 a.m. on {ticker} settlement day 
-    minutesYear = 525600 
+    midnight = (now + datetime.timedelta(days=1)).replace(hour=0, minute=0)
+    minutesToMidnight = ((midnight - now).seconds / 60)  # MCurrentDay
+    mSettlementDay = 510  # minutes from midnight until 8:30 a.m. on {ticker} settlement day
+    minutesYear = 525600
 
     # Near-Term (T1)
     expDateObj = datetime.datetime.fromtimestamp(float(nearTermExpiration / 1000))  # Windows workaround
     # The previous division by 1000 is simply a workaround for Windows. Windows doesn't seem to play nice
     # with timestamps in miliseconds.
-    tzAware = timezone('US/Central').localize(expDateObj) #Converting to timezone
+    tzAware = timezone('US/Central').localize(expDateObj)  # Converting to timezone
     timeDiff = abs(tzAware - now)
     nrSecondsToExpire = int((timeDiff.total_seconds() // 60) - 1440)  # Calulcating time in seconds
 
     #Next-Term (T2)
     expDateObj = datetime.datetime.fromtimestamp(float(nextTermExpiration / 1000))  # Windows workaround
-    tzAware = timezone('US/Central').localize(expDateObj) #Converting to timezone
+    tzAware = timezone('US/Central').localize(expDateObj)  # Converting to timezone
     timeDiff = abs(tzAware - now)
     nxtSecondsToExpire = int((timeDiff.total_seconds() // 60) - 1440)  # Calulcating time in seconds
-    
-    nrMinutesToExpire = (nrSecondsToExpire / 60) # MOther days
-    nxtMinutesToExpire = (nxtSecondsToExpire / 60) # MOther days
+
+    nrMinutesToExpire = (nrSecondsToExpire / 60)  # MOther days
+    nxtMinutesToExpire = (nxtSecondsToExpire / 60)  # MOther days
 
     t1 = (minutesToMidnight + mSettlementDay + nrMinutesToExpire) / minutesYear
     t2 = (minutesToMidnight + mSettlementDay + nxtMinutesToExpire) / minutesYear
@@ -204,13 +199,10 @@ def calculateT(strikes):
     print(t1, t2)
     sys.exit()
     return t1, t2
-    
 
 
-
-def calculateF(expirations):
+def calculateF(t1, t2, r, forwardLevel):
     """
-    Step 3
     "Determine the forward SPX level, F, by identifying the strike price at which the
     absolute difference between the call and put prices is smallest."
     https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx

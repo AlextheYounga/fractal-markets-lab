@@ -4,6 +4,7 @@ import statistics
 import sys
 from ..core.api.historical import getHistoricalData
 from ..core.api.stats import getKeyStats
+from ..core.api.bonds import get3mTreasury
 from ..core.functions import extract_data, logReturns
 from .functions import *
 
@@ -71,39 +72,36 @@ def vix_equation(ticker='SPY', sandbox=False):
     expirations = collectOptionExpirations(ticker)
 
     # Step 2
-    # Select the strike price to be used in calculating F. A lot of our data is tied to the strike price due to
-    # the TD Ameritrade API.
-    strikes = selectStrikes(expirations)
+    # Determine the forward SPX level, F, by identifying the strike price at which the
+    # absolute difference between the call and put prices is smallest
+    forwardLevel = forwardLevel(expirations)
 
     # Step 3
-    # Calculate T1 and T2, for near-term and next-term options respectively. See calculateT() in functions.py for more.
-    t1, t2 = calculateT(strikes)
-
-    # Step 4
     # Calculate R
     # The risk-free interest rate, R, is the bond-equivalent yield of the U.S. T-bill maturing
     # closest to the expiration dates of relevant SPX options. As such, the VIX calculation may
-    # use different risk-free interest rates for near- and next-term options. 
+    # use different risk-free interest rates for near- and next-term options.
+    r = get3mTreasury()[0]['value']
 
     # Step 4
-    # Calculate F, where F is the: "forward SPX {but in our case, any ticker} level, by identifying the strike price at which the 
+    # Calculate T1 and T2, for near-term and next-term options respectively. See calculateT() in functions.py for more.
+    t1, t2 = calculateT(forwardLevel)
+
+    # Step 5
+    # Calculate F, where F is the: "forward SPX {but in our case, any ticker} level, by identifying the strike price at which the
     # absolute difference between the call and put prices is smallest."
     # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx (slide 5)
 
-    f1, f2 = calculateF(expirations)
-
-    
-
-
+    f1, f2 = calculateF(t1, t2, r, forwardLevel)
 
     # minutes in year, minutes in month
-    min_in_year = 525600
-    min_in_month = 43200
+    # min_in_year = 525600
+    # min_in_month = 43200
 
     # Vix calculation as explained by Investopedia.
-    vix = math.sqrt(
-        (this_month_option / min_in_year) * vol3Weeks * (next_month_option - min_in_month / next_month_option - this_month_option) +
-        (next_month_option / min_in_year) * monthVol * (min_in_month - this_month_option / next_month_option - this_month_option)
-    )
+    # vix = math.sqrt(
+    #     (this_month_option / min_in_year) * vol3Weeks * (next_month_option - min_in_month / next_month_option - this_month_option) +
+    #     (next_month_option / min_in_year) * monthVol * (min_in_month - this_month_option / next_month_option - this_month_option)
+    # )
 
     return vix
