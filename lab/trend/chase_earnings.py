@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import json
 import time
 import sys
+import redis
 from datetime import date
 from .functions import *
 from ..redisdb.controller import rdb_save_stock
@@ -22,6 +23,9 @@ print('Running...')
 
 results = []
 tickers = Stock.objects.all().values_list('ticker', flat=True)
+rdb = True
+stocksaved = 0
+wlsaved = 0
 
 chunked_tickers = chunks(tickers, 100)
 for i, chunk in enumerate(chunked_tickers):
@@ -54,7 +58,7 @@ for i, chunk in enumerate(chunked_tickers):
                 fromHigh = round((price / week52high) * 100, 3)
 
                 # Save Data to DB
-                rdb_data = {                    
+                keyStats = {                    
                     'peRatio': stats.get('peRatio', None),
                     'week52': week52high,
                     'day5ChangePercent': day5ChangePercent if day5ChangePercent else None,
@@ -66,7 +70,15 @@ for i, chunk in enumerate(chunked_tickers):
                     'ttmEPS': ttmEPS,
                 }
 
-                rdb_save_stock(ticker, rdb_data)
+                if (rdb == True):
+                    try:
+                        rdb_save_stock(ticker, keyStats)
+                        stocksaved += 1
+                    except redis.exceptions.ConnectionError:
+                        rdb = False
+                        print('Redis not connected. Not saving.')
+
+                # TODO: Check if this still works.
 
                 if ((fromHigh < 105) and (fromHigh > 95)):
                     if (changeToday > 10):
@@ -77,10 +89,7 @@ for i, chunk in enumerate(chunked_tickers):
                             if (isinstance(earningsChecked, dict) and earningsChecked['actual'] and earningsChecked['consensus']):
                                 # Save Earnings to DB
                                 if (earningsChecked['improvement'] == True):
-
-                                    keyStats = {}
-                                    for model, data in rdb_data.items():
-                                        keyStats.update(data)
+                                        
                                     keyStats.update({
                                         'reportedEPS': earningsChecked['actual'],
                                         'reportedConsensus': earningsChecked['consensus'],
@@ -98,12 +107,18 @@ for i, chunk in enumerate(chunked_tickers):
                                         defaults=stockData
                                     )
 
+                                    wlsaved += 1
+
                                     print('{} saved to Watchlist'.format(ticker))
                                     results.append(stockData)
 
 if results:
-    today = date.today().strftime('%m-%d')
-    writeCSV(results, 'lab/trend/output/earnings/trend_chasing_{}.csv'.format(today))
+    print('Total scanned: '+str(len(tickers)))
+    print('Stocks saved: '+str(stocksaved))
+    print('Saved to Watchlist: '+str(wlsaved))
+
+    # today = date.today().strftime('%m-%d')
+    # writeCSV(results, 'lab/trend/output/earnings/trend_chasing_{}.csv'.format(today))
 
     printFullTable(results, struct='dictlist')
 
