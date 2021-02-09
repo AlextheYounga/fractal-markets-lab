@@ -3,6 +3,7 @@ import sys
 import datetime
 import time
 import calendar
+from math import e
 from pytz import timezone
 from dateutil.relativedelta import relativedelta
 from ..core.api.options import *
@@ -11,7 +12,35 @@ import numpy as np
 import calendar
 
 
-def collectOptionExpirations(ticker, testing=False):
+def collectOptionChain(ticker, testing=True):
+    today = datetime.datetime.now()
+    year = today.year
+    month = today.month
+    next_month = (today + relativedelta(months=+1)).month
+    next_month_year = (today + relativedelta(months=+1)).year
+    next_month_end = calendar.monthrange(next_month_year, next_month)[1]
+    
+
+    # Building a timerange to send to TD Ameritrade's API
+    fromDate = today
+    toDate = datetime.datetime(next_month_year, next_month, next_month_end)
+    timeRange = [fromDate, toDate]
+
+    """ Step 1: Fetch the option chain from TD Ameritrade """
+    
+    if (testing):
+    # Test Data
+    JSON = 'lab/vix/sample_response/response.json'
+    with open(JSON) as jsonfile:
+        chain = json.loads(jsonfile.read())
+
+        return chain
+    else:
+        # chain = getOptionChainTD(ticker, timeRange)
+        # return chain
+
+
+def collectOptionExpirations(chain):
     """
     1. Fetches all option expiration dates from IEX api. 
     2. Finds this month's expiration and next months expiration (the near-term and next-term expirations).
@@ -26,24 +55,12 @@ def collectOptionExpirations(ticker, testing=False):
     next_month = (today + relativedelta(months=+1)).month
     next_month_year = (today + relativedelta(months=+1)).year
     next_month_end = calendar.monthrange(next_month_year, next_month)[1]
+
     # Our container for collecting our nearest options
     options = {
         'nearTerm': {},
         'nextTerm': {}
-    }
-
-    # Building a timerange to send to TD Ameritrade's API
-    fromDate = today
-    toDate = datetime.datetime(next_month_year, next_month, next_month_end)
-    timeRange = [fromDate, toDate]
-
-    """ Step 1: Fetch the option chain from TD Ameritrade """
-    # chain = getOptionChainTD(ticker, timeRange, 'OTM')
-
-    # Testing purposes
-    JSON = 'lab/vix/optionData/response.json'
-    with open(JSON) as jsonfile:
-        chain = json.loads(jsonfile.read())
+    }    
 
         """ Step 2: Finding this and next month's closest option expiration dates. """
         for optionSide in ['callExpDateMap', 'putExpDateMap']:
@@ -208,12 +225,34 @@ def calculateF(t1, t2, r, forwardLevel):
 
     """
 
-    # Near-Term
-    strikePrice = forwardLevel['nearTerm'][0]['strikePrice']
-    
 
-    print(forwardLevel)
-    sys.exit()
+    strikePrice = forwardLevel['nearTerm'][0]['strikePrice']
+
+    # Near-Term    
+    callPrice = forwardLevel['nearTerm'][0]['last']
+    putPrice = forwardLevel['nearTerm'][1]['last']
+    
+    f1 = strikePrice + e**(r*t1) * (callPrice - putPrice)
+
+    # Next-Term
+    callPrice = forwardLevel['nextTerm'][0]['last']
+    putPrice = forwardLevel['nextTerm'][1]['last']
+    
+    f2 = strikePrice + e**(r*t2) * (callPrice - putPrice)
+    
+    return f1, f2
+
+
+def calcaulateK():
+    """
+    """
+
+
+def deltaK():
+    """
+    """
+
+
 
 
 #
