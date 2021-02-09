@@ -18,6 +18,7 @@ def list_commands():
         ['donchian [ticker]', 'Runs a donchian range calculation on a ticker'],
         ['financials [ticker]', 'Returns financials data for ticker, including some custom indicators not provided by IEX.'],
         ['macro:trends [timeframe=1m] [gain=20]', 'Scans all ETFs and returns the ETFs with the performance above an int (gain) within a timerange (5d, 1m, 3m, 1y)'],
+        ['macro:search [query]', 'Returns ETFs whose name matches a search string (case sensitive)'],
         ['macro:gainers', 'Scans all ETFs and returns ETFs with highest day change.'],
         ['news:scrape [query]', 'Searches a query and searches first 10 articles for stocks mentioned in article'],
         ['hurst [ticker] [output]', 'Runs a rescaled range analysis on a ticker. Output defaults to table.'],
@@ -27,7 +28,7 @@ def list_commands():
         ['historicalprices:get [ticker]', 'Fetches historical prices for a ticker and saves them to db.'],
         ['inflation:calculate [update=False]', 'Inflation index using etfs'],
         ['inflation:graph [update=False]', 'Graph inflation index using etfs'],
-        ['inflation:functions [refresh]', 'Grabs max historical prices for all etfs in sectors list, updates with fresh data.'],        
+        ['inflation:functions [refresh]', 'Grabs max historical prices for all etfs in sectors list, updates with fresh data.'],
         ['trend:chase', 'Scans all stocks and returns todays gainers with above certain thresholds (weeds out the penny stocks).'],
         ['trend:search [string]', 'Scans stocks with string in stock name and looks for gainers'],
         ['trend:earnings', 'Scans all stocks and returns todays gainers who have consistently good earnings.'],
@@ -84,7 +85,7 @@ def inflation_controller(subroutine, args=[]):
             update = True if (args[0] == 'update') else False
             print(annual(update))
         except IndexError:
-             print(annual())
+            print(annual())
 
 
 def financials_controller(args):
@@ -109,6 +110,12 @@ def macro_controller(subroutine, args=[]):
             except IndexError:
                 print(calculate_trends)
                 return
+    if (subroutine == 'search'):
+        from lab.macro.search_etfs import search
+        if (args):
+            query = args[0]
+            search(query)
+            return
 
     if (subroutine == 'gainers'):
         import lab.macro.gainers
