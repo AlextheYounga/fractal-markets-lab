@@ -3,6 +3,8 @@ from django.apps import apps
 from dotenv import load_dotenv
 import json
 import sys
+import redis
+import time
 from datetime import date
 from ..redisdb.controller import rdb_save_stock
 from ..core.functions import chunks, dataSanityCheck
@@ -15,10 +17,9 @@ django.setup()
 Stock = apps.get_model('database', 'Stock')
 Watchlist = apps.get_model('database', 'Watchlist')
 
-tsaved = 0
-tfailed = 0
-statSaved = 0
-statFailed = 0
+rdb = True
+stocksaved = 0
+wlsaved = 0
 
 
 # Main Thread Start
@@ -73,11 +74,13 @@ for i, chunk in enumerate(chunked_tickers):
                     'ttmEPS': ttmEPS
                 }
 
-                try:
-                    rdb_save_stock(ticker, keyStats)
-                    statSaved = (statSaved + 1)
-                except:
-                    statFailed = (statFailed + 1)
+                if (rdb == True):
+                    try:
+                        rdb_save_stock(ticker, keyStats)
+                        stocksaved += 1
+                    except redis.exceptions.ConnectionError:
+                        rdb = False
+                        print('Redis not connected. Not saving.')
 
                 if ((fromHigh < 100) and (fromHigh > 80)):
                     if (changeToday > 5):
@@ -94,11 +97,7 @@ for i, chunk in enumerate(chunked_tickers):
                                 'fromPriceTarget': fromPriceTarget,
                             }
 
-                            try:                                    
-                                rdb_save_stock(ticker, trend_data)
-                                vsaved = (vsaved + 1)
-                            except:
-                                vfailed = (vfailed + 1)
+                            
 
                             keyStats.update({
                                 'highPriceTarget': highPriceTarget,
@@ -118,25 +117,30 @@ for i, chunk in enumerate(chunked_tickers):
                                 defaults=stockData
                             )
 
+                            wlsaved += 1
+
                             stockData['volume'] = "{}K".format(round(volume / 1000, 2))
                             stockData['previousVolume'] = "{}K".format(round(previousVolume / 1000, 2))
                             stockData['changeToday'] = changeToday
 
                             print('{} saved to Watchlist'.format(ticker))
 
-                            results.append(stockData)
-
                             # Removing from terminal output
                             del stockData['day50MovingAvg']
-                            del stockData['day200MovingAvg']                        
+                            del stockData['day200MovingAvg']  
+
+                            results.append(stockData)
+
+                                                  
 
 
 if results:
-    print('Stocks Saved: '+str(statSaved)+' Trends Saved: '+str(statFailed))
-    print('Stocks Not Saved: '+str(vsaved)+' Trends Not Saved: '+str(vfailed))
+    print('Total scanned: '+str(len(tickers)))
+    print('Stocks saved: '+str(stocksaved))
+    print('Saved to Watchlist: '+str(wlsaved))
 
-    today = date.today().strftime('%m-%d')
-    writeCSV(results, 'lab/trend/output/volume/trend_chasing_{}.csv'.format(today))
+    # today = date.today().strftime('%m-%d')
+    # writeCSV(results, 'lab/trend/output/volume/trend_chasing_{}.csv'.format(today))
 
     printFullTable(results, struct='dictlist')
 
