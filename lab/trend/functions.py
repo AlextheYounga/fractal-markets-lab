@@ -1,4 +1,4 @@
-from ..core.api import getCurrentPrice
+from ..core.api.stats import getCurrentPrice
 import requests
 import json
 import sys

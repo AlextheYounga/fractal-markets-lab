@@ -1,6 +1,7 @@
 import django
 from iexfinance.stocks import Stock
-from ...core.api import syncStocks, batchQuote
+from ...core.api.batch import batchQuote
+from ...core.api.sync import syncStocks
 from ...core.functions import chunks
 from django.apps import apps
 import json
