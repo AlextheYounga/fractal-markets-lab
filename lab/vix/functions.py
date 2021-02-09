@@ -100,7 +100,7 @@ def collectOptionExpirations(chain):
     finding min() value of each group's keys, which again, are the time to expiration in seconds.
     """
 
-    fwdLevelChain = {
+    fwdLvlChain = {
         # Grabbing the nearest calls, will use these expirations to find associated put options.
         'nearTerm': {
             'call': options['nearTerm']['callExpDateMap'][min(options['nearTerm']['callExpDateMap'].keys())],
@@ -113,10 +113,10 @@ def collectOptionExpirations(chain):
     fwdLevelDates = {
         # Creating a separate dict to store some crucial date variables.
         'nearTerm': {
-            'preciseExpiration': next(iter(fwdLevelChain['nearTerm']['call'].values()))[0]['expirationDate'],            
+            'preciseExpiration': next(iter(fwdLvlChain['nearTerm']['call'].values()))[0]['expirationDate'],            
         },
         'nextTerm': {
-            'preciseExpiration': next(iter(fwdLevelChain['nextTerm']['call'].values()))[0]['expirationDate']
+            'preciseExpiration': next(iter(fwdLvlChain['nextTerm']['call'].values()))[0]['expirationDate']
         }
     }
 
@@ -135,14 +135,14 @@ def collectOptionExpirations(chain):
 
     # Finding associated put options from call expirations; making sure we have both the call and put options for the same
     # expiration date.
-    for term, call in fwdLevelChain.items():
-        key = next(iter(fwdLevelChain[term]['call'].values()))[0]['expirationDate']  # Grabbing expiration date from call
-        fwdLevelChain[term]['put'] = options[term]['putExpDateMap'][key]
+    for term, call in fwdLvlChain.items():
+        key = next(iter(fwdLvlChain[term]['call'].values()))[0]['expirationDate']  # Grabbing expiration date from call
+        fwdLvlChain[term]['put'] = options[term]['putExpDateMap'][key]
 
-    return fwdLevelDates, fwdLevelChain
+    return fwdLevelDates, fwdLvlChain
 
 
-def calculateForwardLevel(fwdLevelChain):
+def calculateForwardLevel(fwdLvlChain):
     """
     "Determine the forward SPX level, F, by identifying the strike price at which the
     absolute difference between the call and put prices is smallest."
@@ -160,7 +160,7 @@ def calculateForwardLevel(fwdLevelChain):
     }
 
     # Collecting prices on call and put options with strike price as key.
-    for term, options in fwdLevelChain.items():
+    for term, options in fwdLvlChain.items():
         for side, option in options.items():
             for strike, details in option.items():
 
@@ -185,12 +185,12 @@ def calculateForwardLevel(fwdLevelChain):
 
     results = {
         'nearTerm': [
-            fwdLevelChain['nearTerm']['call'][nearTermStrike][0],
-            fwdLevelChain['nearTerm']['put'][nearTermStrike][0],
+            fwdLvlChain['nearTerm']['call'][nearTermStrike][0],
+            fwdLvlChain['nearTerm']['put'][nearTermStrike][0],
         ],
         'nextTerm': [
-            fwdLevelChain['nextTerm']['call'][nextTermStrike][0],
-            fwdLevelChain['nextTerm']['put'][nextTermStrike][0],
+            fwdLvlChain['nextTerm']['call'][nextTermStrike][0],
+            fwdLvlChain['nextTerm']['put'][nextTermStrike][0],
         ]
     }
 
@@ -253,17 +253,23 @@ def calculateF(t1, t2, r, forwardLevel):
     return f1, f2
 
 
-def calculateK(f1, f2, forwardLevel, chain):
+def calculateK(f1, f2, fwdLvlChain):
     """
     """
     k = {
         'nearTerm': {},
         'nextTerm': {}
     }
+    minFwdLvl = int(min([f1, f2]))
 
-    minF = int(min([f1, f2]))
-    print(minF)
-
+    for term, options in fwdLvlChain.items():
+        for side, option in options.items():
+            print(side)
+            for strike, details in option.items():
+                # if (side == 'put')
+                print(strike)
+        sys.exit()
+    
 
     # Loop Chain
     # for optionSide in ['callExpDateMap', 'putExpDateMap']:
