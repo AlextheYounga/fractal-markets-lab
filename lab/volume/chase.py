@@ -30,6 +30,7 @@ tickers = Stock.objects.all().values_list('ticker', flat=True)
 
 chunked_tickers = chunks(tickers, 100)
 for i, chunk in enumerate(chunked_tickers):
+    time.sleep(1)
     batch = quoteStatsBatchRequest(chunk)
 
     for ticker, stockinfo in batch.items():
