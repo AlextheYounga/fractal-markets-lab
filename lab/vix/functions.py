@@ -260,12 +260,16 @@ def calculateK(f1, f2, fwdLvlChain):
         'nearTerm': {},
         'nextTerm': {}
     }
-    minFwdLvl = int(min([f1, f2]))
+
+    # minFwdLvl = int(min([f1, f2]))
 
     for term, options in fwdLvlChain.items():
         for side, option in options.items():
             print(side)
             for strike, details in option.items():
+                # TODO: Compare to each term's minFwdLvl
+                
+                k[term]['0'] = strike 
                 # if (side == 'put')
                 print(strike)
         sys.exit()
