@@ -63,6 +63,8 @@ def print_results(tickers):
 
             if ((0 in critical)):
                 continue
+            if (changeToday < 1):
+                continue
 
             fromHigh = round((price / week52high) * 100, 3)
             volumeChangeDay = (float(volume) - float(previousVolume)) / float(previousVolume) * 100
@@ -116,7 +118,7 @@ def clean_tickers(tickers):
     return cleaned
 
 
-def scrape_news(query="best+stocks+to+buy"):
+def scrape_news(query="best+stocks+to+buy+this+week"):
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
     tickers = []
 
