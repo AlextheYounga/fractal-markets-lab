@@ -304,7 +304,7 @@ def calculateK(f1, f2, selectedChain):
         # below, once two puts with consecutive strike prices are found to have zero bid
         # prices, no puts with lower strikes are considered for inclusion."
 
-        k[term]['limits'] = {}
+        k[term]['bounds'] = {}
         for side, strks in bets.items():
             zeros = 0
             strklist = strks.keys()
@@ -324,16 +324,11 @@ def calculateK(f1, f2, selectedChain):
                 a = bets[side][price]['ask']
 
                 if (b and a):
-                    k[term]['limits'][side] = price
+                    k[term]['bounds'][side] = price
                 else:
                     zeros += 1
 
-    print(k)
-
-    sys.exit()
-
-
-    sys.exit()
+    return k
 
 
 def deltaK():

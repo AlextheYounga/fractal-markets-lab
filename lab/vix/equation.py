@@ -71,8 +71,13 @@ def vix_equation(ticker='SPY', sandbox=False):
     f1, f2 = calculateF(t1, t2, r, forwardLevel)
 
     # Step 7
-    # Calculate K
-    k0, ki = calculateK(f1, f2, selectedChain)
+    # Calculate K0 and upper/lower boundaries on chain
+    # See calculateK() for more info here.
+    k = calculateK(f1, f2, selectedChain)
+
+    # Step 8
+    # Calculate deltaK for each contract in selected chain.
+    deltaK = deltaK(k, selectedChain)
 
 
     sys.exit()
