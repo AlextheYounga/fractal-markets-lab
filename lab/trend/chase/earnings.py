@@ -6,12 +6,12 @@ import time
 import sys
 import redis
 from datetime import date
-from .functions import *
-from ..redisdb.controller import rdb_save_stock
-from ..core.functions import chunks, dataSanityCheck
-from ..core.api import quoteStatsBatchRequest, getHistoricalEarnings, getPriceTarget
-from ..core.output import printFullTable, writeCSV
-from ..fintwit.tweet import send_tweet
+from ..functions import *
+from ...redisdb.controller import rdb_save_stock
+from ...core.functions import chunks, dataSanityCheck
+from ...core.api import quoteStatsBatchRequest, getHistoricalEarnings, getPriceTarget
+from ...core.output import printFullTable, writeCSV
+from ...fintwit.tweet import send_tweet
 load_dotenv()
 django.setup()
 
