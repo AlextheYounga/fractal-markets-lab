@@ -22,13 +22,9 @@ def list_commands():
         ['news:scrape [query]', 'Searches a query and searches first 10 articles for stocks mentioned in article'],
         ['hurst [ticker] [output]', 'Runs a rescaled range analysis on a ticker. Output defaults to table.'],
         ['range [ticker] [tweet=False]', 'Runs a volatility range analysis on a ticker.'],
-        ['fintwit:follow [handle, page_number]', 'Combs through a followers of a user and follows particular people. Each loop is a *page* of 20 people.'],
-        ['fintwit:followlist', 'Combs through a followers of a user and follows particular people. Each loop is a *page* of 20 people.'],
-        ['fintwit:trim [page_number]', 'Combs through your followers and removes certain types of people.'],
         ['historicalprices:get [ticker]', 'Fetches historical prices for a ticker and saves them to db.'],
         ['inflation:calculate [update=False]', 'Inflation index using etfs'],
         ['inflation:graph [update=False]', 'Graph inflation index using etfs'],
-        ['inflation:functions [refresh]', 'Grabs max historical prices for all etfs in sectors list, updates with fresh data.'],
         ['trend:chase', 'Scans all stocks and returns todays gainers with above certain thresholds (weeds out the penny stocks).'],
         ['trend:search [string]', 'Scans stocks with string in stock name and looks for gainers'],
         ['trend:earnings', 'Scans all stocks and returns todays gainers who have consistently good earnings.'],
@@ -86,29 +82,6 @@ def inflation_controller(subroutine, args=[]):
             print(annual(update))
         except IndexError:
             print(annual())
-
-
-def fintwit_controller(subroutine, args):
-    if (subroutine == 'follow'):
-        from lab.fintwit.user import followFollowers
-        if (args):
-            handle = args[0]
-            index = args[1] if (len(args) > 1) else 0
-            if (index == 'restart'):
-                print(followFollowers(handle, 0))
-            else:
-                print(followFollowers(handle, index))
-
-    if (subroutine == 'followlist'):
-        from lab.fintwit.user import followList
-        print(followList())
-
-    if (subroutine == 'trim'):
-        from lab.fintwit.user import trimFollowers
-        if (args and args[0] == 'restart'):
-            print(trimFollowers(0))
-        else:
-            print(trimFollowers())
 
 
 def financials_controller(args):
@@ -189,10 +162,10 @@ def range_controller(args):
 
 def trend_controller(subroutine, args):
     if (args):
-        if (subroutine == 'pricetarget'):
-            # TODO: Finish price targets
-            from lab.trend.pricetarget import lookup
-            print(lookup(args[0]))
+        # if (subroutine == 'pricetarget'):
+        # TODO: Finish price targets
+        #     from lab.trend.pricetarget import lookup
+        #     print(lookup(args[0]))
         if (subroutine == 'search'):
             from lab.trend.search import search
             print(search(args[0]))
@@ -205,11 +178,6 @@ def trend_controller(subroutine, args):
 
     if (subroutine == 'gainers'):
         import lab.trend.gainers
-
-    if (subroutine == 'pricetarget'):
-        from lab.trend.pricetarget import lookup
-        if (args):
-            print(lookup(args[0]))
 
 
 def volume_controller(subroutine, args):
