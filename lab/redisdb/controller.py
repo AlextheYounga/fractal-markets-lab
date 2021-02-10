@@ -105,11 +105,10 @@ def rdb_save_stock(ticker, data):
         if (key == ticker):
             # Prevent bad data insert
             continue
-        if (allowed_key('stock', key)):
+        if (allowed_key('stock', key) and data.get(key, False)):
             r.set('stock-{}-{}'.format(ticker, key), data[key])
             return True
-        else:
-            print(key+' is not an allowed insert key. Please add to list of allowed keys if you wish to insert.')
+        else:            
             return False
 
 

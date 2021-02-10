@@ -5,6 +5,7 @@ import json
 import sys
 from datetime import date
 import time
+import redis
 from ..redisdb.controller import rdb_save_stock
 from ..core.functions import chunks, dataSanityCheck
 from ..core.api.historical import getHistoricalEarnings
@@ -17,10 +18,9 @@ django.setup()
 
 Stock = apps.get_model('database', 'Stock')
 Watchlist = apps.get_model('database', 'Watchlist')
-tsaved = 0
-tfailed = 0
-statSaved = 0
-statFailed = 0
+rdb = True
+stocksaved = 0
+wlsaved = 0
 
 # Main Thread Start
 print('Running...')
@@ -41,7 +41,7 @@ for i, chunk in enumerate(chunked_tickers):
             stats = stockinfo.get('stats')
             price = quote.get('latestPrice', 0)
 
-            if (price and isinstance(price, float)):                
+            if (price and isinstance(price, float)):
                 ttmEPS = stats.get('ttmEPS', None)
                 day5ChangePercent = round(dataSanityCheck(stats, 'day5ChangePercent') * 100, 2)
                 month1ChangePercent = round(dataSanityCheck(stats, 'month1ChangePercent') * 100, 2)
@@ -73,15 +73,17 @@ for i, chunk in enumerate(chunked_tickers):
                     'ttmEPS': ttmEPS
                 }
 
-                try:
-                    rdb_save_stock(ticker, keyStats)
-                    statSaved = (statSaved + 1)
-                except:
-                    statFailed = (statFailed + 1)
+                if (rdb == True):
+                    try:
+                        rdb_save_stock(ticker, keyStats)
+                        stocksaved += 1
+                    except redis.exceptions.ConnectionError:
+                        rdb = False
+                        print('Redis not connected. Not saving.')
 
                 if (price > 5):
                     if ((fromHigh < 105) and (fromHigh > 95)):
-                        if (changeToday > 12):
+                        if (changeToday > 15):
                             if (volume > previousVolume):
                                 priceTargets = getPriceTarget(ticker)
                                 fromPriceTarget = round((price / priceTargets['priceTargetHigh']) * 100, 3) if (dataSanityCheck(priceTargets, 'priceTargetHigh')) else 0
@@ -95,12 +97,8 @@ for i, chunk in enumerate(chunked_tickers):
                                     'fromPriceTarget': fromPriceTarget,
                                 }
 
-                                try:                                    
-                                    rdb_save_stock(ticker, trend_data)
-                                    tsaved = (tsaved + 1)
-                                except:
-                                    tfailed = (tfailed + 1)
-
+                                if (rdb == True):
+                                    rdb_save_stock(ticker, trend_data)                                    
 
                                 keyStats.update({
                                     'highPriceTarget': highPriceTarget,
@@ -120,16 +118,25 @@ for i, chunk in enumerate(chunked_tickers):
                                     defaults=stockData
                                 )
 
+                                wlsaved += 1
+
                                 stockData['changeToday'] = changeToday
                                 print('{} saved to Watchlist'.format(ticker))
+                                
+                                # Removing from terminal output
+                                del stockData['day50MovingAvg']
+                                del stockData['day200MovingAvg']  
+
                                 results.append(stockData)
 
 
 if results:
-    print('Stocks Saved: '+str(statSaved)+' Trends Saved: '+str(statFailed))
-    print('Stocks Not Saved: '+str(tsaved)+' Trends Not Saved: '+str(tfailed))
-    today = date.today().strftime('%m-%d')
-    writeCSV(results, 'lab/trend/output/chase/trend_chasing_{}.csv'.format(today))
+    print('Total scanned: '+str(len(tickers)))
+    print('Stocks saved: '+str(stocksaved))
+    print('Saved to Watchlist: '+str(wlsaved))
+
+    # today = date.today().strftime('%m-%d')
+    # writeCSV(results, 'lab/trend/output/chase/trend_chasing_{}.csv'.format(today))
 
     printFullTable(results, struct='dictlist')
 
