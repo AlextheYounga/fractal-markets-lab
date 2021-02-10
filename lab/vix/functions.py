@@ -322,6 +322,7 @@ def calculateDeltaK(k, t, r, selectedChain):
         'nearTerm': [],
         'nextTerm': [] 
     }
+    # TODO: Move this into calculateK()
     # Calculate the contribution of each call/put within the bounds.
     for term, options in selectedChain.items():
         # Created list of strikes within boundaries.  
@@ -335,10 +336,10 @@ def calculateDeltaK(k, t, r, selectedChain):
                         continue
                 curatedStrikes.append(strike)
     
-    for i, price in enumerate(curatedStrikes):
+    for i, k in enumerate(curatedStrikes):
         if (i == 0):
-            deltaK = curatedStrikes[i + 1] - price
-            contribution = 
+            deltaK = curatedStrikes[i + 1] - k
+            contribution = (deltaK/k**2)
             continue
 
 
