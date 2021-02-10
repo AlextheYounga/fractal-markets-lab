@@ -41,48 +41,48 @@ def print_results(tickers):
     print("\n")
     results = []
     batch = quoteStatsBatchRequest(tickers)
-
     for ticker, stockinfo in batch.items():
-        if (stockinfo.get('quote', False) and stockinfo.get('stats', False)):
-            quote = stockinfo.get('quote')
-            stats = stockinfo.get('stats')
-            price = quote.get('latestPrice', 0)
+        if (isinstance(stockinfo, dict)):
+            if (stockinfo.get('quote', False) and stockinfo.get('stats', False)):
+                quote = stockinfo.get('quote')
+                stats = stockinfo.get('stats')
+                price = quote.get('latestPrice', 0)
 
-            ttmEPS = stats.get('ttmEPS', None)
-            day5ChangePercent = round(dataSanityCheck(stats, 'day5ChangePercent') * 100, 2)
-            month1ChangePercent = round(dataSanityCheck(stats, 'month1ChangePercent') * 100, 2)
-            ytdChangePercent = round(dataSanityCheck(stats, 'ytdChangePercent') * 100, 2)
-            volume = dataSanityCheck(quote, 'volume')
-            previousVolume = dataSanityCheck(quote, 'previousVolume')
-            changeToday = round(dataSanityCheck(quote, 'changePercent') * 100, 2)
+                ttmEPS = stats.get('ttmEPS', None)
+                day5ChangePercent = round(dataSanityCheck(stats, 'day5ChangePercent') * 100, 2)
+                month1ChangePercent = round(dataSanityCheck(stats, 'month1ChangePercent') * 100, 2)
+                ytdChangePercent = round(dataSanityCheck(stats, 'ytdChangePercent') * 100, 2)
+                volume = dataSanityCheck(quote, 'volume')
+                previousVolume = dataSanityCheck(quote, 'previousVolume')
+                changeToday = round(dataSanityCheck(quote, 'changePercent') * 100, 2)
 
-            # Critical
-            week52high = dataSanityCheck(stats, 'week52high')
+                # Critical
+                week52high = dataSanityCheck(stats, 'week52high')
 
-            critical = [price, week52high]
+                critical = [price, week52high]
 
-            if ((0 in critical)):
-                continue
+                if ((0 in critical)):
+                    continue
 
-            fromHigh = round((price / week52high) * 100, 3)
-            volumeChangeDay = (float(volume) - float(previousVolume)) / float(previousVolume) * 100
+                fromHigh = round((price / week52high) * 100, 3)
+                volumeChangeDay = (float(volume) - float(previousVolume)) / float(previousVolume) * 100
 
-            keyStats = {
-                'ticker': ticker,
-                'name': stats['companyName'],
-                'lastPrice': price,
-                'peRatio': stats.get('peRatio', None),
-                'week52': week52high,
-                'changeToday': changeToday,
-                'day5ChangePercent': day5ChangePercent if day5ChangePercent else None,
-                'month1ChangePercent': month1ChangePercent if month1ChangePercent else None,
-                'ytdChangePercent': ytdChangePercent if ytdChangePercent else None,
-                'volumeChangeDay':  "{}%".format(round(volumeChangeDay, 2)),
-                'fromHigh': fromHigh,
-                'ttmEPS': ttmEPS
-            }
+                keyStats = {
+                    'ticker': ticker,
+                    'name': stats['companyName'],
+                    'lastPrice': price,
+                    'peRatio': stats.get('peRatio', None),
+                    'week52': week52high,
+                    'changeToday': changeToday,
+                    'day5ChangePercent': day5ChangePercent if day5ChangePercent else None,
+                    'month1ChangePercent': month1ChangePercent if month1ChangePercent else None,
+                    'ytdChangePercent': ytdChangePercent if ytdChangePercent else None,
+                    'volumeChangeDay':  "{}%".format(round(volumeChangeDay, 2)),
+                    'fromHigh': fromHigh,
+                    'ttmEPS': ttmEPS
+                }
 
-            results.append(keyStats)
+                results.append(keyStats)
 
     if results:
         today = date.today().strftime('%m-%d')
