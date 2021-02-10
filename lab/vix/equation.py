@@ -42,15 +42,15 @@ def vix_equation(ticker='SPY', sandbox=False):
 
     # Step 2
     # Find the proper "near-term" and "next-term" option expirations to be used to find Forward Level. 
-    # See collectOptionExpirations() in functions.py.
+    # See selectOptionExpirations() in functions.py.
     # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx (slide 4)
-    fwdLevelDates, fwdLvlChain = collectOptionExpirations(chain)
+    selectedDates, selectedChain = selectOptionExpirations(chain)
 
 
     # Step 3
     # Determine the forward SPX level, F, by identifying the strike price at which the
     # absolute difference between the call and put prices is smallest
-    forwardLevel = calculateForwardLevel(fwdLvlChain)
+    forwardLevel = calculateForwardLevel(selectedChain)
 
     # Step 4
     # Calculate R
@@ -61,7 +61,7 @@ def vix_equation(ticker='SPY', sandbox=False):
 
     # Step 5
     # Calculate T1 and T2, for near-term and next-term options respectively. See calculateT() in functions.py for more.
-    t1, t2 = calculateT(fwdLevelDates)
+    t1, t2 = calculateT(selectedDates)
 
     # Step 6
     # Calculate F, where F is the: "forward SPX {but in our case, any ticker} level, by identifying the strike price at which the
@@ -71,8 +71,13 @@ def vix_equation(ticker='SPY', sandbox=False):
     f1, f2 = calculateF(t1, t2, r, forwardLevel)
 
     # Step 7
-    # Calculate K
-    k0, ki = calculateK(f1, f2, fwdLvlChain)
+    # Calculate K0 and upper/lower boundaries on chain
+    # See calculateK() for more info here.
+    k = calculateK(f1, f2, selectedChain)
+
+    # Step 8
+    # Calculate deltaK for each contract in selected chain.
+    deltaK = deltaK(k, selectedChain)
 
 
     sys.exit()
