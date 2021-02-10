@@ -216,13 +216,10 @@ def calculateT(selectedDates):
         minutesToExpire = (secondsToExpire / 60)  # MOther days
         t[term] = (minutesToMidnight + mSettlementDay + minutesToExpire) / minutesYear  # T equation
 
-    t1 = t['nearTerm']
-    t2 = t['nextTerm']
-
-    return t1, t2
+    return t
 
 
-def calculateF(t1, t2, r, forwardLevel):
+def calculateF(t, r, forwardLevel):
     """
     F = Strike Price + eRT × (Call Price – Put Price)
     "Determine the forward SPX level, F, by identifying the strike price at which the
@@ -230,27 +227,19 @@ def calculateF(t1, t2, r, forwardLevel):
     https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx
 
     """
+    f = {}
 
     strikePrice = forwardLevel['nearTerm'][0]['strikePrice']
 
-    # Near-Term
-    callPrice = forwardLevel['nearTerm'][0]['last']
-    putPrice = forwardLevel['nearTerm'][1]['last']
+    for term in ['nearTerm', 'nextTerm']:
+        callPrice = forwardLevel[term][0]['last']
+        putPrice = forwardLevel[term][1]['last']
+        f[term] = strikePrice + e**(r*t[term]) * (callPrice - putPrice) # F equation
 
-    # F equation
-    f1 = strikePrice + e**(r*t1) * (callPrice - putPrice)
-
-    # Next-Term
-    callPrice = forwardLevel['nextTerm'][0]['last']
-    putPrice = forwardLevel['nextTerm'][1]['last']
-
-    # F equation
-    f2 = strikePrice + e**(r*t2) * (callPrice - putPrice)
-
-    return f1, f2
+    return f
 
 
-def calculateK(f1, f2, selectedChain):
+def calculateK(f, selectedChain):
     """
     """
     k = {
@@ -275,17 +264,11 @@ def calculateK(f1, f2, selectedChain):
 
                 # Collecting k0
                 # The first strike below the forward index level, F
-                if (term == 'nearTerm'):
-                    minFwdLvl = float(int(f1))
-                    if (float(strike) <= minFwdLvl):
-                        k0 = strike
-                        k[term]['k0'] = k0
+                minFwdLvl = float(int(f[term]))
+                if (float(strike) <= minFwdLvl):
+                    k0 = strike
+                    k[term]['k0'] = k0
 
-                if (term == 'nextTerm'):
-                    minFwdLvl = float(int(f2))
-                    if (float(strike) <= minFwdLvl):
-                        k0 = strike
-                        k[term]['k0'] = k0
 
         # Collecting put/call averages
         # "Finally, select both the put and call with strike price K0.
@@ -331,9 +314,32 @@ def calculateK(f1, f2, selectedChain):
     return k
 
 
-def deltaK():
+def calculateDeltaK(k, t, r, selectedChain):
     """
     """
+    curatedStrikes = []
+    contributions = {
+        'nearTerm': [],
+        'nextTerm': [] 
+    }
+    # Calculate the contribution of each call/put within the bounds.
+    for term, options in selectedChain.items():
+        # Created list of strikes within boundaries.  
+        for side, option in options.items():
+            for strike, details in option.items():
+                if (side == 'call'):
+                    if ((strike < k[term]['k0']) or (strike > k[term]['bounds']['call'])):
+                        continue
+                if (side == 'put'):
+                    if ((strike > k[term]['k0']) or (strike < k[term]['bounds']['put'])):
+                        continue
+                curatedStrikes.append(strike)
+    
+    for i, price in enumerate(curatedStrikes):
+        if (i == 0):
+            deltaK = curatedStrikes[i + 1] - price
+            contribution = 
+            continue
 
 
 #
