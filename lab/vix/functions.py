@@ -19,7 +19,6 @@ def collectOptionChain(ticker, testing=True):
     next_month = (today + relativedelta(months=+1)).month
     next_month_year = (today + relativedelta(months=+1)).year
     next_month_end = calendar.monthrange(next_month_year, next_month)[1]
-    
 
     # Building a timerange to send to TD Ameritrade's API
     fromDate = today
@@ -27,7 +26,7 @@ def collectOptionChain(ticker, testing=True):
     timeRange = [fromDate, toDate]
 
     """ Step 1: Fetch the option chain from TD Ameritrade """
-    
+
     if (testing):
         # Test Data
         JSON = 'lab/vix/sample_response/response.json'
@@ -38,7 +37,7 @@ def collectOptionChain(ticker, testing=True):
     return chain
 
 
-def collectOptionExpirations(chain):
+def selectOptionExpirations(chain):
     """
     1. Fetches all option expiration dates from IEX api. 
     2. Finds this month's expiration and next months expiration (the near-term and next-term expirations).
@@ -58,7 +57,7 @@ def collectOptionExpirations(chain):
     options = {
         'nearTerm': {},
         'nextTerm': {}
-    }    
+    }
 
     """ Step 2: Finding this and next month's closest option expiration dates. """
     for optionSide in ['callExpDateMap', 'putExpDateMap']:
@@ -100,7 +99,7 @@ def collectOptionExpirations(chain):
     finding min() value of each group's keys, which again, are the time to expiration in seconds.
     """
 
-    fwdLvlChain = {
+    selectedChain = {
         # Grabbing the nearest calls, will use these expirations to find associated put options.
         'nearTerm': {
             'call': options['nearTerm']['callExpDateMap'][min(options['nearTerm']['callExpDateMap'].keys())],
@@ -110,39 +109,38 @@ def collectOptionExpirations(chain):
         },
     }
 
-    fwdLevelDates = {
+    selectedDates = {
         # Creating a separate dict to store some crucial date variables.
         'nearTerm': {
-            'preciseExpiration': next(iter(fwdLvlChain['nearTerm']['call'].values()))[0]['expirationDate'],            
+            'preciseExpiration': next(iter(selectedChain['nearTerm']['call'].values()))[0]['expirationDate'],
         },
         'nextTerm': {
-            'preciseExpiration': next(iter(fwdLvlChain['nextTerm']['call'].values()))[0]['expirationDate']
+            'preciseExpiration': next(iter(selectedChain['nextTerm']['call'].values()))[0]['expirationDate']
         }
     }
 
     # Date manipulation, doing here because we'll need these later.
-    for term, d in fwdLevelDates.items():
+    for term, d in selectedDates.items():
         t = d['preciseExpiration']
-        dateT = datetime.datetime.fromtimestamp(float(t / 1000)) # Windows workaround
+        dateT = datetime.datetime.fromtimestamp(float(t / 1000))  # Windows workaround
         # The previous division by 1000 is simply a workaround for Windows. Windows doesn't seem to play nice
         # with timestamps in miliseconds.
-        dateObj = timezone('US/Central').localize(dateT) # Converting to timezone
+        dateObj = timezone('US/Central').localize(dateT)  # Converting to timezone
         dateStr = dateObj.strftime('%Y-%m-%d')
-        
-        fwdLevelDates[term]['dateObj'] = dateObj
-        fwdLevelDates[term]['dateStr'] = dateStr
 
+        selectedDates[term]['dateObj'] = dateObj
+        selectedDates[term]['dateStr'] = dateStr
 
     # Finding associated put options from call expirations; making sure we have both the call and put options for the same
     # expiration date.
-    for term, call in fwdLvlChain.items():
-        key = next(iter(fwdLvlChain[term]['call'].values()))[0]['expirationDate']  # Grabbing expiration date from call
-        fwdLvlChain[term]['put'] = options[term]['putExpDateMap'][key]
+    for term, call in selectedChain.items():
+        key = next(iter(selectedChain[term]['call'].values()))[0]['expirationDate']  # Grabbing expiration date from call
+        selectedChain[term]['put'] = options[term]['putExpDateMap'][key]
 
-    return fwdLevelDates, fwdLvlChain
+    return selectedDates, selectedChain
 
 
-def calculateForwardLevel(fwdLvlChain):
+def calculateForwardLevel(selectedChain):
     """
     "Determine the forward SPX level, F, by identifying the strike price at which the
     absolute difference between the call and put prices is smallest."
@@ -160,7 +158,7 @@ def calculateForwardLevel(fwdLvlChain):
     }
 
     # Collecting prices on call and put options with strike price as key.
-    for term, options in fwdLvlChain.items():
+    for term, options in selectedChain.items():
         for side, option in options.items():
             for strike, details in option.items():
 
@@ -185,19 +183,19 @@ def calculateForwardLevel(fwdLvlChain):
 
     results = {
         'nearTerm': [
-            fwdLvlChain['nearTerm']['call'][nearTermStrike][0],
-            fwdLvlChain['nearTerm']['put'][nearTermStrike][0],
+            selectedChain['nearTerm']['call'][nearTermStrike][0],
+            selectedChain['nearTerm']['put'][nearTermStrike][0],
         ],
         'nextTerm': [
-            fwdLvlChain['nextTerm']['call'][nextTermStrike][0],
-            fwdLvlChain['nextTerm']['put'][nextTermStrike][0],
+            selectedChain['nextTerm']['call'][nextTermStrike][0],
+            selectedChain['nextTerm']['put'][nextTermStrike][0],
         ]
     }
 
     return results
 
 
-def calculateT(fwdLevelDates):
+def calculateT(selectedDates):
     """
     T = {MCurrent day + MSettlement day + MOther days}/ Minutes in a year 
     https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx
@@ -212,12 +210,12 @@ def calculateT(fwdLevelDates):
 
     t = {}
 
-    for term, date in fwdLevelDates.items():
+    for term, date in selectedDates.items():
         timeDiff = abs(date['dateObj'] - now)
         secondsToExpire = int((timeDiff.total_seconds() // 60) - 1440)  # Calulcating time in seconds
         minutesToExpire = (secondsToExpire / 60)  # MOther days
-        t[term] = (minutesToMidnight + mSettlementDay + minutesToExpire) / minutesYear # T equation
-    
+        t[term] = (minutesToMidnight + mSettlementDay + minutesToExpire) / minutesYear  # T equation
+
     t1 = t['nearTerm']
     t2 = t['nextTerm']
 
@@ -233,27 +231,26 @@ def calculateF(t1, t2, r, forwardLevel):
 
     """
 
-
     strikePrice = forwardLevel['nearTerm'][0]['strikePrice']
 
-    # Near-Term    
+    # Near-Term
     callPrice = forwardLevel['nearTerm'][0]['last']
     putPrice = forwardLevel['nearTerm'][1]['last']
-    
+
     # F equation
     f1 = strikePrice + e**(r*t1) * (callPrice - putPrice)
 
     # Next-Term
     callPrice = forwardLevel['nextTerm'][0]['last']
     putPrice = forwardLevel['nextTerm'][1]['last']
-    
+
     # F equation
     f2 = strikePrice + e**(r*t2) * (callPrice - putPrice)
-    
+
     return f1, f2
 
 
-def calculateK(f1, f2, fwdLvlChain):
+def calculateK(f1, f2, selectedChain):
     """
     """
     k = {
@@ -261,34 +258,87 @@ def calculateK(f1, f2, fwdLvlChain):
         'nextTerm': {}
     }
 
-    # minFwdLvl = int(min([f1, f2]))
-
-    for term, options in fwdLvlChain.items():
+    for term, options in selectedChain.items():
+        bets = {}
         for side, option in options.items():
-            print(side)
+            bets[side] = {}
             for strike, details in option.items():
-                # TODO: Compare to each term's minFwdLvl
-                
-                k[term]['0'] = strike 
-                # if (side == 'put')
-                print(strike)
-        sys.exit()
-    
 
-    # Loop Chain
-    # for optionSide in ['callExpDateMap', 'putExpDateMap']:
-    #     for expir, strikes in chain[optionSide].items():
+                # Collecting bids and asks to be used in determining 'ki'
+                bid = details[0]['bid']
+                ask = details[0]['ask']
+                bets[side][strike] = {
+                    'bid': bid,
+                    'ask': ask,
+                    'midquote': (bid + ask) / 2 
+                }
+
+                # Collecting k0
+                # The first strike below the forward index level, F
+                if (term == 'nearTerm'):
+                    minFwdLvl = float(int(f1))
+                    if (float(strike) <= minFwdLvl):
+                        k0 = strike
+                        k[term]['k0'] = k0
+
+                if (term == 'nextTerm'):
+                    minFwdLvl = float(int(f2))
+                    if (float(strike) <= minFwdLvl):
+                        k0 = strike
+                        k[term]['k0'] = k0
+
+        # Collecting put/call averages
+        # "Finally, select both the put and call with strike price K0.
+        # The following table contains the options used to calculate the VIX in this example. VIX
+        # uses the average of quoted bid and ask, or mid-quote, prices for each option selected. The
+        # K0 put and call prices are averaged to produce a single value."
+        callMQ = bets['call'][k0]['midquote']
+        putMQ = bets['put'][k0]['midquote']
+        k[term]['putCallAvg'] = (callMQ + putMQ) / 2
+
+
+        # Finding upper and lower boundaries on chain
+        # "Select out-of-the-money put options with strike prices < K0. Start with the put
+        # strike immediately lower than K0 and move to successively lower strike prices.
+        # Exclude any put option that has a bid price equal to zero (i.e., no bid). As shown
+        # below, once two puts with consecutive strike prices are found to have zero bid
+        # prices, no puts with lower strikes are considered for inclusion."
+
+        k[term]['limits'] = {}
+        for side, strks in bets.items():
+            zeros = 0
+            strklist = strks.keys()
+            if (side == 'put'):
+                strklist = list(reversed(strks.keys()))
+            for price in strklist:
+
+                if ((side == 'put') and (price > k[term]['k0'])): #Excluding all put prices above k0
+                    continue
+                if ((side == 'call') and (price < k[term]['k0'])): #Ecluding all call prices below k0
+                    continue
+
+                if (zeros == 2): #If two zero bids are encountered in a row, our answer will be the last ki set.
+                    break
+
+                b = bets[side][price]['bid']
+                a = bets[side][price]['ask']
+
+                if (b and a):
+                    k[term]['limits'][side] = price
+                else:
+                    zeros += 1
+
+    print(k)
+
+    sys.exit()
 
 
     sys.exit()
 
 
-
 def deltaK():
     """
     """
-
-
 
 
 #
