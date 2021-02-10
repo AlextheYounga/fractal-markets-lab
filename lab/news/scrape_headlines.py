@@ -11,14 +11,32 @@ import json
 import os
 
 
-def blacklist(link):
-    blacklist = ['www.nasdaq.com']
+def blacklist_urls(link):
+    urls = ['www.nasdaq.com']
     skip = False
-    for b in blacklist:
+    for b in urls:
         if b in link:
             skip = True
 
     return skip
+
+
+def blacklist_stocks(tickers):
+    pruned = []
+    blacklist = [
+        'AAPL',
+        'AMZN',
+        'MSFT',
+        'DIS',
+        'NFLX',
+        'KO',
+    ]
+    for t in tickers:
+        if (t in blacklist):
+            continue
+        pruned.append(t)
+
+    return pruned
 
 
 def exchanges():
@@ -112,8 +130,9 @@ def clean_tickers(tickers):
             t = t.split(':')[1]
         if (t not in cleaned):
             cleaned.append(t)
+    pruned = blacklist_stocks(cleaned)
 
-    return cleaned
+    return pruned
 
 
 def scrape_news(query="best+stocks+to+buy"):
@@ -130,7 +149,7 @@ def scrape_news(query="best+stocks+to+buy"):
     links = soup.find_all("a", {"class": "title"})
 
     for link in links:
-        if (blacklist(link['href'])):
+        if (blacklist_urls(link['href'])):
             continue
 
         print("Searching... "+link['href'])
@@ -148,7 +167,7 @@ def scrape_news(query="best+stocks+to+buy"):
                     tickers.append(l.text)
 
         time.sleep(1)
-        
+
     if (tickers):
         tickers = clean_tickers(tickers)
         print_results(tickers)
