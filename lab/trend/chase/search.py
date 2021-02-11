@@ -1,13 +1,16 @@
+import django
+from django.apps import apps
 from dotenv import load_dotenv
 import json
 import sys
 from datetime import date
-from ..redisdb.controller import rdb_save_stock
-from ..core.functions import chunks, dataSanityCheck
-from ..core.api import quoteStatsBatchRequest, getHistoricalEarnings, getPriceTarget
-from ..core.output import printTable, printFullTable, writeCSV
-from ..fintwit.tweet import send_tweet
+from ...redisdb.controller import rdb_save_stock
+from ...core.functions import chunks, dataSanityCheck
+from ...core.api import quoteStatsBatchRequest, getHistoricalEarnings, getPriceTarget
+from ...core.output import printTable, printFullTable, writeCSV
+from ...fintwit.tweet import send_tweet
 load_dotenv()
+django.setup()
 
 Stock = apps.get_model('database', 'Stock')
 Watchlist = apps.get_model('database', 'Watchlist')
@@ -17,6 +20,8 @@ print('Running...')
 
 
 def search(string):
+    print(string)
+    sys.exit()
     if (string):
         results = []
         stocks = Stock.objects.all()
@@ -30,10 +35,9 @@ def search(string):
         for i, chunk in enumerate(chunked_tickers):
             batch = quoteStatsBatchRequest(chunk)
 
-            for ticker, stockinfo in batch.items():
-                print('Chunk {}: {}'.format(i, ticker))
-
+            for ticker, stockinfo in batch.items():                
                 if (stockinfo.get('quote', False) and stockinfo.get('stats', False)):
+                    print('Chunk {}: {} - {}'.format(i, ticker, stockinfo['quote']['companyName']))
                     quote = stockinfo.get('quote')
                     stats = stockinfo.get('stats')
                     price = quote.get('latestPrice', 0)

@@ -29,12 +29,13 @@ def list_commands():
         ['trend:chase', 'Scans all stocks and returns todays gainers with above certain thresholds (weeds out the penny stocks).'],
         ['trend:search [string]', 'Scans stocks with string in stock name and looks for gainers'],
         ['trend:earnings', 'Scans all stocks and returns todays gainers who have consistently good earnings.'],
-        ['trend:pricetarget [ticker]', 'Grabs price targets'],
+        ['trend:streak [ticker]', 'Determines the current winning/losing streak for a ticker'],        
         ['trend:gainers', 'Grabs todays gainers and checks their earnings.'],
         ['pricedingold [ticker][timespan=5y][test=False]', 'Graphs and assets price in gold.'],
         ['volume:chase', 'Scans all stocks and returns todays gainers with abnormally high volume.'],
         ['volume:anomaly', 'Scans all stocks and returns stocks who are accumulating extremely high volume over the last week. Finds market singularities.'],
         ['vix [ticker]', 'Runs the VIX volatility equation on a ticker'],
+        # ['trend:pricetarget [ticker]', 'Grabs price targets'],
     ]
     printTabs(commands, headers, 'simple')
     print("\n\n")
@@ -167,15 +168,20 @@ def trend_controller(subroutine, args):
         # TODO: Finish price targets
         #     from lab.trend.pricetarget import lookup
         #     print(lookup(args[0]))
+        if (subroutine == 'streak'):
+            from lab.trend.streak.count import count_streak
+            print(count_streak(args[0]))
         if (subroutine == 'search'):
-            from lab.trend.search import search
+            from lab.trend.chase.search import search
             print(search(args[0]))
+        return
 
     if (subroutine == 'chase'):
+        print('here')
         import lab.trend.chase
 
     if (subroutine == 'earnings'):
-        import lab.trend.chase_earnings
+        import lab.trend.chase.earnings
 
     if (subroutine == 'gainers'):
         import lab.trend.gainers
