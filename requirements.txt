@@ -16,3 +16,4 @@ beautifulsoup4
 python-telegram-bot
 jsonfield
 redis
+pytrends
