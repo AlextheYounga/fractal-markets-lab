@@ -11,14 +11,32 @@ import json
 import os
 
 
-def blacklist(link):
-    blacklist = ['www.nasdaq.com']
+def blacklist_urls(link):
+    urls = ['www.nasdaq.com']
     skip = False
-    for b in blacklist:
+    for b in urls:
         if b in link:
             skip = True
 
     return skip
+
+
+def blacklist_stocks(tickers):
+    pruned = []
+    blacklist = [
+        'AAPL',
+        'AMZN',
+        'MSFT',
+        'DIS',
+        'NFLX',
+        'KO',
+    ]
+    for t in tickers:
+        if (t in blacklist):
+            continue
+        pruned.append(t)
+
+    return pruned
 
 
 def exchanges():
@@ -41,48 +59,48 @@ def print_results(tickers):
     print("\n")
     results = []
     batch = quoteStatsBatchRequest(tickers)
-
     for ticker, stockinfo in batch.items():
-        if (stockinfo.get('quote', False) and stockinfo.get('stats', False)):
-            quote = stockinfo.get('quote')
-            stats = stockinfo.get('stats')
-            price = quote.get('latestPrice', 0)
+        if (isinstance(stockinfo, dict)):
+            if (stockinfo.get('quote', False) and stockinfo.get('stats', False)):
+                quote = stockinfo.get('quote')
+                stats = stockinfo.get('stats')
+                price = quote.get('latestPrice', 0)
 
-            ttmEPS = stats.get('ttmEPS', None)
-            day5ChangePercent = round(dataSanityCheck(stats, 'day5ChangePercent') * 100, 2)
-            month1ChangePercent = round(dataSanityCheck(stats, 'month1ChangePercent') * 100, 2)
-            ytdChangePercent = round(dataSanityCheck(stats, 'ytdChangePercent') * 100, 2)
-            volume = dataSanityCheck(quote, 'volume')
-            previousVolume = dataSanityCheck(quote, 'previousVolume')
-            changeToday = round(dataSanityCheck(quote, 'changePercent') * 100, 2)
+                ttmEPS = stats.get('ttmEPS', None)
+                day5ChangePercent = round(dataSanityCheck(stats, 'day5ChangePercent') * 100, 2)
+                month1ChangePercent = round(dataSanityCheck(stats, 'month1ChangePercent') * 100, 2)
+                ytdChangePercent = round(dataSanityCheck(stats, 'ytdChangePercent') * 100, 2)
+                volume = dataSanityCheck(quote, 'volume')
+                previousVolume = dataSanityCheck(quote, 'previousVolume')
+                changeToday = round(dataSanityCheck(quote, 'changePercent') * 100, 2)
 
-            # Critical
-            week52high = dataSanityCheck(stats, 'week52high')
+                # Critical
+                week52high = dataSanityCheck(stats, 'week52high')
 
-            critical = [price, week52high]
+                critical = [price, week52high]
 
-            if ((0 in critical)):
-                continue
+                if ((0 in critical)):
+                    continue
 
-            fromHigh = round((price / week52high) * 100, 3)
-            volumeChangeDay = (float(volume) - float(previousVolume)) / float(previousVolume) * 100
+                fromHigh = round((price / week52high) * 100, 3)
+                volumeChangeDay = (float(volume) - float(previousVolume)) / float(previousVolume) * 100
 
-            keyStats = {
-                'ticker': ticker,
-                'name': stats['companyName'],
-                'lastPrice': price,
-                'peRatio': stats.get('peRatio', None),
-                'week52': week52high,
-                'changeToday': changeToday,
-                'day5ChangePercent': day5ChangePercent if day5ChangePercent else None,
-                'month1ChangePercent': month1ChangePercent if month1ChangePercent else None,
-                'ytdChangePercent': ytdChangePercent if ytdChangePercent else None,
-                'volumeChangeDay':  "{}%".format(round(volumeChangeDay, 2)),
-                'fromHigh': fromHigh,
-                'ttmEPS': ttmEPS
-            }
+                keyStats = {
+                    'ticker': ticker,
+                    'name': stats['companyName'],
+                    'lastPrice': price,
+                    'peRatio': stats.get('peRatio', None),
+                    'week52': week52high,
+                    'changeToday': changeToday,
+                    'day5ChangePercent': day5ChangePercent if day5ChangePercent else None,
+                    'month1ChangePercent': month1ChangePercent if month1ChangePercent else None,
+                    'ytdChangePercent': ytdChangePercent if ytdChangePercent else None,
+                    'volumeChangeDay':  "{}%".format(round(volumeChangeDay, 2)),
+                    'fromHigh': fromHigh,
+                    'ttmEPS': ttmEPS
+                }
 
-            results.append(keyStats)
+                results.append(keyStats)
 
     if results:
         today = date.today().strftime('%m-%d')
@@ -112,8 +130,9 @@ def clean_tickers(tickers):
             t = t.split(':')[1]
         if (t not in cleaned):
             cleaned.append(t)
+    pruned = blacklist_stocks(cleaned)
 
-    return cleaned
+    return pruned
 
 
 def scrape_news(query="best+stocks+to+buy"):
@@ -130,7 +149,7 @@ def scrape_news(query="best+stocks+to+buy"):
     links = soup.find_all("a", {"class": "title"})
 
     for link in links:
-        if (blacklist(link['href'])):
+        if (blacklist_urls(link['href'])):
             continue
 
         print("Searching... "+link['href'])
@@ -148,7 +167,7 @@ def scrape_news(query="best+stocks+to+buy"):
                     tickers.append(l.text)
 
         time.sleep(1)
-        
+
     if (tickers):
         tickers = clean_tickers(tickers)
         print_results(tickers)
