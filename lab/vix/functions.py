@@ -342,7 +342,7 @@ def calculateK(f, t, r, selectedChain):
             strkAbove = float(vc[i + 1]['strike']) if (0 <= (i + 1) < len(vc)) else 0
             strkBelow = float(vc[i - 1]['strike']) if (0 <= (i - 1) < len(vc)) else 0
             kstrike = float(ki['strike'])
-            midquote = float(ki['midquote'])
+            q = float(ki['midquote'])
 
             if (i == 0):
                 deltaK = strkAbove - kstrike
@@ -350,9 +350,23 @@ def calculateK(f, t, r, selectedChain):
                 deltaK = kstrike - strkBelow
             else:
                 deltaK = ((strkAbove - strkBelow) / 2)
+            
+            # TODO: Fix the equation
+            # deltaK = 25
+            # ki = 400
+            # r = .0038
+            # t = 0.0246575
+            # q = 0.125
+            # kc = deltaK/ki**2 * e**r*(t) * (q)
+            print(deltaK)
+            print(kstrike)
+            print(r)
+            print(t[term])
+            print(q)
 
-
-            kc = (deltaK/kstrike**2) * e**(r*t[term]) * midquote
+            kc = deltaK/kstrike**2 * e**r*(t[term]) * (q)
+            print(kc)
+            sys.exit()
 
             contributions[term].append(kc)
 
