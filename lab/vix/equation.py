@@ -61,23 +61,23 @@ def vix_equation(ticker='SPY', sandbox=False):
 
     # Step 5
     # Calculate T1 and T2, for near-term and next-term options respectively. See calculateT() in functions.py for more.
-    t1, t2 = calculateT(selectedDates)
+    t = calculateT(selectedDates)
 
     # Step 6
     # Calculate F, where F is the: "forward SPX {but in our case, any ticker} level, by identifying the strike price at which the
     # absolute difference between the call and put prices is smallest."
     # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx (slide 5)
 
-    f1, f2 = calculateF(t1, t2, r, forwardLevel)
+    f = calculateF(t, r, forwardLevel)
 
     # Step 7
     # Calculate K0 and upper/lower boundaries on chain
     # See calculateK() for more info here.
-    k = calculateK(f1, f2, selectedChain)
+    k = calculateK(f, t, r, selectedChain)
 
     # Step 8
     # Calculate deltaK for each contract in selected chain.
-    deltaK = deltaK(k, selectedChain)
+    # deltaK = calculateDeltaK(k, t, r, selectedChain)
 
 
     sys.exit()

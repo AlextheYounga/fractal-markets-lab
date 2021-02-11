@@ -216,13 +216,10 @@ def calculateT(selectedDates):
         minutesToExpire = (secondsToExpire / 60)  # MOther days
         t[term] = (minutesToMidnight + mSettlementDay + minutesToExpire) / minutesYear  # T equation
 
-    t1 = t['nearTerm']
-    t2 = t['nextTerm']
-
-    return t1, t2
+    return t
 
 
-def calculateF(t1, t2, r, forwardLevel):
+def calculateF(t, r, forwardLevel):
     """
     F = Strike Price + eRT × (Call Price – Put Price)
     "Determine the forward SPX level, F, by identifying the strike price at which the
@@ -230,32 +227,34 @@ def calculateF(t1, t2, r, forwardLevel):
     https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx
 
     """
+    f = {}
 
     strikePrice = forwardLevel['nearTerm'][0]['strikePrice']
 
-    # Near-Term
-    callPrice = forwardLevel['nearTerm'][0]['last']
-    putPrice = forwardLevel['nearTerm'][1]['last']
+    for term in ['nearTerm', 'nextTerm']:
+        callPrice = forwardLevel[term][0]['last']
+        putPrice = forwardLevel[term][1]['last']
+        f[term] = strikePrice + e**(r*t[term]) * (callPrice - putPrice)  # F equation
 
-    # F equation
-    f1 = strikePrice + e**(r*t1) * (callPrice - putPrice)
-
-    # Next-Term
-    callPrice = forwardLevel['nextTerm'][0]['last']
-    putPrice = forwardLevel['nextTerm'][1]['last']
-
-    # F equation
-    f2 = strikePrice + e**(r*t2) * (callPrice - putPrice)
-
-    return f1, f2
+    return f
 
 
-def calculateK(f1, f2, selectedChain):
+def calculateK(f, t, r, selectedChain):
     """
     """
     k = {
         'nearTerm': {},
         'nextTerm': {}
+    }
+
+    vixChain = {
+        'nearTerm': [],
+        'nextTerm': [],
+    }
+
+    contributions = {
+        'nearTerm': [],
+        'nextTerm': []
     }
 
     for term, options in selectedChain.items():
@@ -270,22 +269,15 @@ def calculateK(f1, f2, selectedChain):
                 bets[side][strike] = {
                     'bid': bid,
                     'ask': ask,
-                    'midquote': (bid + ask) / 2 
+                    'midquote': (bid + ask) / 2
                 }
 
                 # Collecting k0
                 # The first strike below the forward index level, F
-                if (term == 'nearTerm'):
-                    minFwdLvl = float(int(f1))
-                    if (float(strike) <= minFwdLvl):
-                        k0 = strike
-                        k[term]['k0'] = k0
-
-                if (term == 'nextTerm'):
-                    minFwdLvl = float(int(f2))
-                    if (float(strike) <= minFwdLvl):
-                        k0 = strike
-                        k[term]['k0'] = k0
+                minFwdLvl = float(int(f[term]))
+                if (float(strike) <= minFwdLvl):
+                    k0 = strike
+                    k[term]['k0'] = k0
 
         # Collecting put/call averages
         # "Finally, select both the put and call with strike price K0.
@@ -295,7 +287,6 @@ def calculateK(f1, f2, selectedChain):
         callMQ = bets['call'][k0]['midquote']
         putMQ = bets['put'][k0]['midquote']
         k[term]['putCallAvg'] = (callMQ + putMQ) / 2
-
 
         # Finding upper and lower boundaries on chain
         # "Select out-of-the-money put options with strike prices < K0. Start with the put
@@ -312,12 +303,12 @@ def calculateK(f1, f2, selectedChain):
                 strklist = list(reversed(strks.keys()))
             for price in strklist:
 
-                if ((side == 'put') and (price > k[term]['k0'])): #Excluding all put prices above k0
+                if ((side == 'put') and (price > k[term]['k0'])):  # Excluding all put prices above k0
                     continue
-                if ((side == 'call') and (price < k[term]['k0'])): #Ecluding all call prices below k0
+                if ((side == 'call') and (price < k[term]['k0'])):  # Ecluding all call prices below k0
                     continue
 
-                if (zeros == 2): #If two zero bids are encountered in a row, our answer will be the last ki set.
+                if (zeros == 2):  # If two zero bids are encountered in a row, our answer will be the last ki set.
                     break
 
                 b = bets[side][price]['bid']
@@ -328,26 +319,55 @@ def calculateK(f1, f2, selectedChain):
                 else:
                     zeros += 1
 
+        for side, strks in bets.items():
+            for strk, data in strks.items():
+                if (side == 'call'):
+                    if ((strk < k[term]['k0']) or (strk > k[term]['bounds']['call'])):
+                        continue
+                if (side == 'put'):
+                    if ((strk > k[term]['k0']) or (strk < k[term]['bounds']['put'])):
+                        continue
+                ki = {
+                    'side': side,
+                    'strike': strk,
+                    'bid': data['bid'],
+                    'ask': data['ask'],
+                    'midquote': data['midquote'],
+                }
+                vixChain[term].append(ki)
+
+        vc = sorted(vixChain[term], key=lambda i: i['strike'])
+        for i, ki in enumerate(vc):        
+
+            strkAbove = float(vc[i + 1]['strike']) if (0 <= (i + 1) < len(vc)) else 0
+            strkBelow = float(vc[i - 1]['strike']) if (0 <= (i - 1) < len(vc)) else 0
+            kstrike = float(ki['strike'])
+            q = float(ki['midquote'])
+
+            if (i == 0):
+                deltaK = strkAbove - kstrike
+            elif (i == (len(vc) - 1)): #Workaround to odd issue with len() after using sorted.
+                deltaK = kstrike - strkBelow
+            else:
+                deltaK = ((strkAbove - strkBelow) / 2)
+            
+            # TODO: Fix the equation
+            # deltaK = 25
+            # ki = 400
+            # r = .0038
+            # t = 0.0246575
+            # q = 0.125
+            # kc = deltaK/ki**2 * e**r*(t) * (q)
+            print(deltaK)
+            print(kstrike)
+            print(r)
+            print(t[term])
+            print(q)
+
+            kc = deltaK/kstrike**2 * e**r*(t[term]) * (q)
+            print(kc)
+            sys.exit()
+
+            contributions[term].append(kc)
+
     return k
-
-
-def deltaK():
-    """
-    """
-
-
-#
-# for later
-# The following division by 1000 is simply a workaround for Windows. Windows doesn't seem to play nice
-# with timestamps in miliseconds.
-
-# expirationObj = datetime.datetime.fromtimestamp(float(preciseExpiration / 1000))  # Windows workaround
-# timeDiff = abs(expirationObj - today)
-# secondsToExpiration = int((timeDiff.total_seconds() // 60) - 1440)  # Calulcating time in seconds
-
-# options['nextTerm'][optionSide][preciseExpiration] = {
-#     'daysToExpiration': daysToExpiration,
-#     'secondsToExpiration': secondsToExpiration,
-#     'preciseExpiration': preciseExpiration,
-#     'chain': strikes,
-# }
