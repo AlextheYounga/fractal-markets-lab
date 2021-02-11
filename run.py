@@ -57,7 +57,8 @@ def correlations_controller(subroutine, args=[]):
 
 def donchian_controller(args):
     if (not args):
-        return 'Requires arguments (string) [<ticker>]. Optional args [--tweet]'
+        print('FAILED: Requires arguments (string) [<ticker>]. Optional args [--tweet]')
+        return
     from lab.donchian.range import calculate
     ticker = args[0]
     try:
@@ -95,7 +96,8 @@ def inflation_controller(subroutine, args=[]):
 
 def financials_controller(args):
     if (not args):
-        return 'Requires arguments (string) [<ticker>].'
+        print('FAILED: Requires arguments (string) [<ticker>].')
+        return
     ticker = args[0]
     from lab.financials.lookup import lookupFinancials
     print(lookupFinancials(ticker))
@@ -136,7 +138,8 @@ def news_controller(subroutine, args=[]):
 def pricedingold_controller(args):
     from lab.pricedingold.compare import price_in_gold
     if (not args):
-        return 'Requires arguments (string) [<ticker>]. Optional argument --timeframe'
+        print('FAILED: Requires arguments (string) [<ticker>]. Optional argument --timeframe')
+        return
     try:
         ticker = args[0]
         timeframe = args[1].split('--')[1]
@@ -152,7 +155,8 @@ def pricedingold_controller(args):
 
 def hurst_controller(args):
     if (not args):
-        return 'Requires arguments (string) [<ticker>]. Optional argument --output'
+        print('FAILED: Requires arguments (string) [<ticker>]. Optional argument --output')
+        return
 
     from lab.rescaledrange.fractal_calculator import fractal_calculator
     ticker = args[0]
@@ -168,7 +172,8 @@ def hurst_controller(args):
 def range_controller(args):
     from lab.riskrange.lookup import rangeLookup
     if (not args):
-        return 'Requires arguments (string) [<ticker>]. Optional argument --tweet'
+        print('FAILED: Requires arguments (string) [<ticker>]. Optional argument --tweet')
+        return
     ticker = args[0]
     try:
         tweet = True if (args[1] == '--tweet') else False
@@ -216,7 +221,8 @@ def volume_controller(subroutine, args):
 
 def vix_controller(args):
     if (not args):
-        return 'Requires arguments (string) [<ticker>].'
+        print('FAILED: Requires arguments (string) [<ticker>].')
+        return
     ticker = args[0]
     from lab.vix.calculation import vix_calculation
     print(vix_calculation(ticker))
