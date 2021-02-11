@@ -26,7 +26,7 @@ def list_commands():
         ['inflation:calculate [update=False]', 'Inflation index using etfs'],
         ['inflation:graph [update=False]', 'Graph inflation index using etfs'],
         ['inflation:functions [refresh]', 'Grabs max historical prices for all etfs in sectors list, updates with fresh data.'],
-        ['trend:chase', 'Scans all stocks and returns todays gainers with above certain thresholds (weeds out the penny stocks).'],
+        ['trend:chase [pennies=False]', 'Scans all stocks and returns todays gainers with above certain thresholds (weeds out the penny stocks).'],
         ['trend:search [string]', 'Scans stocks with string in stock name and looks for gainers'],
         ['trend:earnings', 'Scans all stocks and returns todays gainers who have consistently good earnings.'],
         ['trend:streak [ticker]', 'Determines the current winning/losing streak for a ticker'],        
