@@ -177,8 +177,11 @@ def trend_controller(subroutine, args):
         return
 
     if (subroutine == 'chase'):
-        print('here')
-        import lab.trend.chase
+        from lab.trend.chaser import chase_trends
+        if (args):
+            print(chase_trends(args[0]))
+            return
+        print(chase_trends())
 
     if (subroutine == 'earnings'):
         import lab.trend.chase.earnings
