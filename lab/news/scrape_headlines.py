@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, date
-from ..core.api import quoteStatsBatchRequest
+from ..core.api.batch import quoteStatsBatchRequest
 from ..core.functions import dataSanityCheck
 from ..core.output import printTable, printFullTable, writeCSV
 from ..fintwit.tweet import send_tweet

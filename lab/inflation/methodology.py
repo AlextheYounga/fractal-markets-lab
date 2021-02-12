@@ -8,7 +8,8 @@ import sys
 from datetime import date
 from ..redisdb.controller import update_prices
 from ..core.functions import chunks
-from ..core.api import quoteStatsBatchRequest, syncGoldPrices 
+from ..core.api.gold import syncGoldPrices
+from ..core.api.batch import quoteStatsBatchRequest
 from ..core.output import printFullTable, writeCSV
 load_dotenv()
 

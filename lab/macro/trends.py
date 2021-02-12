@@ -7,7 +7,8 @@ from datetime import date
 from ..fintwit.tweet import send_tweet
 from .functions import getETFs
 from ..core.functions import chunks
-from ..core.api import quoteStatsBatchRequest, getStockInfo
+from ..core.api.batch import quoteStatsBatchRequest
+from ..core.api.stats import getStockInfo
 from ..core.output import printFullTable, writeCSV
 load_dotenv()
 django.setup()

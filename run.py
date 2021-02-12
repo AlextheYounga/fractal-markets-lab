@@ -221,11 +221,18 @@ def volume_controller(subroutine, args):
 
 def vix_controller(args):
     if (not args):
-        print('FAILED: Requires arguments (string) [<ticker>].')
+        print('FAILED: Requires arguments (string) [<ticker>]. Optional argument for debugging [--debug]')
         return
+    from lab.vix.equation import vix_equation
+
     ticker = args[0]
-    from lab.vix.calculation import vix_calculation
-    print(vix_calculation(ticker))
+    
+    if (len(args) >= 2):
+        debug = True if (args[1] == '--debug') else False
+        print(vix_equation(ticker, debug))
+        return
+        
+    print(vix_equation(ticker))        
 
 
 def main():
