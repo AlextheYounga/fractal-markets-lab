@@ -3,7 +3,7 @@ import json
 import sys
 from .functions import *
 from ...core.functions import extract_data
-from ...core.api import getHistoricalData
+from ...core.api.historical import getHistoricalData
 import numpy as np
 from tabulate import tabulate
 

@@ -1,7 +1,7 @@
 import json
 import redis
 from datetime import datetime, date, timedelta
-from ..core.api import getHistoricalData
+from ..core.api.historical import getHistoricalData
 import sys
 import os
 

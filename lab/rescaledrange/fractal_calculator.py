@@ -2,7 +2,8 @@ import statistics
 from scipy import stats
 import math
 from ..core.functions import extract_data
-from ..core.api import getCurrentPrice, getHistoricalData
+from ..core.api.stats import getCurrentPrice
+from ..core.api.historical import getHistoricalData
 from .functions import *
 from .output import exportFractal, outputTable
 import sys
