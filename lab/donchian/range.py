@@ -1,7 +1,8 @@
 import json
 import sys
 from ..core.functions import extract_data
-from ..core.api import getHistoricalData, getCurrentPrice
+from ..core.api.historical import getHistoricalData
+from ..core.api.stats import getCurrentPrice
 from .export import exportDonchian
 from ..core.output import printTable
 from ..fintwit.tweet import send_tweet, translate_data

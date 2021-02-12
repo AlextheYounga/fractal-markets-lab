@@ -6,7 +6,7 @@ from ..core.imports import read_historical_gold_prices
 from ..core.functions import extract_data
 import os
 import sys
-from..core.api import getHistoricalData
+from ..core.api.historical import getHistoricalData
 load_dotenv()
 
 

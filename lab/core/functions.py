@@ -139,6 +139,18 @@ def wordVariator(lst):
 
     return list(lstset)
 
+
+def interdayReturns(prices):
+    """
+    Simple function to calculate interday returns from a list of prices.
+    """
+    int_returns = []
+    for i, price in enumerate(prices):
+        ret = (prices[i + 1] / price) - 1 if (i + 1 in range(-len(prices), len(prices)) and float(prices[i + 1]) != 0) else 0
+        int_returns.append(ret)
+
+    return int_returns
+
 # TODO: Figure out word translations
 # def translateWords(lst):
     # langs = ["zh", "vi", "ja", "de", "ru", "es", "ar"]
