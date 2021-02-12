@@ -12,7 +12,7 @@ import numpy as np
 import calendar
 
 
-def collectOptionChain(ticker, testing=True):
+def collectOptionChain(ticker, debug=False):
     today = datetime.datetime.now()
     year = today.year
     month = today.month
@@ -27,7 +27,7 @@ def collectOptionChain(ticker, testing=True):
 
     """ Step 1: Fetch the option chain from TD Ameritrade """
 
-    if (testing):
+    if (debug):
         # Test Data
         JSON = 'lab/vix/sample_response/response.json'
         with open(JSON) as jsonfile:
@@ -212,9 +212,8 @@ def calculateT(selectedDates):
     tminutes = {}
 
     for term, date in selectedDates.items():
-        timeDiff = abs(date['dateObj'] - now)
-        secondsToExpire = int((timeDiff.total_seconds() // 60) - 1440)  # Calulcating time in seconds
-        minutesToExpire = (secondsToExpire / 60)  # MOther days
+        timeDiff = abs(date['dateObj'] - now).total_seconds()  # Calculating diff in seconds
+        minutesToExpire = (timeDiff / 60)  # MOther days
         tminutes[term] = minutesToExpire
         t[term] = (minutesToMidnight + mSettlementDay + minutesToExpire) / minutesYear  # T equation
 
@@ -246,130 +245,148 @@ def calculateVol(f, t, r, selectedChain):
     """
 
     vol = {}
-
     for term, options in selectedChain.items():
-        bets = {}
-        for side, option in options.items():
-            bets[side] = {}
-            for strike, details in option.items():
 
-                # Collecting bids and asks to be used in determining 'ki'
-                bid = details[0]['bid']
-                ask = details[0]['ask']
-                bets[side][strike] = {
-                    'bid': bid,
-                    'ask': ask,
-                    'midquote': (bid + ask) / 2
-                }
+        def calculateK0(term, options, f=f[term]):
+            ks = {}  # As in many k's. A collection of k's, (contracts within VIX parameters)
 
-                # Collecting k0
-                # The first strike below the forward index level, F
-                minFwdLvl = float(int(f[term]))
-                if (float(strike) <= minFwdLvl):
-                    k0 = strike
+            for side, option in options.items():
+                ks[side] = {}
+                for strike, details in option.items():
+
+                    # Collecting bids and asks to be used in determining 'ki'
+                    bid = details[0]['bid']
+                    ask = details[0]['ask']
+                    ks[side][strike] = {
+                        'bid': bid,
+                        'ask': ask,
+                        'midquote': (bid + ask) / 2
+                    }
+
+                    # Collecting k0
+                    # The first strike below the forward index level, F
+                    minFwdLvl = float(int(f))
+                    if (float(strike) <= minFwdLvl):
+                        k0 = strike
+            return k0, ks
+
+        def calculateBounds(k0, ks):
+            """
+            Finding upper and lower boundaries on chain
+            "Select out-of-the-money put options with strike prices < K0. Start with the put
+            strike immediately lower than K0 and move to successively lower strike prices.
+            Exclude any put option that has a bid price equal to zero (i.e., no bid). As shown
+            below, once two puts with consecutive strike prices are found to have zero bid
+            prices, no puts with lower strikes are considered for inclusion."
+            """
+            bounds = {}
+            for side, strikes in ks.items():
+                zeros = 0
+                strklist = strikes.keys()
+                if (side == 'put'):
+                    strklist = list(reversed(strikes.keys()))
+                for strike in strklist:
+
+                    if ((side == 'put') and (strike > k0)):  # Excluding all put prices above k0
+                        continue
+                    if ((side == 'call') and (strike < k0)):  # Ecluding all call prices below k0
+                        continue
+
+                    if (zeros == 2):  # If two zero bids are encountered in a row, our answer will be the last ki set.
+                        break
+
+                    b = ks[side][strike]['bid']
+                    a = ks[side][strike]['ask']
+
+                    if (b and a):
+                        bounds[side] = strike
+                    else:
+                        zeros += 1
+
+            return bounds
+
+        def buildVixChain(k0, ks, putCallAvg):
+            """
+            Building a new chain excluding all contracts outside of the bounds above.
+            """
+            vixChain = []
+            for side, strikes in ks.items():
+                for strike, data in strikes.items():
+                    if (side == 'call'):
+                        if ((strike < k0) or (strike > bounds['call'])):
+                            continue
+                    if (side == 'put'):
+                        if ((strike > k0) or (strike < bounds['put'])):
+                            continue
+                    ki = {
+                        'side': side,
+                        'strike': strike,
+                        'bid': data['bid'],
+                        'ask': data['ask'],
+                        'midquote': data['midquote'],
+                    }
+
+                    # "The K0 put and call prices are averaged to produce a single value"
+                    if (strike == k0):
+                        ki['midquote'] = putCallAvg
+
+                    vixChain.append(ki)
+
+            return vixChain
+
+        def calculateStrikeContributions(r, t, vixChain):
+            """
+            Determining ∆Ki
+            "Generally, ∆Ki is half the difference between the strike prices on either side of Ki. For
+            example, the ∆K for the next-term 300 Put is 75: ∆K300 Put = (350 – 200)/2. At the upper
+            and lower edges of any given strip of options, ∆Ki is simply the difference between Ki and
+            the adjacent strike price."
+            """
+
+            contributions = []  # Building a list of the "Contribution by Strike"
+            vc = sorted(vixChain, key=lambda i: i['strike'])
+            for i, kdata in enumerate(vc):
+
+                strkAbove = float(vc[i + 1]['strike']) if (0 <= (i + 1) < len(vc)) else 0
+                strkBelow = float(vc[i - 1]['strike']) if (0 <= (i - 1) < len(vc)) else 0
+                ki = float(kdata['strike'])
+                q = float(kdata['midquote'])
+
+                if (i == 0):
+                    deltaK = strkAbove - ki
+                elif (i == (len(vc) - 1)):  # Workaround to odd issue with len() after using sorted.
+                    deltaK = ki - strkBelow
+                else:
+                    deltaK = ((strkAbove - strkBelow) / 2)
+
+                # ∆Ki/Ki**2 e**(rt) * q
+                kc = deltaK/pow(ki, 2) * pow(e, r*t[term]) * q
+
+                contributions.append(kc)
+
+            return contributions
+
+        k0, ks = calculateK0(term, options)
+        bounds = calculateBounds(k0, ks)
 
         # Collecting put/call averages
-        # "Finally, select both the put and call with strike price K0.
-        # The following table contains the options used to calculate the VIX in this example. VIX
+        # "Finally, select both the put and call with strike price K0. VIX
         # uses the average of quoted bid and ask, or mid-quote, prices for each option selected. The
         # K0 put and call prices are averaged to produce a single value."
-        callMQ = bets['call'][k0]['midquote']
-        putMQ = bets['put'][k0]['midquote']
+        callMQ = ks['call'][k0]['midquote']
+        putMQ = ks['put'][k0]['midquote']
         putCallAvg = (callMQ + putMQ) / 2
 
-        # Finding upper and lower boundaries on chain
-        # "Select out-of-the-money put options with strike prices < K0. Start with the put
-        # strike immediately lower than K0 and move to successively lower strike prices.
-        # Exclude any put option that has a bid price equal to zero (i.e., no bid). As shown
-        # below, once two puts with consecutive strike prices are found to have zero bid
-        # prices, no puts with lower strikes are considered for inclusion."
-
-        bounds = {}
-        for side, strks in bets.items():
-            zeros = 0
-            strklist = strks.keys()
-            if (side == 'put'):
-                strklist = list(reversed(strks.keys()))
-            for price in strklist:
-
-                if ((side == 'put') and (price > k0)):  # Excluding all put prices above k0
-                    continue
-                if ((side == 'call') and (price < k0)):  # Ecluding all call prices below k0
-                    continue
-
-                if (zeros == 2):  # If two zero bids are encountered in a row, our answer will be the last ki set.
-                    break
-
-                b = bets[side][price]['bid']
-                a = bets[side][price]['ask']
-
-                if (b and a):
-                    bounds[side] = price
-                else:
-                    zeros += 1
-
-        # Building a new chain excluding all contracts outside of the bounds above. 
-        vixChain = []
-        for side, strks in bets.items():
-            for strk, data in strks.items():
-                if (side == 'call'):
-                    if ((strk < k0) or (strk > bounds['call'])):
-                        continue
-                if (side == 'put'):
-                    if ((strk > k0) or (strk < bounds['put'])):
-                        continue
-                ki = {
-                    'side': side,
-                    'strike': strk,
-                    'bid': data['bid'],
-                    'ask': data['ask'],
-                    'midquote': data['midquote'],
-                }
-
-                # "The K0 put and call prices are averaged to produce a single value"
-                if (strk == k0):
-                    ki['midquote'] = putCallAvg
-
-                vixChain.append(ki)
-        
-
-        # Determining ∆Ki
-        # "Generally, ∆Ki is half the difference between the strike prices on either side of Ki. For
-        # example, the ∆K for the next-term 300 Put is 75: ∆K300 Put = (350 – 200)/2. At the upper
-        # and lower edges of any given strip of options, ∆Ki is simply the difference between Ki and
-        # the adjacent strike price."
-
-        contributions = [] #Building a list of the "Contribution by Strike"
-        vc = sorted(vixChain, key=lambda i: i['strike'])
-        for i, kdata in enumerate(vc):        
-
-            strkAbove = float(vc[i + 1]['strike']) if (0 <= (i + 1) < len(vc)) else 0
-            strkBelow = float(vc[i - 1]['strike']) if (0 <= (i - 1) < len(vc)) else 0
-            ki = float(kdata['strike'])
-            q = float(kdata['midquote'])
-
-            if (i == 0):
-                deltaK = strkAbove - ki
-            elif (i == (len(vc) - 1)): #Workaround to odd issue with len() after using sorted.
-                deltaK = ki - strkBelow
-            else:
-                deltaK = ((strkAbove - strkBelow) / 2)
-
-            # ∆Ki/Ki**2 e**(rt) * q 
-            kc = deltaK/pow(ki, 2) * pow(e, r*t[term]) * q
-
-            contributions.append(kc)            
-        
+        vixChain = buildVixChain(k0, ks, putCallAvg)
+        contributions = calculateStrikeContributions(r, t, vixChain)
 
         # The following is essentially the VIX formula
         # 2/T ∑∆Ki/Ki**2 e**(rt) * q
-        sigmaKcT = (2/t[term] * sum(contributions))        
+        sigmaKcT = (2/t[term] * sum(contributions))
         tK = 1/float(t[term]) * pow(((float(f[term]) / float(k0)) - 1), 2)
 
         v = sigmaKcT - tK
 
         vol[term] = v
-
-        print(vol)
 
     return vol
