@@ -121,19 +121,20 @@ def getOptionChainTD(ticker, timeRange):
     key = os.environ.get("TDAMER_KEY")
     # https://api.tdameritrade.com/v1/marketdata/chains
     # GET /v1/marketdata/chains?apikey=BZCRGMNKWRR4AOGRFXXXNVBF1EBPLMTC&symbol=SPY&range=OTM&fromDate=2021-02-01&toDate=2021-03-30 HTTP/1.1
-    try:
-        url = 'https://{}/chains?apikey={}&symbol={}&fromDate={}&toDate={}'.format(
-            domain,
-            key,
-            ticker,
-            fromDate,
-            toDate
-        )
-        print(url)
+    # try:
+    headers = {
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML'
+    }        
+    url = 'https://{}/chains?apikey={}&symbol={}&fromDate={}&toDate={}'.format(
+        domain,
+        key,
+        ticker,
+        fromDate,
+        toDate
+    )
+    chain = requests.get(url, headers=headers).json()
+    if isinstance(chain, dict):
+        return chain
+    else:        
+        print(chain)
         sys.exit()
-        chain = requests.get(url).json()
-    except:
-        #print("Unexpected error:", sys.exc_info()[0])
-        return None
-
-    return chain

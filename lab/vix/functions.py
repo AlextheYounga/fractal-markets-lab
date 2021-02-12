@@ -12,7 +12,7 @@ import numpy as np
 import calendar
 
 
-def collectOptionChain(ticker, debug=False):
+def collectOptionChain(ticker, debug):
     today = datetime.datetime.now()
     year = today.year
     month = today.month
@@ -32,8 +32,9 @@ def collectOptionChain(ticker, debug=False):
         JSON = 'lab/vix/sample_response/response.json'
         with open(JSON) as jsonfile:
             chain = json.loads(jsonfile.read())
-    else:
-        chain = getOptionChainTD()
+            return chain
+
+    chain = getOptionChainTD(ticker, timeRange)
     return chain
 
 
@@ -45,99 +46,101 @@ def selectOptionExpirations(chain):
     option chain for those dates. 
     """
 
-    # Just some simple variables we will need.
-    today = datetime.datetime.now()
-    year = today.year
-    month = today.month
-    next_month = (today + relativedelta(months=+1)).month
-    next_month_year = (today + relativedelta(months=+1)).year
-    next_month_end = calendar.monthrange(next_month_year, next_month)[1]
+    if (chain):
+        # Just some simple variables we will need.
+        today = datetime.datetime.now()
+        year = today.year
+        month = today.month
+        next_month = (today + relativedelta(months=+1)).month
+        next_month_year = (today + relativedelta(months=+1)).year
+        next_month_end = calendar.monthrange(next_month_year, next_month)[1]
 
-    # Our container for collecting our nearest options
-    options = {
-        'nearTerm': {},
-        'nextTerm': {}
-    }
-
-    """ Step 2: Finding this and next month's closest option expiration dates. """
-    for optionSide in ['callExpDateMap', 'putExpDateMap']:
-        if (optionSide not in options['nearTerm']):
-            options['nearTerm'][optionSide] = {}
-        if (optionSide not in options['nextTerm']):
-            options['nextTerm'][optionSide] = {}
-
-        for expir, strikes in chain[optionSide].items():
-            expDate = datetime.datetime.strptime(expir.split(':')[0], '%Y-%m-%d')
-            expMonth = expDate.month
-            expYear = expDate.year
-
-            """ Near-Term Options """
-            if ((month == expMonth) and (year == expYear)):
-                firstStrike = next(iter(strikes.values()))[0]  # Just grabbing the first row of the strikes dict.
-                daysToExpiration = int(firstStrike['daysToExpiration'])
-                preciseExpiration = int(firstStrike['expirationDate'])
-
-                # “Near-term” options must have at least one week to expiration; a requirement
-                # intended to minimize pricing anomalies that might occur close to expiration.
-                # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx
-
-                if (daysToExpiration > 7):  # Must be at least 7 days from expiration.
-                    options['nearTerm'][optionSide][preciseExpiration] = strikes
-
-            """ Next-Term Options """
-            if ((next_month == expMonth) and (next_month_year == expYear)):
-                firstStrike = next(iter(strikes.values()))[0]  # Just grabbing the first row of the strikes dict.
-                daysToExpiration = int(firstStrike['daysToExpiration'])
-                preciseExpiration = int(firstStrike['expirationDate'])
-
-                if (daysToExpiration >= 30):  # Generally around or more than 30 days to expiration.
-
-                    options['nextTerm'][optionSide][preciseExpiration] = strikes
-
-    """
-    Step 3: Calculating the nearest option of each group of options, 
-    finding min() value of each group's keys, which again, are the time to expiration in seconds.
-    """
-
-    selectedChain = {
-        # Grabbing the nearest calls, will use these expirations to find associated put options.
-        'nearTerm': {
-            'call': options['nearTerm']['callExpDateMap'][min(options['nearTerm']['callExpDateMap'].keys())],
-        },
-        'nextTerm': {
-            'call': options['nextTerm']['callExpDateMap'][min(options['nextTerm']['callExpDateMap'].keys())],
-        },
-    }
-
-    selectedDates = {
-        # Creating a separate dict to store some crucial date variables.
-        'nearTerm': {
-            'preciseExpiration': next(iter(selectedChain['nearTerm']['call'].values()))[0]['expirationDate'],
-        },
-        'nextTerm': {
-            'preciseExpiration': next(iter(selectedChain['nextTerm']['call'].values()))[0]['expirationDate']
+        # Our container for collecting our nearest options
+        options = {
+            'nearTerm': {},
+            'nextTerm': {}
         }
-    }
 
-    # Date manipulation, doing here because we'll need these later.
-    for term, d in selectedDates.items():
-        t = d['preciseExpiration']
-        dateT = datetime.datetime.fromtimestamp(float(t / 1000))  # Windows workaround
-        # The previous division by 1000 is simply a workaround for Windows. Windows doesn't seem to play nice
-        # with timestamps in miliseconds.
-        dateObj = timezone('US/Central').localize(dateT)  # Converting to timezone
-        dateStr = dateObj.strftime('%Y-%m-%d')
+        """ Step 2: Finding this and next month's closest option expiration dates. """
+        for optionSide in ['callExpDateMap', 'putExpDateMap']:
+            if (optionSide not in options['nearTerm']):
+                options['nearTerm'][optionSide] = {}
+            if (optionSide not in options['nextTerm']):
+                options['nextTerm'][optionSide] = {}
 
-        selectedDates[term]['dateObj'] = dateObj
-        selectedDates[term]['dateStr'] = dateStr
+            for expir, strikes in chain[optionSide].items():
+                expDate = datetime.datetime.strptime(expir.split(':')[0], '%Y-%m-%d')
+                expMonth = expDate.month
+                expYear = expDate.year
 
-    # Finding associated put options from call expirations; making sure we have both the call and put options for the same
-    # expiration date.
-    for term, call in selectedChain.items():
-        key = next(iter(selectedChain[term]['call'].values()))[0]['expirationDate']  # Grabbing expiration date from call
-        selectedChain[term]['put'] = options[term]['putExpDateMap'][key]
+                """ Near-Term Options """
+                if ((month == expMonth) and (year == expYear)):
+                    firstStrike = next(iter(strikes.values()))[0]  # Just grabbing the first row of the strikes dict.
+                    daysToExpiration = int(firstStrike['daysToExpiration'])
+                    preciseExpiration = int(firstStrike['expirationDate'])
 
-    return selectedDates, selectedChain
+                    # “Near-term” options must have at least one week to expiration; a requirement
+                    # intended to minimize pricing anomalies that might occur close to expiration.
+                    # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx
+
+                    if (daysToExpiration > 7):  # Must be at least 7 days from expiration.
+                        options['nearTerm'][optionSide][preciseExpiration] = strikes
+
+                """ Next-Term Options """
+                if ((next_month == expMonth) and (next_month_year == expYear)):
+                    firstStrike = next(iter(strikes.values()))[0]  # Just grabbing the first row of the strikes dict.
+                    daysToExpiration = int(firstStrike['daysToExpiration'])
+                    preciseExpiration = int(firstStrike['expirationDate'])
+
+                    if (daysToExpiration >= 30):  # Generally around or more than 30 days to expiration.
+
+                        options['nextTerm'][optionSide][preciseExpiration] = strikes
+
+        """
+        Step 3: Calculating the nearest option of each group of options, 
+        finding min() value of each group's keys, which again, are the time to expiration in seconds.
+        """
+
+
+        selectedChain = {
+            # Grabbing the nearest calls, will use these expirations to find associated put options.
+            'nearTerm': {
+                'call': options['nearTerm']['callExpDateMap'][min(options['nearTerm']['callExpDateMap'].keys())],
+            },
+            'nextTerm': {
+                'call': options['nextTerm']['callExpDateMap'][min(options['nextTerm']['callExpDateMap'].keys())],
+            },
+        }
+
+        selectedDates = {
+            # Creating a separate dict to store some crucial date variables.
+            'nearTerm': {
+                'preciseExpiration': next(iter(selectedChain['nearTerm']['call'].values()))[0]['expirationDate'],
+            },
+            'nextTerm': {
+                'preciseExpiration': next(iter(selectedChain['nextTerm']['call'].values()))[0]['expirationDate']
+            }
+        }
+
+        # Date manipulation, doing here because we'll need these later.
+        for term, d in selectedDates.items():
+            t = d['preciseExpiration']
+            dateT = datetime.datetime.fromtimestamp(float(t / 1000))  # Windows workaround
+            # The previous division by 1000 is simply a workaround for Windows. Windows doesn't seem to play nice
+            # with timestamps in miliseconds.
+            dateObj = timezone('US/Central').localize(dateT)  # Converting to timezone
+            dateStr = dateObj.strftime('%Y-%m-%d')
+
+            selectedDates[term]['dateObj'] = dateObj
+            selectedDates[term]['dateStr'] = dateStr
+
+        # Finding associated put options from call expirations; making sure we have both the call and put options for the same
+        # expiration date.
+        for term, call in selectedChain.items():
+            key = next(iter(selectedChain[term]['call'].values()))[0]['expirationDate']  # Grabbing expiration date from call
+            selectedChain[term]['put'] = options[term]['putExpDateMap'][key]
+
+        return selectedDates, selectedChain
 
 
 def calculateForwardLevel(selectedChain):
@@ -385,7 +388,7 @@ def calculateVol(f, t, r, selectedChain):
         sigmaKcT = (2/t[term] * sum(contributions))
         tK = 1/float(t[term]) * pow(((float(f[term]) / float(k0)) - 1), 2)
 
-        v = sigmaKcT - tK
+        v = abs(sigmaKcT - tK)
 
         vol[term] = v
 

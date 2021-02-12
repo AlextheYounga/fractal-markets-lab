@@ -226,12 +226,13 @@ def vix_controller(args):
     from lab.vix.equation import vix_equation
 
     ticker = args[0]
-    try:
+    
+    if (len(args) >= 2):
         debug = True if (args[1] == '--debug') else False
         print(vix_equation(ticker, debug))
-    except IndexError:
-        print(vix_equation(ticker))
         return
+        
+    print(vix_equation(ticker))        
 
 
 def main():

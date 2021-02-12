@@ -22,7 +22,7 @@ def vix_explanation():
     """
 
 
-def vix_equation(ticker='SPY', debug=True):
+def vix_equation(ticker, debug=False):
     """
     Runs the VIX equation on a ticker.
 
@@ -92,16 +92,16 @@ def vix_equation(ticker='SPY', debug=True):
     nT1 = tminutes['nearTerm']  # Minutes to expiration
     nT2 = tminutes['nextTerm']  # Minutes to expiration
 
-    if (debug):
-        print('Minutes Year = '+str(minYear))
-        print('Minutes in Month = '+str(minMonth))
-        print('Near-Term Vol (v1) = '+str(v1))
-        print('Next-Term Vol (v2) = '+str(v2))
-        print('T1 = '+str(t1))
-        print('T2 = '+str(t2))
-        print('Near-Term Expiration Minutes = '+str(nT1))
-        print('Next-Term Expiration Minutes = '+str(nT2))
-        print("\n")
+    # if (debug):
+    print('Minutes Year = '+str(minYear))
+    print('Minutes in Month = '+str(minMonth))
+    print('Near-Term Vol (v1) = '+str(v1))
+    print('Next-Term Vol (v2) = '+str(v2))
+    print('T1 = '+str(t1))
+    print('T2 = '+str(t2))
+    print('Near-Term Expiration Minutes = '+str(nT1))
+    print('Next-Term Expiration Minutes = '+str(nT2))
+    print("\n")
 
 
     # Test
@@ -123,4 +123,4 @@ def vix_equation(ticker='SPY', debug=True):
         (t1 * v1 * ((nT2 - minMonth) / (nT2 - nT1)) + t2 * v2 * ((minMonth - nT1) / (nT2 - nT1))) * minYear / minMonth
     )
 
-    return vix
+    return round(vix, 3)
