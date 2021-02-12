@@ -75,6 +75,8 @@ def vix_equation(ticker='SPY', sandbox=False):
     # See calculateK() for more info here.
     k = calculateK(f, t, r, selectedChain)
 
+    vol = calculateVol()
+
     # Step 8
     # Calculate deltaK for each contract in selected chain.
     # deltaK = calculateDeltaK(k, t, r, selectedChain)

@@ -234,7 +234,7 @@ def calculateF(t, r, forwardLevel):
     for term in ['nearTerm', 'nextTerm']:
         callPrice = forwardLevel[term][0]['last']
         putPrice = forwardLevel[term][1]['last']
-        f[term] = strikePrice + e**(r*t[term]) * (callPrice - putPrice)  # F equation
+        f[term] = strikePrice + pow(e, r*t[term]) * (callPrice - putPrice)  # F equation
 
     return f
 
@@ -245,16 +245,6 @@ def calculateK(f, t, r, selectedChain):
     k = {
         'nearTerm': {},
         'nextTerm': {}
-    }
-
-    vixChain = {
-        'nearTerm': [],
-        'nextTerm': [],
-    }
-
-    contributions = {
-        'nearTerm': [],
-        'nextTerm': []
     }
 
     for term, options in selectedChain.items():
@@ -303,9 +293,9 @@ def calculateK(f, t, r, selectedChain):
                 strklist = list(reversed(strks.keys()))
             for price in strklist:
 
-                if ((side == 'put') and (price > k[term]['k0'])):  # Excluding all put prices above k0
+                if ((side == 'put') and (price > k0)):  # Excluding all put prices above k0
                     continue
-                if ((side == 'call') and (price < k[term]['k0'])):  # Ecluding all call prices below k0
+                if ((side == 'call') and (price < k0)):  # Ecluding all call prices below k0
                     continue
 
                 if (zeros == 2):  # If two zero bids are encountered in a row, our answer will be the last ki set.
@@ -319,13 +309,15 @@ def calculateK(f, t, r, selectedChain):
                 else:
                     zeros += 1
 
+        # Building a new chain excluding all contracts outside of the bounds above. 
+        vixChain = []
         for side, strks in bets.items():
             for strk, data in strks.items():
                 if (side == 'call'):
-                    if ((strk < k[term]['k0']) or (strk > k[term]['bounds']['call'])):
+                    if ((strk < k0) or (strk > k[term]['bounds']['call'])):
                         continue
                 if (side == 'put'):
-                    if ((strk > k[term]['k0']) or (strk < k[term]['bounds']['put'])):
+                    if ((strk > k0) or (strk < k[term]['bounds']['put'])):
                         continue
                 ki = {
                     'side': side,
@@ -334,40 +326,40 @@ def calculateK(f, t, r, selectedChain):
                     'ask': data['ask'],
                     'midquote': data['midquote'],
                 }
-                vixChain[term].append(ki)
+                vixChain.append(ki)
+        
 
-        vc = sorted(vixChain[term], key=lambda i: i['strike'])
-        for i, ki in enumerate(vc):        
+        # Determining ∆Ki
+        # "Generally, ∆Ki is half the difference between the strike prices on either side of Ki. For
+        # example, the ∆K for the next-term 300 Put is 75: ∆K300 Put = (350 – 200)/2. At the upper
+        # and lower edges of any given strip of options, ∆Ki is simply the difference between Ki and
+        # the adjacent strike price."
+
+        contributions = [] #Building a list of the "Contribution by Strike"
+        vc = sorted(vixChain, key=lambda i: i['strike'])
+        for i, kdata in enumerate(vc):        
 
             strkAbove = float(vc[i + 1]['strike']) if (0 <= (i + 1) < len(vc)) else 0
             strkBelow = float(vc[i - 1]['strike']) if (0 <= (i - 1) < len(vc)) else 0
-            kstrike = float(ki['strike'])
-            q = float(ki['midquote'])
+            ki = float(kdata['strike'])
+            q = float(kdata['midquote'])
 
             if (i == 0):
-                deltaK = strkAbove - kstrike
+                deltaK = strkAbove - ki
             elif (i == (len(vc) - 1)): #Workaround to odd issue with len() after using sorted.
-                deltaK = kstrike - strkBelow
+                deltaK = ki - strkBelow
             else:
                 deltaK = ((strkAbove - strkBelow) / 2)
-            
-            # TODO: Fix the equation
-            # deltaK = 25
-            # ki = 400
-            # r = .0038
-            # t = 0.0246575
-            # q = 0.125
-            # kc = deltaK/ki**2 * e**r*(t) * (q)
-            print(deltaK)
-            print(kstrike)
-            print(r)
-            print(t[term])
-            print(q)
 
-            kc = deltaK/kstrike**2 * e**r*(t[term]) * (q)
-            print(kc)
-            sys.exit()
+            kc = deltaK/pow(ki, 2) * pow(e, r*t[term]) * q
 
-            contributions[term].append(kc)
+            contributions.append(kc)            
+        
+
+        # These two variables will be crucial in determining vol for each term. They are given no specific name in 
+        # the VIX whitepaper, so, sigmaChainT, is the sum of the contributions multiplied by 2/T. And tK is 
+        # 1/T * (F/k0 - 1)**2
+        k[term]['sigmaChainT'] = (2/t[term] * sum(contributions))        
+        k[term]['tK'] = 1/float(t[term]) * pow(((float(f[term]) / float(k0)) - 1), 2)
 
     return k
