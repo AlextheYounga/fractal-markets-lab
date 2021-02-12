@@ -9,7 +9,7 @@ from tabulate import tabulate
 
 
 
-def streak_analyzer(ticker):
+def count_streak(ticker):
     asset_data = list(reversed(getHistoricalData(ticker, '1y', True)))
 
     prices = extract_data(asset_data, 'close')
