@@ -181,7 +181,7 @@ def calculateForwardLevel(selectedChain):
     nearTermStrike = priceDiffs['nearTerm'][min(priceDiffs['nearTerm'].keys())]
     nextTermStrike = priceDiffs['nextTerm'][min(priceDiffs['nextTerm'].keys())]
 
-    results = {
+    forwardLevel = {
         'nearTerm': [
             selectedChain['nearTerm']['call'][nearTermStrike][0],
             selectedChain['nearTerm']['put'][nearTermStrike][0],
@@ -192,7 +192,7 @@ def calculateForwardLevel(selectedChain):
         ]
     }
 
-    return results
+    return forwardLevel
 
 
 def calculateT(selectedDates):
@@ -209,14 +209,16 @@ def calculateT(selectedDates):
     minutesYear = 525600
 
     t = {}
+    tminutes = {}
 
     for term, date in selectedDates.items():
         timeDiff = abs(date['dateObj'] - now)
         secondsToExpire = int((timeDiff.total_seconds() // 60) - 1440)  # Calulcating time in seconds
         minutesToExpire = (secondsToExpire / 60)  # MOther days
+        tminutes[term] = minutesToExpire
         t[term] = (minutesToMidnight + mSettlementDay + minutesToExpire) / minutesYear  # T equation
 
-    return t
+    return t, tminutes
 
 
 def calculateF(t, r, forwardLevel):
@@ -239,13 +241,11 @@ def calculateF(t, r, forwardLevel):
     return f
 
 
-def calculateK(f, t, r, selectedChain):
+def calculateVol(f, t, r, selectedChain):
     """
     """
-    k = {
-        'nearTerm': {},
-        'nextTerm': {}
-    }
+
+    vol = {}
 
     for term, options in selectedChain.items():
         bets = {}
@@ -267,7 +267,6 @@ def calculateK(f, t, r, selectedChain):
                 minFwdLvl = float(int(f[term]))
                 if (float(strike) <= minFwdLvl):
                     k0 = strike
-                    k[term]['k0'] = k0
 
         # Collecting put/call averages
         # "Finally, select both the put and call with strike price K0.
@@ -276,7 +275,7 @@ def calculateK(f, t, r, selectedChain):
         # K0 put and call prices are averaged to produce a single value."
         callMQ = bets['call'][k0]['midquote']
         putMQ = bets['put'][k0]['midquote']
-        k[term]['putCallAvg'] = (callMQ + putMQ) / 2
+        putCallAvg = (callMQ + putMQ) / 2
 
         # Finding upper and lower boundaries on chain
         # "Select out-of-the-money put options with strike prices < K0. Start with the put
@@ -285,7 +284,7 @@ def calculateK(f, t, r, selectedChain):
         # below, once two puts with consecutive strike prices are found to have zero bid
         # prices, no puts with lower strikes are considered for inclusion."
 
-        k[term]['bounds'] = {}
+        bounds = {}
         for side, strks in bets.items():
             zeros = 0
             strklist = strks.keys()
@@ -305,7 +304,7 @@ def calculateK(f, t, r, selectedChain):
                 a = bets[side][price]['ask']
 
                 if (b and a):
-                    k[term]['bounds'][side] = price
+                    bounds[side] = price
                 else:
                     zeros += 1
 
@@ -314,10 +313,10 @@ def calculateK(f, t, r, selectedChain):
         for side, strks in bets.items():
             for strk, data in strks.items():
                 if (side == 'call'):
-                    if ((strk < k0) or (strk > k[term]['bounds']['call'])):
+                    if ((strk < k0) or (strk > bounds['call'])):
                         continue
                 if (side == 'put'):
-                    if ((strk > k0) or (strk < k[term]['bounds']['put'])):
+                    if ((strk > k0) or (strk < bounds['put'])):
                         continue
                 ki = {
                     'side': side,
@@ -326,6 +325,11 @@ def calculateK(f, t, r, selectedChain):
                     'ask': data['ask'],
                     'midquote': data['midquote'],
                 }
+
+                # "The K0 put and call prices are averaged to produce a single value"
+                if (strk == k0):
+                    ki['midquote'] = putCallAvg
+
                 vixChain.append(ki)
         
 
@@ -351,15 +355,21 @@ def calculateK(f, t, r, selectedChain):
             else:
                 deltaK = ((strkAbove - strkBelow) / 2)
 
+            # ∆Ki/Ki**2 e**(rt) * q 
             kc = deltaK/pow(ki, 2) * pow(e, r*t[term]) * q
 
             contributions.append(kc)            
         
 
-        # These two variables will be crucial in determining vol for each term. They are given no specific name in 
-        # the VIX whitepaper, so, sigmaChainT, is the sum of the contributions multiplied by 2/T. And tK is 
-        # 1/T * (F/k0 - 1)**2
-        k[term]['sigmaChainT'] = (2/t[term] * sum(contributions))        
-        k[term]['tK'] = 1/float(t[term]) * pow(((float(f[term]) / float(k0)) - 1), 2)
+        # The following is essentially the VIX formula
+        # 2/T ∑∆Ki/Ki**2 e**(rt) * q
+        sigmaKcT = (2/t[term] * sum(contributions))        
+        tK = 1/float(t[term]) * pow(((float(f[term]) / float(k0)) - 1), 2)
 
-    return k
+        v = sigmaKcT - tK
+
+        vol[term] = v
+
+        print(vol)
+
+    return vol
