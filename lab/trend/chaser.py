@@ -8,7 +8,8 @@ import time
 import redis
 from ..redisdb.controller import rdb_save_stock
 from ..core.functions import chunks, dataSanityCheck
-from ..core.api import quoteStatsBatchRequest, getHistoricalEarnings, getPriceTarget
+from ..core.api.stats import quoteStatsBatchRequest, getPriceTarget
+from ..core.api.historical import getHistoricalEarnings
 from ..core.output import printTable, printFullTable, writeCSV
 from ..fintwit.tweet import send_tweet
 load_dotenv()
