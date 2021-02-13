@@ -92,19 +92,19 @@ def vix_equation(ticker, debug=False):
     nT1 = tminutes['nearTerm']  # Minutes to expiration
     nT2 = tminutes['nextTerm']  # Minutes to expiration
 
-    # if (debug):
-    print('Minutes Year = '+str(minYear))
-    print('Minutes in Month = '+str(minMonth))
-    print('Near-Term Vol (v1) = '+str(v1))
-    print('Next-Term Vol (v2) = '+str(v2))
-    print('T1 = '+str(t1))
-    print('T2 = '+str(t2))
-    print('Near-Term Expiration Minutes = '+str(nT1))
-    print('Next-Term Expiration Minutes = '+str(nT2))
-    print("\n")
+    if (debug):
+        print('Minutes Year = '+str(minYear))
+        print('Minutes in Month = '+str(minMonth))
+        print('Near-Term Vol (v1) = '+str(v1))
+        print('Next-Term Vol (v2) = '+str(v2))
+        print('T1 = '+str(t1))
+        print('T2 = '+str(t2))
+        print('Near-Term Expiration Minutes = '+str(nT1))
+        print('Next-Term Expiration Minutes = '+str(nT2))
+        print("\n")
 
 
-    # Test
+    # Test Data to confirm accuracy
     # NT1 = number of minutes to settlement of the near-term options (12,960)
     # NT2 = number of minutes to settlement of the next-term options (53,280)
     # N30 = number of minutes in 30 days (30 × 1,440 = 43,200)
