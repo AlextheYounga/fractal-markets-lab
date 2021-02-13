@@ -14,17 +14,6 @@ def inverse_correlations(n, src='database'):
         correlations = Correlation.objects.filter(rvalue__lte=n)
         print_correlation(correlations)
 
-    # TODO Get it set up to run on just json, db is too slow
-    # if (src == 'json'):
-    #     results = []
-    #     with open(JSON) as jsonfile:
-    #         correlations = json.loads(jsonfile.read())
-    #         for ticker, data in correlations.items():
-    #             stock = Stock.objects.get(ticker=ticker)
-    #             for item in data:
-    #                 print(item)
-    #                 sys.exit()
-
 
 def get_ticker_correlations(ticker):
     stock = Stock.objects.get(ticker=ticker)
