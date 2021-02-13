@@ -80,6 +80,7 @@ for i, chunk in enumerate(chunked_tickers):
                         rdb = False
                         print('Redis not connected. Not saving.')
 
+                # TODO: Check if this still works.
                 if ((fromHigh < 105) and (fromHigh > 95)):
                     if (changeToday > 10):
                         earningsData = getHistoricalEarnings(ticker)

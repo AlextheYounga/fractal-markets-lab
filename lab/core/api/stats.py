@@ -38,6 +38,38 @@ def getCurrentPrice(ticker, sandbox=False):
     return price
 
 
+def getStockInfo(ticker, sandbox=False):
+    # TODO: Go redo the iex package calls cause the maintainer changed all the shit to pandas datatables output
+    """
+    Fetches company info from stock ticker.
+
+    Parameters
+    ----------
+    ticker      :string
+    sandbox     :bool
+                Sets the IEX environment to sandbox mode to make limitless API calls for testing.
+
+    Returns
+    -------
+    dict object of IEX results
+    """
+    
+    key = os.environ.get("IEX_TOKEN")
+    if (sandbox):
+        os.environ['IEX_API_VERSION'] = 'iexcloud-sandbox'
+        key = os.environ.get("IEX_SANDBOX_TOKEN")
+    try:
+        stock = Stock(ticker, token=key)
+        company = stock.get_company()
+    except:
+        #print("Unexpected error:", sys.exc_info()[0])
+        return {}
+
+    if (sandbox):
+        os.environ['IEX_API_VERSION'] = 'v1'
+    return company
+
+
 def getPriceTarget(ticker, sandbox=False):
     domain = 'cloud.iexapis.com'
     key = os.environ.get("IEX_TOKEN")

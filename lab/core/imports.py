@@ -5,6 +5,7 @@ import csv
 
 
 def parseIndexDateClose(file):
+    # TODO: Make this dynamic.
     with open('lab/imports/{}'.format(file), newline='', encoding='utf-8') as csvfile:
         asset_data = {}
         reader = csv.DictReader(csvfile)
@@ -42,8 +43,13 @@ def parseCSV(path, fullPath=False, headers=True):
     with open(csv_path, newline='', encoding='utf-8-sig') as csvfile:
         asset_data = []
 
-
-        reader = csv.DictReader(csvfile)
+        # TODO: Figure out how to skip headers
+        if (headers == False):
+            
+            reader = csv.reader(csvfile)
+            reader.next()
+        else:
+            reader = csv.DictReader(csvfile)
 
         for i, row in enumerate(reader):
             asset_data.append(row)

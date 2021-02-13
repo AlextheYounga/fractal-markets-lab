@@ -151,3 +151,16 @@ def interdayReturns(prices):
 
     return int_returns
 
+
+def translateWords(lst):
+    # TODO: Figure out word translations
+    langs = ["zh", "vi", "ja", "de", "ru", "es", "ar"]
+    translations = []
+
+    for lang in langs:
+        for phrase in lst:
+            translator = Translator(to_lang=lang)
+            translation = translator.translate(phrase)
+            translations.append(translation)
+    
+    return translations
