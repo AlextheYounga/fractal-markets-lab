@@ -13,8 +13,6 @@ def list_commands():
     print("\n\n")
 
     commands = [
-        ['correlations:scan', 'Runs correlations on all ETFs on the market, with *every other ETF on the market. (Takes about half an hour)'],
-        ['correlations:lookup [t1, t2]', 'Fetches correlation between two tickers'],
         ['donchian [<ticker>]', 'Runs a donchian range calculation on a ticker'],
         ['financials [<ticker>]', 'Returns financials data for ticker, including some custom indicators not provided by IEX.'],
         ['macro:trends [--timeframe=1m] [--gain=20]', 'Scans all ETFs and returns the ETFs with the performance above an int (gain) within a timerange (5d, 1m, 3m, 1y)'],
@@ -41,19 +39,6 @@ def list_commands():
     print("\n\n")
 
 
-def correlations_controller(subroutine, args=[]):
-    """
-    """
-    # if (subroutine == 'scan'):
-    # TODO: Fix the scanner
-    #     from lab.correlations.scanner import scanner
-    #     print(scanner())
-    # TODO: Fix the lookup
-    # if (subroutine == 'lookup'):
-    #     from lab.correlations.analyze import lookup
-    #     if (args and len(args) == 2):
-    #         print(lookup(args[0], args[1]))
-
 
 def donchian_controller(args):
     if (not args):
@@ -67,13 +52,6 @@ def donchian_controller(args):
     except IndexError:
         print(calculate(ticker))
 
-
-# def historicalprices_controller(subroutine, args):
-    # TODO Switch to redisdb here
-    # if (subroutine == 'get'):
-    #     if (args):
-    #         from lab.database.hp.update_prices import refresh_one
-    #         print(refresh_one(args[0]))
 
 
 def inflation_controller(subroutine, args=[]):
@@ -185,10 +163,6 @@ def range_controller(args):
 
 def trend_controller(subroutine, args):
     if (args):
-        # if (subroutine == 'pricetarget'):
-        # TODO: Finish price targets
-        #     from lab.trend.pricetarget import lookup
-        #     print(lookup(args[0]))
         if (subroutine == 'streak'):
             from lab.trend.streak.count import count_streak
             print(count_streak(args[0]))

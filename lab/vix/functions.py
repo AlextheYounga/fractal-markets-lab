@@ -102,7 +102,6 @@ def selectOptionExpirations(chain):
         """
 
 
-        # TODO: Account for TD's discrepencies in data
         selectedChain = {
             # Grabbing the nearest calls, will use these expirations to find associated put options.
             'nearTerm': {
