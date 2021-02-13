@@ -33,7 +33,6 @@ def list_commands():
         ['volume:chase', 'Scans all stocks and returns todays gainers with abnormally high volume.'],
         ['volume:anomaly', 'Scans all stocks and returns stocks who are accumulating extremely high volume over the last week. Finds market singularities.'],
         ['vix [<ticker>]', 'Runs the VIX volatility equation on a ticker'],
-        # ['trend:pricetarget [<ticker>]', 'Grabs price targets'],
     ]
     printTabs(commands, headers, 'simple')
     print("\n\n")

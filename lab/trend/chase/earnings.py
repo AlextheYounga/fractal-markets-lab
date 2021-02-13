@@ -7,7 +7,7 @@ import sys
 import redis
 from datetime import date
 from ..functions import *
-from ..redisdb.controller import rdb_save_stock
+from ...redisdb.controller import rdb_save_stock
 from ...core.functions import chunks, dataSanityCheck
 from ...core.api.historical import getHistoricalEarnings
 from ...core.api.batch import quoteStatsBatchRequest
