@@ -205,7 +205,7 @@ def vix_controller(args):
         print(vix_equation(ticker, debug))
         return
         
-    print(vix_equation(ticker))        
+    print('VIX: '+str(vix_equation(ticker)))
 
 
 def main():

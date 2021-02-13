@@ -101,26 +101,36 @@ def selectOptionExpirations(chain):
         finding min() value of each group's keys, which again, are the time to expiration in seconds.
         """
 
-
-        selectedChain = {
-            # Grabbing the nearest calls, will use these expirations to find associated put options.
-            'nearTerm': {
-                'call': options['nearTerm']['callExpDateMap'][min(options['nearTerm']['callExpDateMap'].keys())],
-            },
-            'nextTerm': {
-                'call': options['nextTerm']['callExpDateMap'][min(options['nextTerm']['callExpDateMap'].keys())],
-            },
-        }
-
-        selectedDates = {
-            # Creating a separate dict to store some crucial date variables.
-            'nearTerm': {
-                'preciseExpiration': next(iter(selectedChain['nearTerm']['call'].values()))[0]['expirationDate'],
-            },
-            'nextTerm': {
-                'preciseExpiration': next(iter(selectedChain['nextTerm']['call'].values()))[0]['expirationDate']
+        try:
+            selectedChain = {
+                # Grabbing the nearest calls, will use these expirations to find associated put options.
+                'nearTerm': {
+                    'call': options['nearTerm']['callExpDateMap'][min(options['nearTerm']['callExpDateMap'].keys())],
+                },
+                'nextTerm': {
+                    'call': options['nextTerm']['callExpDateMap'][min(options['nextTerm']['callExpDateMap'].keys())],
+                },
             }
-        }
+
+            selectedDates = {
+                # Creating a separate dict to store some crucial date variables.
+                'nearTerm': {
+                    'preciseExpiration': next(iter(selectedChain['nearTerm']['call'].values()))[0]['expirationDate'],
+                },
+                'nextTerm': {
+                    'preciseExpiration': next(iter(selectedChain['nextTerm']['call'].values()))[0]['expirationDate']
+                }
+            }
+        except ValueError:
+            print(
+            """
+            It seems there was some unexpected data returned from TD Ameritrade. Generally this only happens with penny
+            stocks or stocks with little option volume. I am still working to account for these discrepencies in 
+            TD Ameritrade's response; I would like to see vix data on some of the smaller stocks as well.
+            """
+            )
+            sys.exit()
+
 
         # Date manipulation, doing here because we'll need these later.
         for term, d in selectedDates.items():
