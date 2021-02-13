@@ -170,5 +170,3 @@ def fractal_calculator(ticker, output='table'):
     if (output == 'csv'):
         exportFractal(fractal_results, scales)
 
-    # TODO: Think of a way to tweet this complicated data.
-    # if (tweet):
