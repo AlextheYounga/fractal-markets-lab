@@ -4,7 +4,7 @@ import statistics
 import sys
 from ..core.api.historical import getHistoricalData
 from ..core.api.stats import getKeyStats
-from ..core.api.bonds import get3mTreasury
+from ..core.scrape.bonds import scrape3mTreasury
 from ..core.functions import extract_data, logReturns
 from .functions import *
 
@@ -52,7 +52,7 @@ def vix_equation(ticker, debug=False):
     # closest to the expiration dates of relevant SPX options. As such, the VIX calculation may
     # use different risk-free interest rates for near- and next-term options.
     # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx (pg 4)
-    r = get3mTreasury()[0]['value']
+    r = scrape3mTreasury()
 
     # Step 4
     # Calculate T1 and T2, for near-term and next-term options respectively. See calculateT() in functions.py for more.
