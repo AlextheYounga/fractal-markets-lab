@@ -1,6 +1,8 @@
 from ..core.api.stats import getCashFlow, getFinancials, getKeyStats, getAdvancedStats, getCurrentPrice
 from ..core.functions import dataSanityCheck
 from ..redisdb.controller import rdb_save_stock
+import colored
+from colored import stylize
 import json
 import sys
 from dotenv import load_dotenv
@@ -58,4 +60,4 @@ def lookupFinancials(ticker):
 
 
     else:
-        print('Could not fetch financials')
+        print(stylize("Error: Could not fetch financials", colored.fg("red")))

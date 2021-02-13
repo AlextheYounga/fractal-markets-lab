@@ -1,6 +1,8 @@
 import json
 import os
 import sys
+import colored
+from colored import stylize
 from ..core.functions import prompt_yes_no
 from dotenv import load_dotenv
 import twitter
@@ -40,16 +42,16 @@ def send_tweet(tweet, headline=False, footer=False):
         print(draw_box(tweet))
         print('Characters: {}'.format(len(tweet)))
 
-        if (len(tweet) > 280):
-            print('Tweet over 280 characters.')
+        if (len(tweet) > 280):            
+            print(stylize("Error: Tweet over 280 characters.", colored.fg("red")))
             continue
 
         while True:
             # First prompt
             send = str(input('Send Tweet? (y/n): '))
             if send in ('y', 'n'):
-                break
-            print("invalid input.")
+                break            
+            print(stylize("Invalid input.", colored.fg("red")))
 
         if (send == 'n'):
             while True:
@@ -58,14 +60,14 @@ def send_tweet(tweet, headline=False, footer=False):
                 if rerun in ('y', 'n'):
                     break
                 else:
-                    print("invalid input.")
+                    print(stylize("Invalid input.", colored.fg("red")))
             if (rerun == 'n'):
                 sys.exit()
             else:
                 continue
         if (send == 'y'):
-            api.PostUpdate(tweet)
-            print('Tweet Sent')
+            api.PostUpdate(tweet)            
+            print(stylize("Tweet Sent", colored.fg("green")))
             break
 
 

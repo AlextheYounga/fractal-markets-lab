@@ -4,7 +4,7 @@ from ..core.functions import extract_data
 from ..core.api.historical import getHistoricalData
 from ..core.api.stats import getCurrentPrice
 from .export import exportDonchian
-from ..core.output import printTable
+from ..core.output import printTabs
 from ..fintwit.tweet import send_tweet, translate_data
 
 
@@ -22,7 +22,7 @@ def calculate(ticker, tweet=False):
         'donchianLow': min(list(reversed(lows))[:16])
     }
 
-    printTable(donchian_range)
+    printTabs(donchian_range)
 
     if (tweet):
         headline = "${} 3week Donchian Range:".format(ticker)
