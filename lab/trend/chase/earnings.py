@@ -7,7 +7,7 @@ import sys
 import redis
 from datetime import date
 from ..functions import *
-from ..redisdb.controller import rdb_save_stock
+from ...redisdb.controller import rdb_save_stock
 from ...core.functions import chunks, dataSanityCheck
 from ...core.api.historical import getHistoricalEarnings
 from ...core.api.batch import quoteStatsBatchRequest
@@ -79,8 +79,6 @@ for i, chunk in enumerate(chunked_tickers):
                     except redis.exceptions.ConnectionError:
                         rdb = False
                         print('Redis not connected. Not saving.')
-
-                # TODO: Check if this still works.
 
                 if ((fromHigh < 105) and (fromHigh > 95)):
                     if (changeToday > 10):
