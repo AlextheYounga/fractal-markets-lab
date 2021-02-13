@@ -5,6 +5,8 @@ from ..core.api.batch import quoteStatsBatchRequest
 from ..core.functions import dataSanityCheck
 from ..core.output import printTable, printFullTable, writeCSV
 from ..fintwit.tweet import send_tweet
+import colored
+from colored import stylize
 import time
 import sys
 import json
@@ -108,16 +110,6 @@ def print_results(tickers):
 
         printFullTable(results, struct='dictlist')
 
-        # Tweet
-        # tweet = ""
-        # for i, data in enumerate(results):
-        #     ticker = '${}'.format(data['ticker'])
-        #     changeToday = data['changeToday']
-        #     tweet_data = "{} +{}% \n".format(ticker, changeToday)
-        #     tweet = tweet + tweet_data
-
-        # send_tweet(tweet, True)
-
 
 def clean_tickers(tickers):
     cleaned = []
@@ -143,7 +135,8 @@ def scrape_news(query="best+stocks+to+buy"):
         url = 'https://www.bing.com/news/search?q={}'.format(query)
         results = requests.get(url, headers=headers)
     except:
-        print("Unexpected error:", sys.exc_info()[0])
+        print(stylize("Unexpected error:", colored.fg("red")))
+        print(stylize(sys.exc_info()[0], colored.fg("red")))        
 
     soup = BeautifulSoup(results.text, 'html.parser')
     links = soup.find_all("a", {"class": "title"})
@@ -152,7 +145,7 @@ def scrape_news(query="best+stocks+to+buy"):
         if (blacklist_urls(link['href'])):
             continue
 
-        print("Searching... "+link['href'])
+        print(stylize("Searching... "+link['href'], colored.fg("yellow")))
 
         page = requests.get(link['href'], headers=headers)
         soup = BeautifulSoup(page.text, 'html.parser')

@@ -5,6 +5,8 @@ import time
 import calendar
 from math import e
 from pytz import timezone
+import colored
+from colored import stylize
 from dateutil.relativedelta import relativedelta
 from ..core.api.options import *
 import pandas as pd
@@ -122,11 +124,12 @@ def selectOptionExpirations(chain):
                 }
             }
         except ValueError:
+            print(stylize("Unexpected response from TD:", colored.fg("red")))
             print(
             """
             It seems there was some unexpected data returned from TD Ameritrade. Generally this only happens with penny
             stocks or stocks with little option volume. I am still working to account for these discrepencies in 
-            TD Ameritrade's response; I would like to see vix data on some of the smaller stocks as well.
+            TD Ameritrade's response; believe me, I would like to see vix data on some of the smaller stocks as much as you.
             """
             )
             sys.exit()
