@@ -18,3 +18,4 @@ jsonfield
 redis
 colored
 pytrends
+python-dateutil
