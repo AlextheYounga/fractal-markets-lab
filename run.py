@@ -2,7 +2,7 @@ import os
 import sys
 import colored
 from colored import stylize
-from lab.core.output import printTabs
+from lab.core.output import printTabs, printFullTable
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -36,6 +36,7 @@ def list_commands():
         ['volume:chase', 'Scans all stocks and returns todays gainers with abnormally high volume.'],
         ['volume:anomaly', 'Scans all stocks and returns stocks who are accumulating extremely high volume over the last week. Finds market singularities.'],
         ['vix [<ticker>]', 'Runs the VIX volatility equation on a ticker'],
+        ['output:last [--filter=key]', 'Returns the last cached output, can resort by specific key.']
     ]
     printTabs(commands, headers, 'simple')
     print("\n\n")
@@ -222,6 +223,22 @@ def range_controller(args):
     except IndexError:
         print(rangeLookup(ticker))
         return
+
+
+def output_controller(subroutine, args):
+    if (subroutine == 'last'):
+        from lab.redisdb.controller import fetch_last_output
+        
+        try:
+            filterKey = args[0].split('--')[1]
+            results = fetch_last_output(filterKey)
+            printFullTable(results, struct='dictlist')
+            return
+        except IndexError:
+            results = fetch_last_output()
+            printFullTable(results, struct='dictlist')
+            return
+    command_error()
 
 
 def trend_controller(subroutine, args):

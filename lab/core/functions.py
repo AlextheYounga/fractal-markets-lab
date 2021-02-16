@@ -1,8 +1,10 @@
 import sys
 import statistics
 import math
+import json
 import pandas as pd
 import numpy as np
+import operator
 # from translate import Translator
 
 
@@ -151,3 +153,7 @@ def interdayReturns(prices):
 
     return int_returns
 
+def reorder_dict(dct, key):
+    sorted_d = sorted(dct.items(), key=operator.itemgetter(  ))
+    print(json.dumps(sorted_d, indent=1))
+    sys.exit()

@@ -74,5 +74,7 @@ def rdb_schema():
     'correlation-'+t1+'-'+t2+'-rvalue'
     'correlation-'+t1+'-'+t2+'-datapoints'
 
+    #Output
+    'lab-last-output'
 
     """
