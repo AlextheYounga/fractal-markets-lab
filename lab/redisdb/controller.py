@@ -185,6 +185,6 @@ def fetch_last_output():
     r = redis.Redis(host='localhost', port=6379, db=0, charset="utf-8", decode_responses=True)
     op = r.get('lab-last-output')
     if (op):
-            return json.loads(op)
+        return json.loads(op)
 
     return False
