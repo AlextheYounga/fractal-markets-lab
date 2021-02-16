@@ -17,3 +17,5 @@ python-telegram-bot
 jsonfield
 redis
 colored
+pytrends
+python-dateutil
