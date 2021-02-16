@@ -7,7 +7,7 @@ import sys
 import redis
 from datetime import date
 from ..functions import *
-from ..redisdb.controller import rdb_save_stock
+from ...redisdb.controller import rdb_save_stock
 from ...core.functions import chunks, dataSanityCheck
 from ...core.api.historical import getHistoricalEarnings
 from ...core.api.batch import quoteStatsBatchRequest
@@ -20,7 +20,9 @@ django.setup()
 Stock = apps.get_model('database', 'Stock')
 Watchlist = apps.get_model('database', 'Watchlist')
 
-# Main Thread Start
+"""
+This function doesn't get much love anymore because nobody cares about earnings anymore.
+"""
 print('Running...')
 
 results = []

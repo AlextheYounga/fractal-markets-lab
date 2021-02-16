@@ -1,9 +1,15 @@
+import django
+from django.apps import apps
 from ..core.api.stats import getCurrentPrice
-import requests
+from ..core.api.sync import syncPrices
+import colored
+from colored import stylize
+import redis
 import json
 import sys
 from dotenv import load_dotenv
 load_dotenv()
+django.setup()
 
 
 def checkEarnings(earnings):
@@ -33,3 +39,30 @@ def checkEarnings(earnings):
         }
 
         return results
+
+
+
+def getPennyStocks(tickersOnly=True, refresh_prices=False):
+    if (refresh_prices):
+        print(stylize("Syncing prices...", colored.fg("yellow")))
+        syncPrices()
+
+    Stock = apps.get_model('database', 'Stock')
+    stocks = Stock.objects.all()
+    r = redis.Redis(host='localhost', port=6379, db=0, charset="utf-8", decode_responses=True)
+    pennystocks = []
+
+    for stock in stocks:
+        price = r.get('stock-'+stock.ticker+'-price')
+        if (price):
+            if (float(price) < 4):
+                if (tickersOnly):
+                    pennystocks.append(stock.ticker)
+                else:
+                    pennystocks.append(stock)
+
+    return pennystocks
+
+
+
+    
