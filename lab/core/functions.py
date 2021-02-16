@@ -170,5 +170,6 @@ def translateWords(lst):
     
 def reorder_dict(dct, key):
     sorted_d = sorted(dct.items(), key=operator.itemgetter(  ))
+    # TODO Figure out how to reorder dicts
     print(json.dumps(sorted_d, indent=1))
     sys.exit()
