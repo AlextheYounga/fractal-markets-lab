@@ -20,7 +20,9 @@ django.setup()
 Stock = apps.get_model('database', 'Stock')
 Watchlist = apps.get_model('database', 'Watchlist')
 
-# Main Thread Start
+"""
+This function doesn't get much love anymore because nobody cares about earnings anymore.
+"""
 print('Running...')
 
 results = []

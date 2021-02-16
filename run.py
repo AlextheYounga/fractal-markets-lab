@@ -2,7 +2,7 @@ import os
 import sys
 import colored
 from colored import stylize
-from lab.core.output import printTabs
+from lab.core.output import printTabs, printFullTable
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -33,10 +33,12 @@ def list_commands():
         ['trend:earnings', 'Scans all stocks and returns todays gainers who have consistently good earnings.'],
         ['trend:streak [<ticker>]', 'Determines the current winning/losing streak for a ticker'],
         ['trend:gainers', 'Grabs todays gainers and checks their earnings.'],
+        ['trend:google', 'Searches google trends for search query interest'],
         ['pricedingold [<ticker>][--timespan=5y][--test=False]', 'Graphs and assets price in gold.'],
         ['volume:chase', 'Scans all stocks and returns todays gainers with abnormally high volume.'],
         ['volume:anomaly', 'Scans all stocks and returns stocks who are accumulating extremely high volume over the last week. Finds market singularities.'],
         ['vix [<ticker>]', 'Runs the VIX volatility equation on a ticker'],
+        ['output:last [--filter=key]', 'Returns the last cached output, can resort by specific key.']
     ]
     printTabs(commands, headers, 'simple')
     print("\n\n")
@@ -247,6 +249,22 @@ def range_controller(args):
         return
 
 
+def output_controller(subroutine, args):
+    if (subroutine == 'last'):
+        from lab.redisdb.controller import fetch_last_output
+        
+        try:
+            filterKey = args[0].split('--')[1]
+            results = fetch_last_output(filterKey)
+            printFullTable(results, struct='dictlist')
+            return
+        except IndexError:
+            results = fetch_last_output()
+            printFullTable(results, struct='dictlist')
+            return
+    command_error()
+
+
 def trend_controller(subroutine, args):
     # TODO: Finish price targets
     # if (subroutine == 'pricetarget'):        
@@ -281,9 +299,18 @@ def trend_controller(subroutine, args):
 
     if (subroutine == 'earnings'):
         import lab.trend.chase.earnings
+        return
 
     if (subroutine == 'gainers'):
         import lab.trend.gainers
+        return
+    if (subroutine == 'google'):
+        from lab.trend.googletrends.request import stock_search_trends
+        print(stock_search_trends())
+        return
+    
+    command_error()
+
 
 
 def volume_controller(subroutine, args):
@@ -320,26 +347,24 @@ def main():
 
     args = [arg.strip() for arg in sys.argv]
 
-    try:
-        if (args[0] == 'list'):
-            list_commands()
-            return
+   
+    if (args[0] == 'list'):
+        list_commands()
+        return
 
-        if (':' in args[0]):
-            command = args.pop(0)
-            program = command.split(':')[0] + "_controller"
-            subroutine = command.split(':')[1]
+    if (':' in args[0]):
+        command = args.pop(0)
+        program = command.split(':')[0] + "_controller"
+        subroutine = command.split(':')[1]
 
-            globals()[program](subroutine, args)
-            return
-        else:
-            program = args.pop(0) + "_controller"
+        globals()[program](subroutine, args)
+        return
+    else:
+        program = args.pop(0) + "_controller"
 
-            globals()[program](args)
-            return
-    except:
-        print(stylize("Error: your command did not match any known programs. Closing...", colored.fg("red")))
-        sys.exit()
+        globals()[program](args)
+        return
+
 
 
 if __name__ == '__main__':

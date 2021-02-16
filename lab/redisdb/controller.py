@@ -2,6 +2,7 @@ import json
 import redis
 from datetime import datetime, date, timedelta
 from ..core.api.historical import getHistoricalData
+from ..core.functions import reorder_dict
 import sys
 import os
 
@@ -108,7 +109,7 @@ def rdb_save_stock(ticker, data):
         if (allowed_key('stock', key) and data.get(key, False)):
             r.set('stock-{}-{}'.format(ticker, key), data[key])
             return True
-        else:            
+        else:
             return False
 
 
@@ -173,3 +174,24 @@ def update_prices(ticker):
             break
 
     rdb_save_prices(ticker, prices)
+
+
+def rdb_save_output(output):
+    r = redis.Redis(host='localhost', port=6379, db=0, charset="utf-8", decode_responses=True)
+    r.set('lab-last-output', json.dumps(output))
+    return True
+
+
+def fetch_last_output(filterKey=None):
+    r = redis.Redis(host='localhost', port=6379, db=0, charset="utf-8", decode_responses=True)
+    op = r.get('lab-last-output')
+    if (op):
+        if (filterKey):
+            last = json.loads(op)
+            results = reorder_dict(last, filterKey)
+            
+            return results
+        else:
+            return json.loads(op)
+
+    return False
