@@ -48,7 +48,7 @@ def rdb_schema():
     'stock-'+ticker+'-freeCashFlowYield'
     'stock-'+ticker+'-longTermDebtToEquity'
 
-    # Trend
+    # Stock Trends
     'stock-'+ticker+'-week52'
     'stock-'+ticker+'-day5ChangePercent'
     'stock-'+ticker+'-month1ChangePercent'
@@ -59,6 +59,9 @@ def rdb_schema():
     'stock-'+ticker+'-highPriceTarget'
     'stock-'+ticker+'-fromPriceTarget'
     'stock-'+ticker+'-fromHigh'
+
+    # Google Trends
+    'trends-'+ticker+'-interest'
 
     # Valuation
     'stock-'+ticker+'-peRatio'
@@ -71,5 +74,7 @@ def rdb_schema():
     'correlation-'+t1+'-'+t2+'-rvalue'
     'correlation-'+t1+'-'+t2+'-datapoints'
 
+    #Output
+    'lab-last-output'
 
     """
