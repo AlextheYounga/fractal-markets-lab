@@ -182,16 +182,10 @@ def rdb_save_output(output):
     return True
 
 
-def fetch_last_output(filterKey=None):
+def fetch_last_output():
     r = redis.Redis(host='localhost', port=6379, db=0, charset="utf-8", decode_responses=True)
     op = r.get('lab-last-output')
     if (op):
-        if (filterKey):
-            last = json.loads(op)
-            results = reorder_dict(last, filterKey)
-            
-            return results
-        else:
             return json.loads(op)
 
     return False

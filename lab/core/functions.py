@@ -153,7 +153,3 @@ def interdayReturns(prices):
 
     return int_returns
 
-def reorder_dict(dct, key):
-    sorted_d = sorted(dct.items(), key=operator.itemgetter(  ))
-    print(json.dumps(sorted_d, indent=1))
-    sys.exit()

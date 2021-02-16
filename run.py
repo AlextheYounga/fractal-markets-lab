@@ -36,7 +36,7 @@ def list_commands():
         ['volume:chase', 'Scans all stocks and returns todays gainers with abnormally high volume.'],
         ['volume:anomaly', 'Scans all stocks and returns stocks who are accumulating extremely high volume over the last week. Finds market singularities.'],
         ['vix [<ticker>]', 'Runs the VIX volatility equation on a ticker'],
-        ['output:last [--filter=key]', 'Returns the last cached output, can resort by specific key.']
+        ['output:last', 'Returns the last cached output, can resort by specific key.']
     ]
     printTabs(commands, headers, 'simple')
     print("\n\n")
