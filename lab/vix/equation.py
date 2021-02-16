@@ -4,7 +4,7 @@ import statistics
 import sys
 from ..core.api.historical import getHistoricalData
 from ..core.api.stats import getKeyStats
-from ..core.api.bonds import get3mTreasury
+from ..core.scrape.bonds import scrape3mTreasury
 from ..core.functions import extract_data, logReturns
 from .functions import *
 
@@ -52,7 +52,7 @@ def vix_equation(ticker, debug=False):
     # closest to the expiration dates of relevant SPX options. As such, the VIX calculation may
     # use different risk-free interest rates for near- and next-term options.
     # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx (pg 4)
-    r = get3mTreasury()[0]['value']
+    r = scrape3mTreasury()
 
     # Step 4
     # Calculate T1 and T2, for near-term and next-term options respectively. See calculateT() in functions.py for more.
@@ -92,19 +92,19 @@ def vix_equation(ticker, debug=False):
     nT1 = tminutes['nearTerm']  # Minutes to expiration
     nT2 = tminutes['nextTerm']  # Minutes to expiration
 
-    # if (debug):
-    print('Minutes Year = '+str(minYear))
-    print('Minutes in Month = '+str(minMonth))
-    print('Near-Term Vol (v1) = '+str(v1))
-    print('Next-Term Vol (v2) = '+str(v2))
-    print('T1 = '+str(t1))
-    print('T2 = '+str(t2))
-    print('Near-Term Expiration Minutes = '+str(nT1))
-    print('Next-Term Expiration Minutes = '+str(nT2))
-    print("\n")
+    if (debug):
+        print('Minutes Year = '+str(minYear))
+        print('Minutes in Month = '+str(minMonth))
+        print('Near-Term Vol (v1) = '+str(v1))
+        print('Next-Term Vol (v2) = '+str(v2))
+        print('T1 = '+str(t1))
+        print('T2 = '+str(t2))
+        print('Near-Term Expiration Minutes = '+str(nT1))
+        print('Next-Term Expiration Minutes = '+str(nT2))
+        print("\n")
 
 
-    # Test
+    # Test Data to confirm accuracy
     # NT1 = number of minutes to settlement of the near-term options (12,960)
     # NT2 = number of minutes to settlement of the next-term options (53,280)
     # N30 = number of minutes in 30 days (30 × 1,440 = 43,200)

@@ -1,6 +1,8 @@
 import os
 import sys
-from lab.core.output import printTabs
+import colored
+from colored import stylize
+from lab.core.output import printTabs, printFullTable
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -29,52 +31,94 @@ def list_commands():
         ['trend:earnings', 'Scans all stocks and returns todays gainers who have consistently good earnings.'],
         ['trend:streak [<ticker>]', 'Determines the current winning/losing streak for a ticker'],
         ['trend:gainers', 'Grabs todays gainers and checks their earnings.'],
+        ['trend:google', 'Searches google trends for search query interest'],
         ['pricedingold [<ticker>][--timespan=5y][--test=False]', 'Graphs and assets price in gold.'],
         ['volume:chase', 'Scans all stocks and returns todays gainers with abnormally high volume.'],
         ['volume:anomaly', 'Scans all stocks and returns stocks who are accumulating extremely high volume over the last week. Finds market singularities.'],
         ['vix [<ticker>]', 'Runs the VIX volatility equation on a ticker'],
+        ['output:last', 'Returns the last cached output, can resort by specific key.']
     ]
     printTabs(commands, headers, 'simple')
     print("\n\n")
 
 
+def command_error(required={}, opt=None):
+    if(not (required or opt)):
+        print(stylize("Error: your command did not match any known programs. Closing...", colored.fg("red")))
+        print("\n")
+        return
+
+    if (required):
+        print(stylize("FAILED: Requires arguments: ", colored.fg("red")))
+        for typ, var in required.items():
+            print(stylize("({}) [{}]".format(typ, var), colored.fg("red")))
+        print("\n")
+    if (opt):
+        print(stylize("Optional arguments: ", colored.fg("yellow")))
+        if (isinstance(opt, dict)):
+            for typ, var in opt.items():
+                print(stylize("({}) [{}]".format(typ, var), colored.fg("yellow")))
+        if (isinstance(opt, list)):
+            for var in opt.items():
+                print(stylize("[{}]".format(var), colored.fg("yellow")))
+            print("\n")
+
 
 def donchian_controller(args):
+    required = {"string": "ticker"}
+    opt = ["--tweet"]
+
     if (not args):
-        print('FAILED: Requires arguments (string) [<ticker>]. Optional args [--tweet]')
+        command_error(required, opt)
         return
+
     from lab.donchian.range import calculate
     ticker = args[0]
     try:
         tweet = True if (args[1] == '--tweet') else False
         print(calculate(ticker, tweet))
+        return
     except IndexError:
         print(calculate(ticker))
-
+        return
+    command_error()
 
 
 def inflation_controller(subroutine, args=[]):
     if (subroutine == 'graph'):
         from lab.inflation.measure import graph
+
         try:
             update = True if (args and args[0] == '--update') else False
             print(graph(update))
+            return
+
         except IndexError:
             print(graph())
+            return
 
     if (subroutine == 'calculate'):
         from lab.inflation.measure import annual
+
         try:
             update = True if (args[0] == '--update') else False
             print(annual(update))
+            return
+
         except IndexError:
             print(annual())
+            return
+
+    command_error()
 
 
 def financials_controller(args):
+    required = {"string": "ticker"}
+
     if (not args):
-        print('FAILED: Requires arguments (string) [<ticker>].')
+        command_error(required)
         return
+
     ticker = args[0]
     from lab.financials.lookup import lookupFinancials
     print(lookupFinancials(ticker))
@@ -88,16 +132,21 @@ def macro_controller(subroutine, args=[]):
             timeframe = args[0].split('--')[1]
             gain = args[1].split('--')[1]
             print(calculate_trends(timeframe, gain))
+            return
+
         except IndexError:
             try:
                 timeframe = args[0].split('--')[1]
                 print(calculate_trends(timeframe))
+                return
             except IndexError:
                 print(calculate_trends)
                 return
 
     if (subroutine == 'gainers'):
         import lab.macro.gainers
+
+    command_error()
 
 
 def news_controller(subroutine, args=[]):
@@ -107,32 +156,42 @@ def news_controller(subroutine, args=[]):
         try:
             query = args[0].split('--')[1]
             print(scrape_news(query))
+            return
         except IndexError:
             print(scrape_news())
             return
+    command_error()
 
 
 def pricedingold_controller(args):
     from lab.pricedingold.compare import price_in_gold
+    required = {"string": "ticker"}
+    opt = {"string": "--timeframe"}
+
     if (not args):
-        print('FAILED: Requires arguments (string) [<ticker>]. Optional argument --timeframe')
+        command_error(required, opt)
         return
     try:
         ticker = args[0]
         timeframe = args[1].split('--')[1]
         print(price_in_gold(ticker, timeframe))
+        return
     except IndexError:
         try:
             ticker = args[0]
             print(price_in_gold(ticker))
+            return
         except IndexError:
             print(price_in_gold)
             return
 
 
 def hurst_controller(args):
+    required = {"string": "ticker"}
+    opt = {"string": "--output"}
+
     if (not args):
-        print('FAILED: Requires arguments (string) [<ticker>]. Optional argument --output')
+        command_error(required, opt)
         return
 
     from lab.rescaledrange.fractal_calculator import fractal_calculator
@@ -141,6 +200,7 @@ def hurst_controller(args):
     try:
         output = args[1].split('--')[1]
         print(fractal_calculator(ticker, output))
+        return
     except IndexError:
         print(fractal_calculator(ticker))
         return
@@ -148,26 +208,58 @@ def hurst_controller(args):
 
 def range_controller(args):
     from lab.riskrange.lookup import rangeLookup
+    required = {"string": "ticker"}
+    opt = ["--tweet"]
+
     if (not args):
-        print('FAILED: Requires arguments (string) [<ticker>]. Optional argument --tweet')
+        command_error(required, opt)
         return
+
     ticker = args[0]
     try:
         tweet = True if (args[1] == '--tweet') else False
         print(rangeLookup(ticker, tweet))
+        return
     except IndexError:
         print(rangeLookup(ticker))
         return
 
 
+def output_controller(subroutine, args):
+    if (subroutine == 'last'):
+        from lab.redisdb.controller import fetch_last_output
+        
+        try:
+            filterKey = args[0].split('--')[1]
+            results = fetch_last_output(filterKey)
+            printFullTable(results, struct='dictlist')
+            return
+        except IndexError:
+            results = fetch_last_output()
+            printFullTable(results, struct='dictlist')
+            return
+    command_error()
+
+
 def trend_controller(subroutine, args):
-    if (args):
-        if (subroutine == 'streak'):
-            from lab.trend.streak.count import count_streak
-            print(count_streak(args[0]))
-        if (subroutine == 'search'):
-            from lab.trend.chase.search import search
-            print(search(args[0]))
+
+    if (subroutine == 'streak'):
+        required = {"string": "ticker"}
+        if (not args):
+            command_error(required)
+            return
+
+        from lab.trend.streak.count import count_streak
+        print(count_streak(args[0]))
+        return
+
+    if (subroutine == 'search'):
+        required = {"string": "query"}
+        if (not args):
+            command_error(required)
+            return
+        from lab.trend.chase.search import search
+        print(search(args[0]))
         return
 
     if (subroutine == 'chase'):
@@ -179,9 +271,18 @@ def trend_controller(subroutine, args):
 
     if (subroutine == 'earnings'):
         import lab.trend.chase.earnings
+        return
 
     if (subroutine == 'gainers'):
         import lab.trend.gainers
+        return
+    if (subroutine == 'google'):
+        from lab.trend.googletrends.request import stock_search_trends
+        print(stock_search_trends())
+        return
+    
+    command_error()
+
 
 
 def volume_controller(subroutine, args):
@@ -193,19 +294,23 @@ def volume_controller(subroutine, args):
 
 
 def vix_controller(args):
+    required = {"string": "ticker"}
+    opt = {"string": "--debug"}
+
     if (not args):
-        print('FAILED: Requires arguments (string) [<ticker>]. Optional argument for debugging [--debug]')
+        command_error(required, opt)
         return
+
     from lab.vix.equation import vix_equation
 
     ticker = args[0]
-    
+
     if (len(args) >= 2):
         debug = True if (args[1] == '--debug') else False
         print(vix_equation(ticker, debug))
         return
-        
-    print(vix_equation(ticker))        
+
+    print('VIX: '+str(vix_equation(ticker)))
 
 
 def main():
@@ -214,6 +319,7 @@ def main():
 
     args = [arg.strip() for arg in sys.argv]
 
+   
     if (args[0] == 'list'):
         list_commands()
         return
@@ -231,8 +337,6 @@ def main():
         globals()[program](args)
         return
 
-    print("Error: your command did not match any known programs. Closing...")
-    return
 
 
 if __name__ == '__main__':
