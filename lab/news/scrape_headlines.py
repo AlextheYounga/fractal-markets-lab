@@ -37,6 +37,7 @@ def blacklist_stocks(tickers):
         'NFLX',
         'KO',
         'TSLA',
+        'GOOG',
     ]
     for t in tickers:
         if (t in blacklist):
