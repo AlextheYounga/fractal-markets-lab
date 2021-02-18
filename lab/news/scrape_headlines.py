@@ -1,3 +1,5 @@
+import django
+from django.apps import apps
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, date
@@ -11,6 +13,7 @@ import time
 import sys
 import json
 import os
+django.setup()
 
 
 def blacklist_urls(link):
@@ -60,6 +63,8 @@ def exchanges():
 
 
 def clean_tickers(tickers):
+    Stock = apps.get_model('database', 'Stock')
+    db_tickers = Stock.objects.all().values_list('ticker', flat=True)
     cleaned = []
 
     def checkLowerCase(t):
@@ -69,18 +74,15 @@ def clean_tickers(tickers):
         return False
     
     for t in tickers:
-        if(' ' in t):
-            continue
-        if ('.' in t):
-            continue
-        if (t == ''):
-            continue        
-        if (checkLowerCase(t)):
-            continue
-        if (':' in t):
-            t = t.split(':')[1]
-        if (t not in cleaned):
-            cleaned.append(t)
+        if(' ' not in t):
+            if ('.' not in t):
+                if (t != ''):      
+                    if (checkLowerCase(t) == False):
+                        if (t in db_tickers):
+                            if (':' in t):
+                                t = t.split(':')[1]
+                            if (t not in cleaned):
+                                cleaned.append(t)
     pruned = blacklist_stocks(cleaned)
 
     return pruned
