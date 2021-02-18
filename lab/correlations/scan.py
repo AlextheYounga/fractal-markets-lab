@@ -11,43 +11,28 @@ import json
 import sys
 import os
 from dotenv import load_dotenv
-from ..twitter.tweet import send_tweet
 load_dotenv()
 django.setup()
-FILES = "lab/correlations/output/files"
-JSON = "lab/correlations/output/json/correlations.json"
-CSV = "lab/correlations/output/csv"
 
-HistoricalPrices = apps.get_model('database', 'HistoricalPrices')
-priceobjs = HistoricalPrices.objects.all()
 badset = ['GCOW', 'FAAR']
-json_output = {}
-
-
-def scan_output_folder(output):
-    if (output):
-        if (output == 'files'):
-            files = os.listdir(FILES)
-        if (output == 'csv'):
-            files = os.listdir(CSV)
-        return [f.split('.').pop(0) for f in files]
-
+Stock = apps.get_model('database', 'Stock')
+tickers = Stock.objects.all().values_list('ticker', flat=True)
 
 def redundant_correlation(t1, t2, output):
-    if (output == 'json'):
-        if (t2 in json_output and json_output[t2]):
-            for data in json_output[t2]:
-                if (data['comparand'] == t1):
-                    return True
-        return False
-    if (output == 'files'):
-        if (t1 in scan_output_folder()):
-            with open(os.path.join(FILES, "{}.txt".format(t1))) as txtfile:
-                correlations = json.loads(txtfile.read())
-                for corrs in correlations:
-                    if (corrs['comparand'] == t2):
-                        return True
-        return False
+    # if (output == 'json'):
+    #     if (t2 in json_output and json_output[t2]):
+    #         for data in json_output[t2]:
+    #             if (data['comparand'] == t1):
+    #                 return True
+    #     return False
+    # if (output == 'files'):
+    #     if (t1 in scan_output_folder()):
+    #         with open(os.path.join(FILES, "{}.txt".format(t1))) as txtfile:
+    #             correlations = json.loads(txtfile.read())
+    #             for corrs in correlations:
+    #                 if (corrs['comparand'] == t2):
+    #                     return True
+    #     return False
 
 
 def correct_lengths(h1, h2):
@@ -63,8 +48,7 @@ def correct_lengths(h1, h2):
     return x, y
 
 
-def run_correlation(h1, output='files'):
-    json_output[h1.stock.ticker] = []
+def run_correlation(h1):
     correlations = []
 
     for h2 in priceobjs:
@@ -104,9 +88,9 @@ def run_correlation(h1, output='files'):
 def scan_for_correlations(output='files'):
     print('Running...')
     for h in priceobjs:
-        if (output != 'json'):
-            if (h.stock.ticker in scan_output_folder(output)):
-                continue
+        # if (output != 'json'):
+        #     if (h.stock.ticker in scan_output_folder(output)):
+        #         continue
         if (h.stock.ticker in badset):
             continue
         print("Mass Correlating: {}".format(h.stock.ticker))
