@@ -27,11 +27,13 @@ def blacklist_stocks(tickers):
     pruned = []
     blacklist = [
         'AAPL',
+        'APPL',
         'AMZN',
         'MSFT',
         'DIS',
         'NFLX',
         'KO',
+        'TSLA',
     ]
     for t in tickers:
         if (t in blacklist):
@@ -59,10 +61,21 @@ def exchanges():
 
 def clean_tickers(tickers):
     cleaned = []
+
+    def checkLowerCase(t):
+        for c in t: #Checking for lowercase letters
+            if (c.islower()):
+                return True
+        return False
+    
     for t in tickers:
         if(' ' in t):
             continue
+        if ('.' in t):
+            continue
         if (t == ''):
+            continue        
+        if (checkLowerCase(t)):
             continue
         if (':' in t):
             t = t.split(':')[1]
@@ -109,4 +122,4 @@ def scrape_news(query="best+stocks+to+buy"):
 
     if (tickers):
         tickers = clean_tickers(tickers)
-        print_results(tickers)
+        printStockResults(tickers)

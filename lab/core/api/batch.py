@@ -1,6 +1,8 @@
 from iexfinance.stocks import Stock, get_historical_data
 from datetime import datetime, time, timedelta
 from dotenv import load_dotenv
+import colored
+from colored import stylize
 import requests
 import sys
 import json
@@ -132,8 +134,7 @@ def quoteStatsBatchRequest(batch, sandbox=False):
     key = os.environ.get("IEX_TOKEN")
     if (sandbox):
         domain = 'sandbox.iexapis.com'
-        key = os.environ.get("IEX_SANDBOX_TOKEN")
-
+        key = os.environ.get("IEX_SANDBOX_TOKEN")    
     batch = ",".join(batch)  # Convert to comma-separated string
     try:
         url = 'https://{}/stable/stock/market/batch?symbols={}&types=quote,stats&token={}'.format(
@@ -143,7 +144,7 @@ def quoteStatsBatchRequest(batch, sandbox=False):
         )
         batch_request = requests.get(url).json()
     except:
-        #print("Unexpected error:", sys.exc_info()[0])
+        print(stylize("Unexpected error: "+sys.exc_info()[0], colored.fg("red")))
         return {}
 
     return batch_request
