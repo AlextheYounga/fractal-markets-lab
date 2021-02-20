@@ -10,6 +10,7 @@ import sys
 import csv
 import os
 
+
 def setWidths(data, w='default'):
     """ 
     Parameters
