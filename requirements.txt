@@ -19,3 +19,4 @@ redis
 colored
 pytrends
 python-dateutil
+docopt

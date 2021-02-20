@@ -1,5 +1,5 @@
 import os
-import sys
+import sys, getopt
 import colored
 from colored import stylize
 from lab.core.output import printTabs, printFullTable
