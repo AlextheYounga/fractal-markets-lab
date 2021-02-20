@@ -5,9 +5,6 @@ lab/.env
 lab/database/.env
 lab/key.py
 lab/__pycache__
-lab/*/__pycache__
-lab/database/*/__pycache__/
-lab/__pycache__/
 lab/exports/*
 lab/graveyard/
 lab/riskrange/output/*
@@ -24,6 +21,7 @@ lab/fintwit/user.py
 lab/fintwit/notes.*
 lab/redisdb/export/*
 lab/redisdb/import/*
+__pycache__/
 *.sqlite
 .vscode
 settings.json
