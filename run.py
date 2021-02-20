@@ -32,9 +32,10 @@ def list_commands():
         ['trend:streak [<ticker>]', 'Determines the current winning/losing streak for a ticker'],
         ['trend:gainers', 'Grabs todays gainers and checks their earnings.'],
         ['trend:google', 'Searches google trends for search query interest'],
-        ['pricedingold [<ticker>][--timespan=5y][--test=False]', 'Graphs and assets price in gold.'],
+        ['pricedingold [<ticker>][--timeframe=5y][--test=False]', 'Graphs and assets price in gold.'],
         ['volume:chase', 'Scans all stocks and returns todays gainers with abnormally high volume.'],
         ['volume:anomaly', 'Scans all stocks and returns stocks who are accumulating extremely high volume over the last week. Finds market singularities.'],
+        ['volume:graph [<ticker>][--timeframe=3m][--sandbox=false]', 'Scans all stocks and returns stocks who are accumulating extremely high volume over the last week. Finds market singularities.'],
         ['vix [<ticker>]', 'Runs the VIX volatility equation on a ticker'],
         ['output:last', 'Returns the last cached output, can resort by specific key.']
     ]
@@ -286,6 +287,14 @@ def trend_controller(subroutine, args):
 
 
 def volume_controller(subroutine, args):
+    if (subroutine == 'graph'):
+        required = {"string": "ticker"}
+        if (not args):
+            command_error(required)
+            return
+        from lab.volume.graph import graph_volume
+        print(graph_volume(args[0]))
+
     if (subroutine == 'chase'):
         import lab.volume.chase
 
