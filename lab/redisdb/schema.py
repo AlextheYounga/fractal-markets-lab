@@ -78,3 +78,12 @@ def rdb_schema():
     'lab-last-output'
 
     """
+
+    key_roots = [
+        'stock',
+        'gold',
+        'correlation',
+        'trends'
+    ]
+    
+    return key_roots

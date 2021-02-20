@@ -37,7 +37,10 @@ def list_commands():
         ['volume:anomaly', 'Scans all stocks and returns stocks who are accumulating extremely high volume over the last week. Finds market singularities.'],
         ['volume:graph [<ticker>][--timeframe=3m][--sandbox=false]', 'Scans all stocks and returns stocks who are accumulating extremely high volume over the last week. Finds market singularities.'],
         ['vix [<ticker>]', 'Runs the VIX volatility equation on a ticker'],
-        ['output:last', 'Returns the last cached output, can resort by specific key.']
+        ['output:last', 'Returns the last cached output, can resort by specific key.'],
+        ['rdb:export', 'Exports redisdb to zipped json file'],
+        ['rdb:import', 'Import redisdb from a zipped json file'],
+
     ]
     printTabs(commands, headers, 'simple')
     print("\n\n")
@@ -207,6 +210,15 @@ def hurst_controller(args):
         return
 
 
+def rdb_controller(subroutine, args=[]):
+    if (subroutine == 'export'):
+        from lab.redisdb.export import export_rdb
+        export_rdb()
+    if (subroutine == 'import'):
+        from lab.redisdb.imports import import_rdb
+        import_rdb()
+
+
 def range_controller(args):
     from lab.riskrange.lookup import rangeLookup
     required = {"string": "ticker"}
@@ -229,7 +241,7 @@ def range_controller(args):
 def output_controller(subroutine, args):
     if (subroutine == 'last'):
         from lab.redisdb.controller import fetch_last_output
-        
+
         try:
             filterKey = args[0].split('--')[1]
             results = fetch_last_output(filterKey)
@@ -281,9 +293,8 @@ def trend_controller(subroutine, args):
         from lab.trend.googletrends.request import stock_search_trends
         print(stock_search_trends())
         return
-    
-    command_error()
 
+    command_error()
 
 
 def volume_controller(subroutine, args):
@@ -328,7 +339,6 @@ def main():
 
     args = [arg.strip() for arg in sys.argv]
 
-   
     if (args[0] == 'list'):
         list_commands()
         return
@@ -345,7 +355,6 @@ def main():
 
         globals()[program](args)
         return
-
 
 
 if __name__ == '__main__':
