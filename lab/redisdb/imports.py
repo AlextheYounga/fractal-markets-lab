@@ -3,14 +3,15 @@ import redis
 from ..core.functions import unzip_folder
 from datetime import datetime, date, timedelta
 from .schema import rdb_schema
+import progressbar
 import colored
 from colored import stylize
 import sys
 import os
 
 def import_rdb():
-    directory = "lab/redisdb/import/"
-    filepath = "lab/redisdb/import/rdb_export.zip"
+    directory = "lab/redisdb/imports/"
+    filepath = "lab/redisdb/imports/rdb_export.zip"
     if (os.path.exists(filepath)):
 
         unzip_folder(directory, filepath)
@@ -22,7 +23,7 @@ def import_rdb():
                     print(stylize("Saving key values from "+file, colored.fg("yellow")))
                     rdb_data = json.loads(jsonfile.read())
                     keys = rdb_data.keys()
-                    for key in keys:
+                    for key in progressbar.progressbar(keys):
                         try:
                             r.set(key, json.dumps(rdb_data[key]))
                         except json.decoder.JSONDecodeError:
