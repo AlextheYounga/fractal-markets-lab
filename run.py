@@ -271,7 +271,8 @@ def trend_controller(subroutine, args):
             command_error(required)
             return
         from lab.trend.chase.search import search
-        print(search(args[0]))
+        searchstring = args[0].split('=')[1]
+        print(search(searchstring))
         return
 
     if (subroutine == 'chase'):
