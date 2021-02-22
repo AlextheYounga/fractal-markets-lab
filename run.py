@@ -33,6 +33,7 @@ def list_commands():
         ['trend:gainers', 'Grabs todays gainers and checks their earnings.'],
         ['trend:google', 'Searches google trends for search query interest'],
         ['pricedingold [<ticker>][--timespan=5y][--test=False]', 'Graphs and assets price in gold.'],
+        ['vol:graph [<ticker>] [--ndays=30]', 'Graphs vol'],
         ['volume:chase', 'Scans all stocks and returns todays gainers with abnormally high volume.'],
         ['volume:anomaly', 'Scans all stocks and returns stocks who are accumulating extremely high volume over the last week. Finds market singularities.'],
         ['vix [<ticker>]', 'Runs the VIX volatility equation on a ticker'],
@@ -295,6 +296,23 @@ def trend_controller(subroutine, args):
         return
 
     command_error()
+
+
+def vol_controller(subroutine, args):
+    required = {"string": "ticker"}
+    opt = {"string": "--ndays="}
+
+    if (not args):
+        command_error(required, opt)
+        return
+    if (subroutine == 'graph'):
+        from lab.vol.calculator import graphVol
+        ticker = args[0]
+        try:
+            print(graphVol(ticker, ndays=args[1]))
+        except IndexError:
+            print(graphVol(ticker))
+        return
 
 
 def volume_controller(subroutine, args):
