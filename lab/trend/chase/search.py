@@ -6,7 +6,6 @@ import sys
 from datetime import date
 from ...redisdb.controller import rdb_save_stock
 from ...core.functions import chunks, dataSanityCheck
-from ...core.api.historical import getHistoricalEarnings
 from ...core.api.batch import quoteStatsBatchRequest
 from ...core.api.stats import getPriceTarget
 from ...core.output import printTable, printFullTable, writeCSV
@@ -17,13 +16,12 @@ django.setup()
 Stock = apps.get_model('database', 'Stock')
 Watchlist = apps.get_model('database', 'Watchlist')
 
-# Main Thread Start
+
 print('Running...')
 
 
 def search(string):
-    print(string)
-    sys.exit()
+    print('Searching '+string)
     if (string):
         results = []
         stocks = Stock.objects.all()
@@ -34,12 +32,14 @@ def search(string):
                 tickers.append(stock.ticker)
 
         chunked_tickers = chunks(tickers, 100)
+
+
+
         for i, chunk in enumerate(chunked_tickers):
             batch = quoteStatsBatchRequest(chunk)
 
-            for ticker, stockinfo in batch.items():                
+            for ticker, stockinfo in batch.items():
                 if (stockinfo.get('quote', False) and stockinfo.get('stats', False)):
-                    print('Chunk {}: {} - {}'.format(i, ticker, stockinfo['quote']['companyName']))
                     quote = stockinfo.get('quote')
                     stats = stockinfo.get('stats')
                     price = quote.get('latestPrice', 0)
@@ -71,7 +71,7 @@ def search(string):
                     fromHigh = round((price / week52high) * 100, 3)
 
                     # Save Data to DB
-                    rdb_data = {
+                    keyStats = {
                         'peRatio': stats.get('peRatio', None),
                         'week52': week52high,
                         'day5ChangePercent': day5ChangePercent if day5ChangePercent else None,
@@ -83,7 +83,7 @@ def search(string):
                         'ttmEPS': ttmEPS
                     }
 
-                    rdb_save_stock(ticker, rdb_data)
+                    rdb_save_stock(ticker, keyStats)
 
                     if (changeToday > 12):
                         if (volume > previousVolume):
@@ -99,10 +99,6 @@ def search(string):
                                 'fromPriceTarget': fromPriceTarget,
                             }
                             rdb_save_stock(ticker, trend_data)
-
-                            keyStats = {}
-                            for model, data in rdb_data.items():
-                                keyStats.update(data)
 
                             keyStats.update({
                                 'highPriceTarget': highPriceTarget,
