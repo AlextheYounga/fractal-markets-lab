@@ -36,6 +36,7 @@ def list_commands():
         ['vol:graph [<ticker>] [--ndays=30]', 'Graphs vol'],
         ['volume:chase', 'Scans all stocks and returns todays gainers with abnormally high volume.'],
         ['volume:anomaly', 'Scans all stocks and returns stocks who are accumulating extremely high volume over the last week. Finds market singularities.'],
+        ['volume:graph [<ticker>][--timeframe=3m][--sandbox=false]', 'Scans all stocks and returns stocks who are accumulating extremely high volume over the last week. Finds market singularities.'],
         ['vix [<ticker>]', 'Runs the VIX volatility equation on a ticker'],
         ['output:last', 'Returns the last cached output, can resort by specific key.'],
         ['rdb:export', 'Exports redisdb to zipped json file'],
@@ -316,6 +317,14 @@ def vol_controller(subroutine, args):
 
 
 def volume_controller(subroutine, args):
+    if (subroutine == 'graph'):
+        required = {"string": "ticker"}
+        if (not args):
+            command_error(required)
+            return
+        from lab.volume.graph import graph_volume
+        print(graph_volume(args[0]))
+
     if (subroutine == 'chase'):
         import lab.volume.chase
 
