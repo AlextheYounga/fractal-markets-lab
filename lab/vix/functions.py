@@ -123,7 +123,9 @@ def selectOptionExpirations(chain):
                     'preciseExpiration': next(iter(selectedChain['nextTerm']['call'].values()))[0]['expirationDate']
                 }
             }
-        except ValueError:
+        except:
+            print(stylize("Error message: {}".format(sys.exc_info()[0]), colored.fg("red")))
+            print("\n")
             print(stylize("Unexpected response from TD:", colored.fg("red")))
             print(
             """
