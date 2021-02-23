@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import redis
 import statistics
+import progressbar
 import json
 import sys
 from datetime import date
@@ -77,11 +78,15 @@ def formula(data):
     
     syncGoldPrices()
 
-    for day, a in avgs.items():
-        gold_price = r.get('gold-'+day+'-close')        
-        if (gold_price):
-            price = round(float(gold_price) / float(a), 3)
-            index[day] = price
+    with progressbar.ProgressBar(max_value=len(list(avgs)), prefix='Indexing: ', redirect_stdout=True) as bar:
+        i = 0
+        for day, a in avgs.items():
+            i += 1
+            bar.update(i)
+            gold_price = r.get('gold-'+day+'-close')        
+            if (gold_price):
+                price = round(float(gold_price) / float(a), 3)
+                index[day] = price
 
     return index
 
@@ -90,8 +95,7 @@ def calculate(update):
     r = redis.Redis(host='localhost', port=6379, db=0, charset="utf-8", decode_responses=True)
     data = {}
 
-    for ticker in sectors():
-        print(ticker)
+    for ticker in progressbar.progressbar(sectors(), prefix='Calculating: '):
         if (update):
             update_prices(ticker)
 
