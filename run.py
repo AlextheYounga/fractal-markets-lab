@@ -26,12 +26,13 @@ def list_commands():
         ['inflation:calculate [--update]', 'Inflation index using etfs'],
         ['inflation:graph [--update]', 'Graph inflation index using etfs'],
         ['inflation:functions [--refresh]', 'Grabs max historical prices for all etfs in sectors list, updates with fresh data.'],
+        ['googletrends:scan', 'Searches google trends for search query interest'],
+        ['googletrends:print', 'Prints trends in rdb'],
         ['trend:chase [--pennies]', 'Scans all stocks and returns todays gainers with above certain thresholds (weeds out the penny stocks).'],
         ['trend:search [--string=]', 'Scans stocks with string in stock name and looks for gainers'],
         ['trend:earnings', 'Scans all stocks and returns todays gainers who have consistently good earnings.'],
         ['trend:streak [<ticker>]', 'Determines the current winning/losing streak for a ticker'],
         ['trend:gainers', 'Grabs todays gainers and checks their earnings.'],
-        ['trend:google', 'Searches google trends for search query interest'],
         ['pricedingold [<ticker>][--timespan=5y][--test=False]', 'Graphs and assets price in gold.'],
         ['vol:graph [<ticker>] [--ndays=30]', 'Graphs vol'],
         ['volume:chase', 'Scans all stocks and returns todays gainers with abnormally high volume.'],
@@ -115,6 +116,17 @@ def inflation_controller(subroutine, args=[]):
             return
 
     command_error()
+
+
+def googletrends_controller(subroutine, args=[]):
+    if (subroutine == 'scan'):
+        from lab.googletrends.scan import scan_trends
+        print(scan_trends())
+        return
+    if (subroutine == 'print'):
+        from lab.googletrends.scan import print_trends
+        print(print_trends())
+        return
 
 
 def financials_controller(args):
@@ -290,10 +302,6 @@ def trend_controller(subroutine, args):
 
     if (subroutine == 'gainers'):
         import lab.trend.gainers
-        return
-    if (subroutine == 'google'):
-        from lab.trend.googletrends.request import stock_search_trends
-        print(stock_search_trends())
         return
 
     command_error()

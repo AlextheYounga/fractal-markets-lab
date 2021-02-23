@@ -54,7 +54,7 @@ def getPennyStocks(tickersOnly=True, refresh_prices=False):
 
     for stock in stocks:
         price = r.get('stock-'+stock.ticker+'-price')
-        if (price):
+        if (price and price != ""):
             if (float(price) < 4):
                 if (tickersOnly):
                     pennystocks.append(stock.ticker)
