@@ -20,8 +20,6 @@ lab/volume/output/*
 lab/donchian/news/*
 lab/fintwit/user.py
 lab/fintwit/notes.*
-lab/redisdb/export/*
-lab/redisdb/imports/*
 *.sqlite
 .vscode
 settings.json
