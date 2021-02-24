@@ -5,6 +5,7 @@ lab/.env
 lab/database/.env
 lab/key.py
 */__pycache__/*
+__pycache__
 lab/exports/*
 lab/graveyard/
 lab/riskrange/output/*
