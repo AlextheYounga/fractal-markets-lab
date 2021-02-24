@@ -68,9 +68,9 @@ def selectOptionExpirations(chain):
             if (optionSide not in options['nearTerm']):
                 options['nearTerm'][optionSide] = {}
             if (optionSide not in options['nextTerm']):
-                options['nextTerm'][optionSide] = {}
+                options['nextTerm'][optionSide] = {}            
 
-            for expir, strikes in chain[optionSide].items():
+            for expir, strikes in chain[optionSide].items():                
                 expDate = datetime.datetime.strptime(expir.split(':')[0], '%Y-%m-%d')
                 expMonth = expDate.month
                 expYear = expDate.year
@@ -88,6 +88,7 @@ def selectOptionExpirations(chain):
                     if (daysToExpiration > 7):  # Must be at least 7 days from expiration.
                         options['nearTerm'][optionSide][preciseExpiration] = strikes
 
+
                 """ Next-Term Options """
                 if ((next_month == expMonth) and (next_month_year == expYear)):
                     firstStrike = next(iter(strikes.values()))[0]  # Just grabbing the first row of the strikes dict.
@@ -97,42 +98,43 @@ def selectOptionExpirations(chain):
                     if (daysToExpiration >= 30):  # Generally around or more than 30 days to expiration.
 
                         options['nextTerm'][optionSide][preciseExpiration] = strikes
+                        
 
         """
         Step 3: Calculating the nearest option of each group of options, 
         finding min() value of each group's keys, which again, are the time to expiration in seconds.
         """
+        # print(options['nearTerm']['callExpDateMap'].keys())
+        # sys.exit()
+        selectedChain = {
+            # Grabbing the nearest calls, will use these expirations to find associated put options.
+            'nearTerm': {
+                'call': options['nearTerm']['callExpDateMap'][min(options['nearTerm']['callExpDateMap'].keys())],
+            },
+            'nextTerm': {
+                'call': options['nextTerm']['callExpDateMap'][min(options['nextTerm']['callExpDateMap'].keys())],
+            },
+        }
 
-        try:
-            selectedChain = {
-                # Grabbing the nearest calls, will use these expirations to find associated put options.
-                'nearTerm': {
-                    'call': options['nearTerm']['callExpDateMap'][min(options['nearTerm']['callExpDateMap'].keys())],
-                },
-                'nextTerm': {
-                    'call': options['nextTerm']['callExpDateMap'][min(options['nextTerm']['callExpDateMap'].keys())],
-                },
+        selectedDates = {
+            # Creating a separate dict to store some crucial date variables.
+            'nearTerm': {
+                'preciseExpiration': next(iter(selectedChain['nearTerm']['call'].values()))[0]['expirationDate'],
+            },
+            'nextTerm': {
+                'preciseExpiration': next(iter(selectedChain['nextTerm']['call'].values()))[0]['expirationDate']
             }
-
-            selectedDates = {
-                # Creating a separate dict to store some crucial date variables.
-                'nearTerm': {
-                    'preciseExpiration': next(iter(selectedChain['nearTerm']['call'].values()))[0]['expirationDate'],
-                },
-                'nextTerm': {
-                    'preciseExpiration': next(iter(selectedChain['nextTerm']['call'].values()))[0]['expirationDate']
-                }
-            }
-        except ValueError:
-            print(stylize("Unexpected response from TD:", colored.fg("red")))
-            print(
-            """
-            It seems there was some unexpected data returned from TD Ameritrade. Generally this only happens with penny
-            stocks or stocks with little option volume. I am still working to account for these discrepencies in 
-            TD Ameritrade's response; believe me, I would like to see vix data on some of the smaller stocks as much as you.
-            """
-            )
-            sys.exit()
+        }
+        # except ValueError:
+        #     print(stylize("Unexpected response from TD:", colored.fg("red")))
+        #     print(
+        #     """
+        #     It seems there was some unexpected data returned from TD Ameritrade. Generally this only happens with penny
+        #     stocks or stocks with little option volume. I am still working to account for these discrepencies in 
+        #     TD Ameritrade's response; believe me, I would like to see vix data on some of the smaller stocks as much as you.
+        #     """
+        #     )
+        #     sys.exit()
 
 
         # Date manipulation, doing here because we'll need these later.
