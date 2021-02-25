@@ -51,93 +51,96 @@ def selectOptionExpirations(chain):
     if (chain):
         # Just some simple variables we will need.
         today = datetime.datetime.now()
-        year = today.year
-        month = today.month
-        next_month = (today + relativedelta(months=+1)).month
-        next_month_year = (today + relativedelta(months=+1)).year
-        next_month_end = calendar.monthrange(next_month_year, next_month)[1]
+        next_month = (today + relativedelta(months=+1))
+        two_months_ahead = (today + relativedelta(months=+2))
+        two_months_ahead_days = calendar.monthrange(two_months_ahead.year, two_months_ahead.month)[1]
+        next_term_limit = datetime.datetime(two_months_ahead.year, two_months_ahead.month, two_months_ahead_days)
 
-        # Our container for collecting our nearest options
-        options = {
-            'nearTerm': {},
-            'nextTerm': {}
-        }
+        # Our container for collecting our near-term/next-term options
+        options = {}
 
-        """ Step 2: Finding this and next month's closest option expiration dates. """
+        """ Step 2: Finding this month's and next month's closest option expiration dates. """
         for optionSide in ['callExpDateMap', 'putExpDateMap']:
-            if (optionSide not in options['nearTerm']):
-                options['nearTerm'][optionSide] = {}
-            if (optionSide not in options['nextTerm']):
-                options['nextTerm'][optionSide] = {}            
+            for expir, strikes in chain[optionSide].items():  # Looping each side of the option chain
 
-            for expir, strikes in chain[optionSide].items():                
-                expDate = datetime.datetime.strptime(expir.split(':')[0], '%Y-%m-%d')
-                expMonth = expDate.month
-                expYear = expDate.year
+                if (optionSide not in options):
+                    options[optionSide] = {}
 
-                """ Near-Term Options """
-                if ((month == expMonth) and (year == expYear)):
-                    firstStrike = next(iter(strikes.values()))[0]  # Just grabbing the first row of the strikes dict.
-                    daysToExpiration = int(firstStrike['daysToExpiration'])
-                    preciseExpiration = int(firstStrike['expirationDate'])
+                expDate = datetime.datetime.strptime(expir.split(':')[0], '%Y-%m-%d')  # Option expiration date object
+                # Just grabbing the first strike row in the chain because TD has specific information on
+                # this nested level of the dict. I can get the precise expiration from any strike.
+                firstStrike = next(iter(strikes.values()))[0]
+                daysToExpiration = int(firstStrike['daysToExpiration'])
+                preciseExpiration = int(firstStrike['expirationDate'])  # Getting precise expiration
 
-                    # “Near-term” options must have at least one week to expiration; a requirement
-                    # intended to minimize pricing anomalies that might occur close to expiration.
-                    # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx
-
-                    if (daysToExpiration > 7):  # Must be at least 7 days from expiration.
-                        options['nearTerm'][optionSide][preciseExpiration] = strikes
-
-
-                """ Next-Term Options """
-                if ((next_month == expMonth) and (next_month_year == expYear)):
-                    firstStrike = next(iter(strikes.values()))[0]  # Just grabbing the first row of the strikes dict.
-                    daysToExpiration = int(firstStrike['daysToExpiration'])
-                    preciseExpiration = int(firstStrike['expirationDate'])
-
-                    if (daysToExpiration >= 30):  # Generally around or more than 30 days to expiration.
-
-                        options['nextTerm'][optionSide][preciseExpiration] = strikes
-                        
+                if (daysToExpiration > 7):  # Must be at least 7 days from expiration.
+                    if (expDate < next_term_limit): # Can be no further than 2 months away.
+                        options[optionSide][preciseExpiration] = {
+                            'expDate': expDate,
+                            'month': expDate.month,
+                            'daysToExpiration': daysToExpiration,
+                            'strikes': strikes                            
+                        }
 
         """
         Step 3: Calculating the nearest option of each group of options, 
         finding min() value of each group's keys, which again, are the time to expiration in seconds.
         """
-        # print(options['nearTerm']['callExpDateMap'].keys())
-        # sys.exit()
-        selectedChain = {
-            # Grabbing the nearest calls, will use these expirations to find associated put options.
-            'nearTerm': {
-                'call': options['nearTerm']['callExpDateMap'][min(options['nearTerm']['callExpDateMap'].keys())],
-            },
-            'nextTerm': {
-                'call': options['nextTerm']['callExpDateMap'][min(options['nextTerm']['callExpDateMap'].keys())],
-            },
-        }
 
-        selectedDates = {
-            # Creating a separate dict to store some crucial date variables.
-            'nearTerm': {
-                'preciseExpiration': next(iter(selectedChain['nearTerm']['call'].values()))[0]['expirationDate'],
-            },
-            'nextTerm': {
-                'preciseExpiration': next(iter(selectedChain['nextTerm']['call'].values()))[0]['expirationDate']
+        def vixExpirationRules(options):
+            this_month = today.month
+            month_0 = []
+            month_1 = []
+            month_2 = []
+            for side, option in options.items(): 
+                for exp, data in option.items():              
+                    if (data['month'] == this_month):
+                        month_0.append(exp)
+                    if (data['month'] == next_month.month):
+                        month_1.append(exp)
+                    if (data['month'] == two_months_ahead.month):
+                        month_2.append(exp)
+            print(month_0,month_1,month_2,)                        
+            if (len(month_0) != 0):
+                nearTermExp = min(month_0)
+                nextTermExp = min(month_1)
+            else:
+                nearTermExp = min(month_1)
+                nextTermExp = min(month_2)
+            
+            return nearTermExp, nextTermExp
+
+
+
+        nearTermExp, nextTermExp = vixExpirationRules(options)
+        print(nearTermExp, nextTermExp)
+        sys.exit()
+
+        selectedChain = {}
+        selectedDates = {}
+        for term in ['nearTerm', 'nextTerm']:
+            # Grabbing the nearest calls, will use these expirations to find associated put options.
+            selectedChain[term] = {
+                'call': options[term]['callExpDateMap'][min(options[term]['callExpDateMap'].keys())],
             }
-        }
+        for term in ['nearTerm', 'nextTerm']:
+            # Creating a separate dict to store some crucial date variables.
+            selectedDates[term] = {
+                'preciseExpiration': next(iter(selectedChain[term]['call'].values()))[0]['expirationDate']
+            }
+
         # except ValueError:
         #     print(stylize("Unexpected response from TD:", colored.fg("red")))
         #     print(
         #     """
         #     It seems there was some unexpected data returned from TD Ameritrade. Generally this only happens with penny
-        #     stocks or stocks with little option volume. I am still working to account for these discrepencies in 
+        #     stocks or stocks with little option volume. I am still working to account for these discrepencies in
         #     TD Ameritrade's response; believe me, I would like to see vix data on some of the smaller stocks as much as you.
         #     """
         #     )
         #     sys.exit()
 
-
-        # Date manipulation, doing here because we'll need these later.
+        # Date timezone manipulation; doing here because we'll need these later.
         for term, d in selectedDates.items():
             t = d['preciseExpiration']
             dateT = datetime.datetime.fromtimestamp(float(t / 1000))  # Windows workaround

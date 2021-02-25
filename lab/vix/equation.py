@@ -92,16 +92,16 @@ def vix_equation(ticker, debug=False):
     nT1 = tminutes['nearTerm']  # Minutes to expiration
     nT2 = tminutes['nextTerm']  # Minutes to expiration
 
-    if (debug):
-        print('Minutes Year = '+str(minYear))
-        print('Minutes in Month = '+str(minMonth))
-        print('Near-Term Vol (v1) = '+str(v1))
-        print('Next-Term Vol (v2) = '+str(v2))
-        print('T1 = '+str(t1))
-        print('T2 = '+str(t2))
-        print('Near-Term Expiration Minutes = '+str(nT1))
-        print('Next-Term Expiration Minutes = '+str(nT2))
-        print("\n")
+    # if (debug):
+    print('Minutes Year = '+str(minYear))
+    print('Minutes in Month = '+str(minMonth))
+    print('Near-Term Vol (v1) = '+str(v1))
+    print('Next-Term Vol (v2) = '+str(v2))
+    print('T1 = '+str(t1))
+    print('T2 = '+str(t2))
+    print('Near-Term Expiration Minutes = '+str(nT1))
+    print('Next-Term Expiration Minutes = '+str(nT2))
+    print("\n")
 
 
     # Test Data to confirm accuracy
