@@ -35,7 +35,7 @@ wlsaved = 0
 chunked_tickers = chunks(tickers, 100)
 chunks_length = int(len(tickers) / 100)
 
-with progressbar.ProgressBar(max_value=chunks_length, prefix='Chunks: ', redirect_stdout=True) as bar:
+with progressbar.ProgressBar(max_value=chunks_length, prefix='Batch: ', redirect_stdout=True) as bar:
     for i, chunk in enumerate(chunked_tickers):
 
         bar.update(i)
