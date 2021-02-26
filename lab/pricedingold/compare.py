@@ -10,11 +10,11 @@ from ..core.api.historical import getHistoricalData
 load_dotenv()
 
 
-def price_in_gold(ticker, timespan='5y', sandbox=False):
+def price_in_gold(ticker, timeframe='5y', sandbox=False):
     if (sandbox):
-        asset_prices = getHistoricalData(ticker, timespan, sandbox=True)
+        asset_prices = getHistoricalData(ticker, timeframe, sandbox=True)
     else:
-        asset_prices = getHistoricalData(ticker, timespan)
+        asset_prices = getHistoricalData(ticker, timeframe)
 
     gold_prices = read_historical_gold_prices()
 

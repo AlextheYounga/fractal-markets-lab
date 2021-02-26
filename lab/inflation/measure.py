@@ -13,7 +13,6 @@ import numpy as np
 load_dotenv()
 
 
-
 def annual(update=False):
     index = calculate(update)
     annualPrices = {}
@@ -26,21 +25,17 @@ def annual(update=False):
             annualPrices[year] = []
 
         annualPrices[year].append(price)
-    
+
     for yr, prices in annualPrices.items():
         annualDelta[yr] = ((prices[-1] - prices[0]) / prices[0] * 100)
 
-    avg =  round(statistics.mean(annualDelta.values()), 3)
+    avg = round(statistics.mean(annualDelta.values()), 3)
 
     print("\n")
     printTabs(annualDelta)
     print("\n")
     print('Total Average: '+str(avg)+'%')
     print("\n")
-
-
-
-
 
 
 def graph(update=False):

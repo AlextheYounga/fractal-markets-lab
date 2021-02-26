@@ -4,9 +4,12 @@ from .api.batch import quoteStatsBatchRequest
 from .functions import dataSanityCheck
 from datetime import date
 from ..redisdb.controller import rdb_save_output
+import colored
+from colored import stylize
 import sys
 import csv
 import os
+
 
 def setWidths(data, w='default'):
     """ 
@@ -157,7 +160,6 @@ def printStockResults(tickers):
                 volume = dataSanityCheck(quote, 'volume')
                 previousVolume = dataSanityCheck(quote, 'previousVolume')
                 changeToday = round(dataSanityCheck(quote, 'changePercent') * 100, 2)
-
                 # Critical
                 week52high = dataSanityCheck(stats, 'week52high')
 
@@ -167,25 +169,27 @@ def printStockResults(tickers):
                     continue
 
                 fromHigh = round((price / week52high) * 100, 3)
-                if (fromHigh > 75):
-                    volumeChangeDay = (float(volume) - float(previousVolume)) / float(previousVolume) * 100
+                # if (fromHigh > 75):
+                volumeChangeDay = (float(volume) - float(previousVolume)) / float(previousVolume) * 100
 
-                    keyStats = {
-                        'ticker': ticker,
-                        'name': stats['companyName'],
-                        'lastPrice': price,
-                        'peRatio': stats.get('peRatio', None),
-                        'week52': week52high,
-                        'changeToday': changeToday,
-                        'day5ChangePercent': day5ChangePercent if day5ChangePercent else None,
-                        'month1ChangePercent': month1ChangePercent if month1ChangePercent else None,
-                        'ytdChangePercent': ytdChangePercent if ytdChangePercent else None,
-                        'volumeChangeDay':  "{}%".format(round(volumeChangeDay, 2)),
-                        'fromHigh': fromHigh,
-                        'ttmEPS': ttmEPS
-                    }
+                keyStats = {
+                    'ticker': ticker,
+                    'name': stats['companyName'],
+                    'lastPrice': price,
+                    'peRatio': stats.get('peRatio', None),
+                    'week52': week52high,
+                    'changeToday': changeToday,
+                    'day5ChangePercent': day5ChangePercent if day5ChangePercent else None,
+                    'month1ChangePercent': month1ChangePercent if month1ChangePercent else None,
+                    'ytdChangePercent': ytdChangePercent if ytdChangePercent else None,
+                    'volumeChangeDay':  "{}%".format(round(volumeChangeDay, 2)),
+                    'fromHigh': fromHigh,
+                    'ttmEPS': ttmEPS
+                }
 
-                    results.append(keyStats)
+                results.append(keyStats)
+        else:
+            print(stylize(batch, colored.fg("red")))
 
     if results:
         rdb_save_output(results)
