@@ -3,22 +3,20 @@ from django.apps import apps
 from dotenv import load_dotenv
 import json
 import sys
+import progressbar
 from datetime import date
 import time
 import redis
 from ..redisdb.controller import rdb_save_stock
 from ..core.functions import chunks, dataSanityCheck
-from ..core.api.stats import quoteStatsBatchRequest, getPriceTarget
-from ..core.api.historical import getHistoricalEarnings
+from ..core.api.stats import getPriceTarget
+from ..core.api.batch import quoteStatsBatchRequest
 from ..core.output import printTable, printFullTable, writeCSV
 from ..fintwit.tweet import send_tweet
 load_dotenv()
 django.setup()
 
 
-
-
-# Main Thread Start
 def chase_trends(pennies=False):
     print('Running...')
 
@@ -31,109 +29,112 @@ def chase_trends(pennies=False):
     tickers = Stock.objects.all().values_list('ticker', flat=True)
 
     chunked_tickers = chunks(tickers, 100)
-    for i, chunk in enumerate(chunked_tickers):
-        time.sleep(1)
-        batch = quoteStatsBatchRequest(chunk)
+    chunks_length = int(len(tickers) / 100)
 
-        for ticker, stockinfo in batch.items():
-            print('Chunk {}: {}'.format(i, ticker))
+    with progressbar.ProgressBar(max_value=chunks_length, prefix='Batch: ', redirect_stdout=True) as bar:
+        for i, chunk in enumerate(chunked_tickers):
 
-            if (stockinfo.get('quote', False) and stockinfo.get('stats', False)):
-                quote = stockinfo.get('quote')
-                stats = stockinfo.get('stats')
-                price = quote.get('latestPrice', 0)
+            bar.update(i)
+            time.sleep(1)
+            batch = quoteStatsBatchRequest(chunk)
+            
+            for ticker, stockinfo in batch.items():
 
-                if (price and isinstance(price, float)):
-                    ttmEPS = stats.get('ttmEPS', None)
-                    day5ChangePercent = round(dataSanityCheck(stats, 'day5ChangePercent') * 100, 2)
-                    month1ChangePercent = round(dataSanityCheck(stats, 'month1ChangePercent') * 100, 2)
-                    ytdChangePercent = round(dataSanityCheck(stats, 'ytdChangePercent') * 100, 2)
+                if (stockinfo.get('quote', False) and stockinfo.get('stats', False)):
+                    quote = stockinfo.get('quote')
+                    stats = stockinfo.get('stats')
+                    price = quote.get('latestPrice', 0)
 
-                    # Critical
-                    week52high = dataSanityCheck(stats, 'week52high')
-                    changeToday = round(dataSanityCheck(quote, 'changePercent') * 100, 2)
-                    volume = dataSanityCheck(quote, 'volume')
-                    previousVolume = dataSanityCheck(quote, 'previousVolume')
+                    if (price and isinstance(price, float)):
+                        ttmEPS = stats.get('ttmEPS', None)
+                        day5ChangePercent = round(dataSanityCheck(stats, 'day5ChangePercent') * 100, 2)
+                        month1ChangePercent = round(dataSanityCheck(stats, 'month1ChangePercent') * 100, 2)
+                        ytdChangePercent = round(dataSanityCheck(stats, 'ytdChangePercent') * 100, 2)
 
-                    critical = [changeToday, week52high, volume, previousVolume]
+                        # Critical
+                        week52high = dataSanityCheck(stats, 'week52high')
+                        changeToday = round(dataSanityCheck(quote, 'changePercent') * 100, 2)
+                        volume = dataSanityCheck(quote, 'volume')
+                        previousVolume = dataSanityCheck(quote, 'previousVolume')
 
-                    if ((0 in critical)):
-                        continue
+                        critical = [changeToday, week52high, volume, previousVolume]
 
-                    fromHigh = round((price / week52high) * 100, 3)
+                        if ((0 in critical)):
+                            continue
 
-                    # Save Data to DB
-                    keyStats = {
-                        'peRatio': stats.get('peRatio', None),
-                        'week52': week52high,
-                        'day5ChangePercent': day5ChangePercent if day5ChangePercent else None,
-                        'month1ChangePercent': month1ChangePercent if month1ChangePercent else None,
-                        'ytdChangePercent': ytdChangePercent if ytdChangePercent else None,
-                        'day50MovingAvg': stats.get('day50MovingAvg', None),
-                        'day200MovingAvg': stats.get('day200MovingAvg', None),
-                        'fromHigh': fromHigh,
-                        'ttmEPS': ttmEPS
-                    }
+                        fromHigh = round((price / week52high) * 100, 3)
 
-                    if (rdb == True):
-                        try:
-                            rdb_save_stock(ticker, keyStats)
-                            stocksaved += 1
-                        except redis.exceptions.ConnectionError:
-                            rdb = False
-                            print('Redis not connected. Not saving.')
+                        # Save Data to DB
+                        keyStats = {
+                            'peRatio': stats.get('peRatio', None),
+                            'week52': week52high,
+                            'day5ChangePercent': day5ChangePercent if day5ChangePercent else None,
+                            'month1ChangePercent': month1ChangePercent if month1ChangePercent else None,
+                            'ytdChangePercent': ytdChangePercent if ytdChangePercent else None,
+                            'day50MovingAvg': stats.get('day50MovingAvg', None),
+                            'day200MovingAvg': stats.get('day200MovingAvg', None),
+                            'fromHigh': fromHigh,
+                            'ttmEPS': ttmEPS
+                        }
 
-                    rnge = (price > 5)
-                    if (pennies):
-                        rnge = ((price > 0.5) and (price < 5))
-                    if (rnge):
-                        if ((fromHigh < 105) and (fromHigh > 95)):
-                            if (changeToday > 15):
-                                if (volume > previousVolume):
-                                    priceTargets = getPriceTarget(ticker)
-                                    fromPriceTarget = round((price / priceTargets['priceTargetHigh']) * 100, 3) if (dataSanityCheck(priceTargets, 'priceTargetHigh')) else 0
-                                    avgPricetarget = priceTargets['priceTargetAverage'] if (dataSanityCheck(priceTargets, 'priceTargetAverage')) else None
-                                    highPriceTarget = priceTargets['priceTargetHigh'] if (dataSanityCheck(priceTargets, 'priceTargetHigh')) else None
+                        if (rdb == True):
+                            try:
+                                rdb_save_stock(ticker, keyStats)
+                                stocksaved += 1
+                            except redis.exceptions.ConnectionError:
+                                rdb = False
+                                print('Redis not connected. Not saving.')
 
-                                    # Save Trends to DB
-                                    trend_data = {
-                                        'avgPricetarget': avgPricetarget,
-                                        'highPriceTarget': highPriceTarget,
-                                        'fromPriceTarget': fromPriceTarget,
-                                    }
+                        rnge = (price > 5)
+                        if (pennies):
+                            rnge = ((price > 0.5) and (price < 5))
+                        if (rnge):
+                            if ((fromHigh < 105) and (fromHigh > 95)):
+                                if (changeToday > 15):
+                                    if (volume > previousVolume):
+                                        priceTargets = getPriceTarget(ticker)
+                                        fromPriceTarget = round((price / priceTargets['priceTargetHigh']) * 100, 3) if (dataSanityCheck(priceTargets, 'priceTargetHigh')) else 0
+                                        avgPricetarget = priceTargets['priceTargetAverage'] if (dataSanityCheck(priceTargets, 'priceTargetAverage')) else None
+                                        highPriceTarget = priceTargets['priceTargetHigh'] if (dataSanityCheck(priceTargets, 'priceTargetHigh')) else None
 
-                                    if (rdb == True):
-                                        rdb_save_stock(ticker, trend_data)                                    
+                                        # Save Trends to DB
+                                        trend_data = {
+                                            'avgPricetarget': avgPricetarget,
+                                            'highPriceTarget': highPriceTarget,
+                                            'fromPriceTarget': fromPriceTarget,
+                                        }
 
-                                    keyStats.update({
-                                        'highPriceTarget': highPriceTarget,
-                                        'fromPriceTarget': fromPriceTarget,
-                                    })
+                                        if (rdb == True):
+                                            rdb_save_stock(ticker, trend_data)
 
-                                    stockData = {
-                                        'ticker': ticker,
-                                        'name': quote['companyName'],
-                                        'lastPrice': price
-                                    }
-                                    stockData.update(keyStats)
+                                        keyStats.update({
+                                            'highPriceTarget': highPriceTarget,
+                                            'fromPriceTarget': fromPriceTarget,
+                                        })
 
-                                    # Save to Watchlist
-                                    Watchlist.objects.update_or_create(
-                                        ticker=ticker,
-                                        defaults=stockData
-                                    )
+                                        stockData = {
+                                            'ticker': ticker,
+                                            'name': quote['companyName'],
+                                            'lastPrice': price
+                                        }
+                                        stockData.update(keyStats)
 
-                                    wlsaved += 1
+                                        # Save to Watchlist
+                                        Watchlist.objects.update_or_create(
+                                            ticker=ticker,
+                                            defaults=stockData
+                                        )
 
-                                    stockData['changeToday'] = changeToday
-                                    print('{} saved to Watchlist'.format(ticker))
-                                    
-                                    # Removing from terminal output
-                                    del stockData['day50MovingAvg']
-                                    del stockData['day200MovingAvg']  
+                                        wlsaved += 1
 
-                                    results.append(stockData)
+                                        stockData['changeToday'] = changeToday
+                                        print('{} saved to Watchlist'.format(ticker))
 
+                                        # Removing from terminal output
+                                        del stockData['day50MovingAvg']
+                                        del stockData['day200MovingAvg']
+
+                                        results.append(stockData)
 
     if results:
         print('Total scanned: '+str(len(tickers)))

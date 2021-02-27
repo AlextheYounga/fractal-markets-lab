@@ -4,10 +4,8 @@ env39
 lab/.env
 lab/database/.env
 lab/key.py
-lab/__pycache__
-lab/*/__pycache__
-lab/database/*/__pycache__/
-lab/__pycache__/
+*/__pycache__/*
+__pycache__
 lab/exports/*
 lab/graveyard/
 lab/riskrange/output/*

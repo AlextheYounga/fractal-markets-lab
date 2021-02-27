@@ -23,6 +23,7 @@ def goldForexPrice():
 
 
 def syncGoldPrices():
+    print('Syncing gold prices... ')
     r = redis.Redis(host='localhost', port=6379, db=0, charset="utf-8", decode_responses=True)
 
     def goldapi_io_fetch(date):
@@ -41,7 +42,10 @@ def syncGoldPrices():
         res = conn.getresponse()
         data = res.read().decode("utf-8")
         saveDate = datetime.strptime(date, '%Y%m%d').strftime('%Y-%m-%d')
-        r.set('gold-'+saveDate+'-close', data['price'])
+        if ('price' in data):
+            r.set('gold-'+saveDate+'-close', json.loads(data)['price'])
+        else:
+            print(data, "www.goldapi.io"+"/api/XAU/USD/"+date)
 
         return True
 
@@ -55,11 +59,7 @@ def syncGoldPrices():
             print('Gold prices up to date.')
             break
 
-        try:
-            goldapi_io_fetch(day.strftime('%Y%m%d'))
-            print('Saved {} - '.format(day.strftime('%Y%m%d')))
-        except:
-            print('Could not fetch gold price for '+day.strftime('%Y%m%d'))
+        goldapi_io_fetch(day.strftime('%Y%m%d'))
 
         time.sleep(0.5)
         i += 1
