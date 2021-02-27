@@ -5,6 +5,7 @@ from ..core.functions import chunks
 from ..core.api.batch import quoteStatsBatchRequest
 from ..core.output import printFullTable
 from ..redisdb.controller import rdb_save_stock
+from ..redisdb.controller import rdb_save_output
 import progressbar
 import json
 import time
@@ -95,6 +96,7 @@ if results:
     print('Saved: '+str(saved))
     print('Did not Save: '+str(failed))
     today = date.today().strftime('%m-%d')
+    rdb_save_output(results)
     printFullTable(results, struct='dictlist')
 
     tweet = ""
