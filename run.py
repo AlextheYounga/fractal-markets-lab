@@ -15,7 +15,7 @@ def list_commands():
     print("\n\n")
 
     commands = [
-        ['donchian [<ticker>]', 'Runs a donchian range calculation on a ticker'],
+        ['donchian [<ticker>] [--days=30] [--tweet]', 'Runs a donchian range calculation on a ticker'],
         ['financials [<ticker>]', 'Returns financials data for ticker, including some custom indicators not provided by IEX.'],
         ['macro:trends [--timeframe=1m] [--gain=20]', 'Scans all ETFs and returns the ETFs with the performance above an int (gain) within a timerange (5d, 1m, 3m, 1y)'],
         ['macro:gainers', 'Scans all ETFs and returns ETFs with highest day change.'],
@@ -33,8 +33,10 @@ def list_commands():
         ['trend:gainers', 'Grabs todays gainers and checks their earnings.'],
         ['trend:google', 'Searches google trends for search query interest'],
         ['pricedingold [<ticker>][--timespan=5y][--test=False]', 'Graphs and assets price in gold.'],
+        ['vol:graph [<ticker>] [--ndays=30]', 'Graphs vol'],
         ['volume:chase', 'Scans all stocks and returns todays gainers with abnormally high volume.'],
         ['volume:anomaly', 'Scans all stocks and returns stocks who are accumulating extremely high volume over the last week. Finds market singularities.'],
+        ['volume:graph [<ticker>][--timeframe=3m][--sandbox=false]', 'Scans all stocks and returns stocks who are accumulating extremely high volume over the last week. Finds market singularities.'],
         ['vix [<ticker>]', 'Runs the VIX volatility equation on a ticker'],
         ['output:last', 'Returns the last cached output, can resort by specific key.'],
         ['rdb:export', 'Exports redisdb to zipped json file'],
@@ -69,7 +71,7 @@ def command_error(required={}, opt=None):
 
 def donchian_controller(args):
     required = {"string": "ticker"}
-    opt = ["--tweet"]
+    opt = ["--days", "--tweet"]
 
     if (not args):
         command_error(required, opt)
@@ -77,7 +79,7 @@ def donchian_controller(args):
 
     from lab.donchian.range import calculate
     ticker = args[0]
-    try:
+    try:        
         tweet = True if (args[1] == '--tweet') else False
         print(calculate(ticker, tweet))
         return
@@ -271,7 +273,8 @@ def trend_controller(subroutine, args):
             command_error(required)
             return
         from lab.trend.chase.search import search
-        print(search(args[0]))
+        searchstring = args[0].split('=')[1]
+        print(search(searchstring))
         return
 
     if (subroutine == 'chase'):
@@ -296,7 +299,32 @@ def trend_controller(subroutine, args):
     command_error()
 
 
+def vol_controller(subroutine, args):
+    required = {"string": "ticker"}
+    opt = {"string": "--ndays="}
+
+    if (not args):
+        command_error(required, opt)
+        return
+    if (subroutine == 'graph'):
+        from lab.vol.calculator import graphVol
+        ticker = args[0]
+        try:
+            print(graphVol(ticker, ndays=args[1]))
+        except IndexError:
+            print(graphVol(ticker))
+        return
+
+
 def volume_controller(subroutine, args):
+    if (subroutine == 'graph'):
+        required = {"string": "ticker"}
+        if (not args):
+            command_error(required)
+            return
+        from lab.volume.graph import graph_volume
+        print(graph_volume(args[0]))
+
     if (subroutine == 'chase'):
         import lab.volume.chase
 
@@ -321,7 +349,7 @@ def vix_controller(args):
         print(vix_equation(ticker, debug))
         return
 
-    print('VIX: '+str(vix_equation(ticker)))
+    print(vix_equation(ticker))
 
 
 def main():

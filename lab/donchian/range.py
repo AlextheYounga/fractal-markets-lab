@@ -8,7 +8,7 @@ from ..core.output import printTabs
 from ..fintwit.tweet import send_tweet, translate_data
 
 
-def calculate(ticker, tweet=False):
+def calculate(ticker, days=30, tweet=False):
     asset_data = getHistoricalData(ticker, '1m')
 
     prices = extract_data(asset_data, 'close')
@@ -17,10 +17,11 @@ def calculate(ticker, tweet=False):
     dates = extract_data(asset_data, 'date')
 
     donchian_range = {
-        'donchianHigh': max(list(reversed(highs))[:16]),
+        'donchianHigh': max(list(reversed(highs))[:days]),
         'currentPrice': getCurrentPrice(ticker),
-        'donchianLow': min(list(reversed(lows))[:16])
+        'donchianLow': min(list(reversed(lows))[:days])
     }
+
 
     printTabs(donchian_range)
 
