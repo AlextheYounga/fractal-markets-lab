@@ -2,6 +2,8 @@ import json
 import math
 import statistics
 import sys
+import colored
+from colored import stylize
 from ..core.api.historical import getHistoricalData
 from ..core.api.stats import getKeyStats
 from ..core.scrape.bonds import scrape3mTreasury
@@ -36,6 +38,8 @@ def vix_equation(ticker, debug=False):
     -------
     vix         :float
     """
+
+    print(stylize("Calculating...", colored.fg("yellow")))
 
     # Step 1: Fetch the option chain for the ticker.
     chain = collectOptionChain(ticker, debug)
@@ -123,4 +127,4 @@ def vix_equation(ticker, debug=False):
         (t1 * v1 * ((nT2 - minMonth) / (nT2 - nT1)) + t2 * v2 * ((minMonth - nT1) / (nT2 - nT1))) * minYear / minMonth
     )
 
-    return round(vix, 3)
+    return ticker+" VIX: "+str(round(vix, 3))
