@@ -15,7 +15,7 @@ def list_commands():
     print("\n\n")
 
     commands = [
-        ['donchian [<ticker>]', 'Runs a donchian range calculation on a ticker'],
+        ['donchian [<ticker>] [--days=30] [--tweet]', 'Runs a donchian range calculation on a ticker'],
         ['financials [<ticker>]', 'Returns financials data for ticker, including some custom indicators not provided by IEX.'],
         ['macro:trends [--timeframe=1m] [--gain=20]', 'Scans all ETFs and returns the ETFs with the performance above an int (gain) within a timerange (5d, 1m, 3m, 1y)'],
         ['macro:gainers', 'Scans all ETFs and returns ETFs with highest day change.'],
@@ -71,7 +71,7 @@ def command_error(required={}, opt=None):
 
 def donchian_controller(args):
     required = {"string": "ticker"}
-    opt = ["--tweet"]
+    opt = ["--days", "--tweet"]
 
     if (not args):
         command_error(required, opt)
@@ -79,7 +79,7 @@ def donchian_controller(args):
 
     from lab.donchian.range import calculate
     ticker = args[0]
-    try:
+    try:        
         tweet = True if (args[1] == '--tweet') else False
         print(calculate(ticker, tweet))
         return
@@ -349,7 +349,7 @@ def vix_controller(args):
         print(vix_equation(ticker, debug))
         return
 
-    print('VIX: '+str(vix_equation(ticker)))
+    print(vix_equation(ticker))
 
 
 def main():
