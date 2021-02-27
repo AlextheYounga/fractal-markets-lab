@@ -1,6 +1,7 @@
 import json
 import sys
 from ..core.functions import extract_data
+from ..redisdb.controller import rdb_save_output
 from ..core.api.historical import getHistoricalData
 from ..core.api.stats import getCurrentPrice
 from .export import exportDonchian
@@ -22,7 +23,7 @@ def calculate(ticker, days=30, tweet=False):
         'donchianLow': min(list(reversed(lows))[:days])
     }
 
-
+    rdb_save_output(donchian_range)
     printTabs(donchian_range)
 
     if (tweet):
