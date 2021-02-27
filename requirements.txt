@@ -20,4 +20,3 @@ colored
 pytrends
 python-dateutil
 progressbar2
-docopt
