@@ -5,6 +5,7 @@ import json
 import time
 import sys
 import redis
+import progressbar
 from datetime import date
 from ..functions import *
 from ...redisdb.controller import rdb_save_stock
@@ -32,87 +33,90 @@ stocksaved = 0
 wlsaved = 0
 
 chunked_tickers = chunks(tickers, 100)
-for i, chunk in enumerate(chunked_tickers):
-    time.sleep(1)
-    batch = quoteStatsBatchRequest(chunk)
+chunks_length = int(len(tickers) / 100)
 
-    for ticker, stockinfo in batch.items():
-        print('Chunk {}: {}'.format(i, ticker))
+with progressbar.ProgressBar(max_value=chunks_length, prefix='Batch: ', redirect_stdout=True) as bar:
+    for i, chunk in enumerate(chunked_tickers):
 
-        if (stockinfo.get('quote', False) and stockinfo.get('stats', False)):
-            quote = stockinfo.get('quote')
-            stats = stockinfo.get('stats')
+        bar.update(i)
+        time.sleep(1)        
+        batch = quoteStatsBatchRequest(chunk)
 
-            price = quote.get('latestPrice', 0)
+        for ticker, stockinfo in batch.items():
 
-            if (price and isinstance(price, float)):
-                month1ChangePercent = round(dataSanityCheck(stats, 'month1ChangePercent') * 100, 2)
-                ytdChangePercent = round(dataSanityCheck(stats, 'ytdChangePercent') * 100, 2)
+            if (stockinfo.get('quote', False) and stockinfo.get('stats', False)):
+                quote = stockinfo.get('quote')
+                stats = stockinfo.get('stats')
 
-                # Critical
-                ttmEPS = dataSanityCheck(stats, 'ttmEPS')
-                week52high = dataSanityCheck(stats, 'week52high')
-                changeToday = round(dataSanityCheck(quote, 'changePercent') * 100, 2)
-                day5ChangePercent = round(dataSanityCheck(stats, 'day5ChangePercent') * 100, 2)
-                critical = [changeToday, week52high, ttmEPS, day5ChangePercent]
+                price = quote.get('latestPrice', 0)
 
-                if ((0 in critical)):
-                    continue
+                if (price and isinstance(price, float)):
+                    month1ChangePercent = round(dataSanityCheck(stats, 'month1ChangePercent') * 100, 2)
+                    ytdChangePercent = round(dataSanityCheck(stats, 'ytdChangePercent') * 100, 2)
 
-                fromHigh = round((price / week52high) * 100, 3)
+                    # Critical
+                    ttmEPS = dataSanityCheck(stats, 'ttmEPS')
+                    week52high = dataSanityCheck(stats, 'week52high')
+                    changeToday = round(dataSanityCheck(quote, 'changePercent') * 100, 2)
+                    day5ChangePercent = round(dataSanityCheck(stats, 'day5ChangePercent') * 100, 2)
+                    critical = [changeToday, week52high, ttmEPS, day5ChangePercent]
 
-                # Save Data to DB
-                keyStats = {                    
-                    'peRatio': stats.get('peRatio', None),
-                    'week52': week52high,
-                    'day5ChangePercent': day5ChangePercent if day5ChangePercent else None,
-                    'month1ChangePercent': month1ChangePercent if month1ChangePercent else None,
-                    'ytdChangePercent': ytdChangePercent if ytdChangePercent else None,
-                    'day50MovingAvg': stats.get('day50MovingAvg', None),
-                    'day200MovingAvg': stats.get('day200MovingAvg', None),
-                    'fromHigh': fromHigh,
-                    'ttmEPS': ttmEPS,
-                }
+                    if ((0 in critical)):
+                        continue
 
-                if (rdb == True):
-                    try:
-                        rdb_save_stock(ticker, keyStats)
-                        stocksaved += 1
-                    except redis.exceptions.ConnectionError:
-                        rdb = False
-                        print('Redis not connected. Not saving.')
+                    fromHigh = round((price / week52high) * 100, 3)
 
-                if ((fromHigh < 105) and (fromHigh > 95)):
-                    if (changeToday > 10):
-                        earningsData = getHistoricalEarnings(ticker)
-                        if (earningsData and isinstance(earningsData, dict)):
-                            print('{} ---- Checking Earnings ----'.format(ticker))
-                            earningsChecked = checkEarnings(earningsData)
-                            if (isinstance(earningsChecked, dict) and earningsChecked['actual'] and earningsChecked['consensus']):
-                                # Save Earnings to DB
-                                if (earningsChecked['improvement'] == True):
-                                        
-                                    keyStats.update({
-                                        'reportedEPS': earningsChecked['actual'],
-                                        'reportedConsensus': earningsChecked['consensus'],
-                                    })
-                                    stockData = {
-                                        'ticker': ticker,
-                                        'name': quote['companyName'],
-                                        'lastPrice': price
-                                    }
-                                    stockData.update(keyStats)
+                    # Save Data to DB
+                    keyStats = {                    
+                        'peRatio': stats.get('peRatio', None),
+                        'week52': week52high,
+                        'day5ChangePercent': day5ChangePercent if day5ChangePercent else None,
+                        'month1ChangePercent': month1ChangePercent if month1ChangePercent else None,
+                        'ytdChangePercent': ytdChangePercent if ytdChangePercent else None,
+                        'day50MovingAvg': stats.get('day50MovingAvg', None),
+                        'day200MovingAvg': stats.get('day200MovingAvg', None),
+                        'fromHigh': fromHigh,
+                        'ttmEPS': ttmEPS,
+                    }
 
-                                    # Save to Watchlist
-                                    Watchlist.objects.update_or_create(
-                                        ticker=ticker,
-                                        defaults=stockData
-                                    )
+                    if (rdb == True):
+                        try:
+                            rdb_save_stock(ticker, keyStats)
+                            stocksaved += 1
+                        except redis.exceptions.ConnectionError:
+                            rdb = False
+                            print('Redis not connected. Not saving.')
 
-                                    wlsaved += 1
+                    if ((fromHigh < 105) and (fromHigh > 95)):
+                        if (changeToday > 10):
+                            earningsData = getHistoricalEarnings(ticker)
+                            if (earningsData and isinstance(earningsData, dict)):
+                                earningsChecked = checkEarnings(earningsData)
+                                if (isinstance(earningsChecked, dict) and earningsChecked['actual'] and earningsChecked['consensus']):
+                                    # Save Earnings to DB
+                                    if (earningsChecked['improvement'] == True):
+                                            
+                                        keyStats.update({
+                                            'reportedEPS': earningsChecked['actual'],
+                                            'reportedConsensus': earningsChecked['consensus'],
+                                        })
+                                        stockData = {
+                                            'ticker': ticker,
+                                            'name': quote['companyName'],
+                                            'lastPrice': price
+                                        }
+                                        stockData.update(keyStats)
 
-                                    print('{} saved to Watchlist'.format(ticker))
-                                    results.append(stockData)
+                                        # Save to Watchlist
+                                        Watchlist.objects.update_or_create(
+                                            ticker=ticker,
+                                            defaults=stockData
+                                        )
+
+                                        wlsaved += 1
+
+                                        print('{} saved to Watchlist'.format(ticker))
+                                        results.append(stockData)
 
 if results:
     print('Total scanned: '+str(len(tickers)))

@@ -172,13 +172,6 @@ def returns_calculator(prices):
     returnsdf = pricesdf[:-1].values / pricesdf[1:] - 1
     return returnsdf.iloc[:, 0].tolist()
 
-    # Old Method before learning about Numpy's method:
-    # returns = []
-    # for i, price in enumerate(prices):
-    #     return_value = (price / float(prices[i + 1]) - 1) if (i + 1 in range(-len(prices), len(prices)) and float(prices[i + 1]) != 0) else 0
-    #     returns.append(return_value)
-    # return returns
-
 
 def chunks(lst, n):
     """

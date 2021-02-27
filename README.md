@@ -46,7 +46,7 @@ trend:search [--string=]                              Scans stocks with string i
 trend:earnings                                        Scans all stocks and returns todays gainers who have consistently good earnings.
 trend:streak [<ticker>]                               Determines the current winning/losing streak for a ticker
 trend:gainers                                         Grabs todays gainers and checks their earnings.
-pricedingold [<ticker>][--timespan=5y][--test=False]  Graphs and assets price in gold.
+pricedingold [<ticker>][--timeframe=5y][--test=False]  Graphs and assets price in gold.
 volume:chase                                          Scans all stocks and returns todays gainers with abnormally high volume.
 volume:anomaly                                        Scans all stocks and returns stocks who are accumulating extremely high volume over the last week. Finds market singularities.
 vix [<ticker>]                                        Runs the VIX volatility equation on a ticker

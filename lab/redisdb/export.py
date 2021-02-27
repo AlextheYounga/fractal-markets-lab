@@ -3,6 +3,7 @@ import redis
 from ..core.functions import zipfolder
 from datetime import datetime, date, timedelta
 from .schema import rdb_schema
+import progressbar
 import colored
 from colored import stylize
 import sys
@@ -21,7 +22,7 @@ def export_rdb():
         filename = "{}_rdb.json".format(root.split('-')[0])
         json_output = "lab/redisdb/export/"+filename
         print(stylize("Exporting keys containing "+root, colored.fg("yellow")))
-        for key in r.scan_iter(root):
+        for key in progressbar.progressbar(r.scan_iter(root)):
             value = r.get(key)
             try:
                 dictexport[key] = json.loads(value)
