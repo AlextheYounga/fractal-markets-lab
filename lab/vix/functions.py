@@ -16,7 +16,7 @@ import calendar
 
 
 
-def collectOptionChain(ticker, debug):
+def collectOptionChain(ticker, dummyData):
     today = datetime.datetime.now()
     three_months_away = (today + relativedelta(months=+3))    
     three_months_away_days = calendar.monthrange(three_months_away.year, three_months_away.month)[1]
@@ -28,7 +28,7 @@ def collectOptionChain(ticker, debug):
 
     """ Step 1: Fetch the option chain from TD Ameritrade """
 
-    if (debug):
+    if (dummyData):
         # Test Data
         JSON = 'lab/vix/sample_response/response.json'
         with open(JSON) as jsonfile:

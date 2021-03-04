@@ -8,6 +8,7 @@ from ..core.api.historical import getHistoricalData
 from ..core.api.stats import getKeyStats
 from ..core.scrape.bonds import scrape3mTreasury
 from ..core.functions import extract_data, logReturns
+from ..fintwit.tweet import send_tweet
 from .functions import *
 
 
@@ -24,7 +25,7 @@ def vix_explanation():
     """
 
 
-def vix_equation(ticker, debug=False):
+def vix_equation(ticker, sendtweet=False, debug=False, dummyData=False):
     """
     Runs the VIX equation on a ticker.
 
@@ -42,7 +43,7 @@ def vix_equation(ticker, debug=False):
     print(stylize("Calculating...", colored.fg("yellow")))
 
     # Step 1: Fetch the option chain for the ticker.
-    chain = collectOptionChain(ticker, debug)
+    chain = collectOptionChain(ticker, dummyData)
 
     # Step 2
     # Find the proper "near-term" and "next-term" option expirations to be used to find Forward Level.
@@ -96,16 +97,16 @@ def vix_equation(ticker, debug=False):
     nT1 = tminutes['nearTerm']  # Minutes to expiration
     nT2 = tminutes['nextTerm']  # Minutes to expiration
 
-    # if (debug):
-    # print('Minutes Year = '+str(minYear))
-    # print('Minutes in Month = '+str(minMonth))
-    # print('Near-Term Vol (v1) = '+str(v1))
-    # print('Next-Term Vol (v2) = '+str(v2))
-    # print('T1 = '+str(t1))
-    # print('T2 = '+str(t2))
-    # print('Near-Term Expiration Minutes = '+str(nT1))
-    # print('Next-Term Expiration Minutes = '+str(nT2))
-    # print("\n")
+    if (debug):
+        print('Minutes Year = '+str(minYear))
+        print('Minutes in Month = '+str(minMonth))
+        print('Near-Term Vol (v1) = '+str(v1))
+        print('Next-Term Vol (v2) = '+str(v2))
+        print('T1 = '+str(t1))
+        print('T2 = '+str(t2))
+        print('Near-Term Expiration Minutes = '+str(nT1))
+        print('Next-Term Expiration Minutes = '+str(nT2))
+        print("\n")
 
 
     # Test Data to confirm accuracy
@@ -126,5 +127,11 @@ def vix_equation(ticker, debug=False):
     vix = 100 * math.sqrt(
         (t1 * v1 * ((nT2 - minMonth) / (nT2 - nT1)) + t2 * v2 * ((minMonth - nT1) / (nT2 - nT1))) * minYear / minMonth
     )
+
+    if (sendtweet):
+        headline = "${} VIX: ".format(ticker)
+        tweet = headline + str(round(vix, 3))
+        send_tweet(tweet)
+
 
     return ticker+" VIX: "+str(round(vix, 3))
