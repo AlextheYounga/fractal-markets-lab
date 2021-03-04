@@ -9,7 +9,7 @@ from ..core.output import printTabs
 from ..fintwit.tweet import send_tweet, translate_data
 
 
-def calculate(ticker, days=30, tweet=False):
+def calculate(ticker, days=30, sendtweet=False):
     asset_data = getHistoricalData(ticker, '1m')
 
     prices = extract_data(asset_data, 'close')
@@ -26,7 +26,7 @@ def calculate(ticker, days=30, tweet=False):
     rdb_save_output(donchian_range)
     printTabs(donchian_range)
 
-    if (tweet):
+    if (sendtweet):
         headline = "${} 3week Donchian Range:".format(ticker)
         tweet = headline + translate_data(donchian_range)
         send_tweet(tweet)

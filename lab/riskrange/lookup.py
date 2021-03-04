@@ -7,11 +7,11 @@ from ..core.output import printTable
 from ..fintwit.tweet import send_tweet
 
 
-def rangeLookup(ticker, tweet=False):
+def rangeLookup(ticker, sendtweet=False):
     data = rangeRules(ticker)
     printTable(data[ticker])
 
-    if (tweet):
+    if (sendtweet):
         percentDownside = data[ticker]['PercentDownside']
         percentUpside = data[ticker]['PercentUpside']
         lowerRange = data[ticker]['lowerRange']

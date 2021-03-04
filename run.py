@@ -128,7 +128,7 @@ def donchian_controller(args):
     print(calculate(
         params['ticker'],
         days=params['days'] if 'days' in params else opt['days']['default'],
-        tweet=True if ('tweet' in params) else opt['--tweet']['default']
+        sendtweet=True if ('tweet' in params) else opt['--tweet']['default']
     ))
 
 
@@ -269,7 +269,7 @@ def range_controller(args):
 
     print(rangeLookup(
         ticker=params['ticker'],
-        tweet=params['tweet'] if ('tweet' in params) else opt['--tweet']['default'],
+        sendtweet=params['tweet'] if ('tweet' in params) else opt['--tweet']['default'],
     ))
 
 
@@ -372,7 +372,11 @@ def volume_controller(subroutine, args):
 
 def vix_controller(args):
     required = {'ticker': {'pos': 0, 'type': str}}
-    opt = {'--debug': {'type': bool, 'default': False}}
+    opt = {
+        '--debug': {'type': bool, 'default': False},
+        '--dummy-data': {'type': bool, 'default': False},
+        '--tweet': {'type': bool, 'default': False},
+        }
 
     if (not args):
         command_error(required, opt)
@@ -384,6 +388,7 @@ def vix_controller(args):
 
     print(vix_equation(
         params['ticker'],
+        sendtweet=params['tweet'] if ('tweet' in params) else opt['--tweet']['default'],
         debug=params['debug'] if ('debug' in params) else opt['--debug']['default']
     ))
 
