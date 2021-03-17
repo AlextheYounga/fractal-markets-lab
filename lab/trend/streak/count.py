@@ -22,16 +22,16 @@ def count_streak(ticker):
 
     print("\n")
     print(tabulate([
-        ['Count', trend_data['upDays']['count']],
-        ['Consecutive', trend_data['upDays']['consecutive']],
+        ['UpDays', trend_data['upDays']['count']],
+        ['Current Streak', trend_data['upDays']['consecutive']],
         ['Longest Streak', len(upStreaks)],
         ['Average', trend_data['upDays']['average']]],
         headers=['Up Days', '']))
 
     print("\n")
     print(tabulate([
-        ['Count', trend_data['downDays']['count']],
-        ['Consecutive', trend_data['downDays']['consecutive']],
+        ['DownDays', trend_data['downDays']['count']],
+        ['Current Streak', trend_data['downDays']['consecutive']],
         ['Longest Streak', len(downStreaks)],
         ['Average', trend_data['downDays']['average']]],
         headers=['Down Days', '']))
