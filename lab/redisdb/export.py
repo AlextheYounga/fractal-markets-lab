@@ -5,7 +5,7 @@ from datetime import datetime, date, timedelta
 from .schema import rdb_schema
 import progressbar
 import colored
-from colored import stylize
+from colored import stylize 
 import sys
 import os
 
