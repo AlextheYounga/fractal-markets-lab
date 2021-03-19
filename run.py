@@ -68,16 +68,17 @@ def command_error(required={}, opt=None):
             print('\n')
 
 
-def parse_args(args, required, opt):
+def parse_args(args, required=[], opt=[]):
     params = {}
 
-    for req, rules in required.items():
-        if ('=' in args[rules['pos']]):
-            rv = args[rules['pos']].split('=')[1]
-        else:
-            rv = args[rules['pos']]
+    if (required):
+        for req, rules in required.items():
+            if ('=' in args[rules['pos']]):
+                rv = args[rules['pos']].split('=')[1]
+            else:
+                rv = args[rules['pos']]
 
-        params[req] = rv
+            params[req] = rv
 
     if (required and params == {}):
         command_error()
