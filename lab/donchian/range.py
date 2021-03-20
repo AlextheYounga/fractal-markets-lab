@@ -11,7 +11,6 @@ from ..fintwit.tweet import send_tweet, translate_data
 
 def calculate(ticker, days=30, sendtweet=False):
     asset_data = getHistoricalData(ticker, '1m')
-
     prices = extract_data(asset_data, 'close')
     highs = extract_data(asset_data, 'high')
     lows = extract_data(asset_data, 'low')
