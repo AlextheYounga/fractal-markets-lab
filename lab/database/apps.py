@@ -1,3 +1,3 @@
 from django.apps import AppConfig
 class DatabaseConfig(AppConfig):
-    name = 'database'
+    name = 'lab.database'
