@@ -89,7 +89,7 @@ def clean_tickers(tickers):
     return pruned
 
 
-def scrape_news(query="best+stocks+to+buy"):
+def scrape_news(query):
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
     tickers = []
 

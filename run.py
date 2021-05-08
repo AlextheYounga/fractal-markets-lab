@@ -20,7 +20,7 @@ def list_commands():
         ['macro:trends [timeframe=1m] [gain=20]', 'Scans all ETFs and returns the ETFs with the performance above an int (gain) within a timerange (5d, 1m, 3m, 1y)'],
         ['macro:gainers', 'Scans all ETFs and returns ETFs with highest day change.'],
         ['news:scrape [query=insert+string]', 'Searches a query and searches first 10 articles for stocks mentioned in article'],
-        ['hurst [<ticker>] [output=table]', 'Runs a rescaled range analysis on a ticker. Output defaults to table.'],
+        ['hurst [<ticker>] [timeframe=1y]', 'Runs a rescaled range analysis on a ticker. Output defaults to table.'],
         ['range [<ticker>] [tweet]', 'Runs a volatility range analysis on a ticker.'],
         ['historicalprices:get [<ticker>]', 'Fetches historical prices for a ticker and saves them to db.'],
         ['inflation:calculate [update]', 'Inflation index using etfs'],
@@ -100,13 +100,14 @@ def parse_args(args, required=[], opt=[]):
 
                 argvalue = args[in_args.index(True)].split('=')[1]
 
-                if (rules['type'] == int and isinstance(int(argvalue), int)):
-                    params[var] = int(argvalue)
-                    continue
-                else:
-                    print(stylize(var+' must be of type int.', colored.fg('red')))
-                    sys.exit()
-
+                if (rules['type'] == int):
+                    if (isinstance(int(argvalue), int)):
+                        params[var] = int(argvalue)
+                        continue
+                    else:
+                        print(stylize(var+' must be of type '+str(rules['type']), colored.fg('red')))
+                        sys.exit()
+                    
                 params[var] = argvalue
 
     return params
@@ -231,7 +232,11 @@ def pricedingold_controller(args):
 
 def hurst_controller(args):
     required = {'ticker': {'pos': 0, 'type': str}}
-    opt = {'output': {'type': str, 'default': 'table'}}
+    opt = {
+        'timeframe': {'type': str, 'default': '1y'},
+        'output': {'type': str, 'default': 'table'},
+        '--tweet': {'type': bool, 'default': False}
+        }
 
     if (not args):
         command_error(required, opt)
@@ -243,6 +248,8 @@ def hurst_controller(args):
     print(fractal_calculator(
         ticker=params['ticker'],
         output=params['output'] if ('output' in params) else opt['output']['default'],
+        timeframe=params['timeframe'] if ('timeframe' in params) else opt['timeframe']['default'],
+        sendtweet=params['tweet'] if ('tweet' in params) else opt['--tweet']['default'],
     ))
 
 
