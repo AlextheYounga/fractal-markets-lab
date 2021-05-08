@@ -1,9 +1,11 @@
 import statistics
 from scipy import stats
+from datetime import datetime
 import math
 from ..core.functions import extract_data
 from ..core.api.stats import getCurrentPrice
 from ..core.api.historical import getHistoricalData
+from ..fintwit.tweet import send_tweet, translate_data
 from .functions import *
 from .output import exportFractal, outputTable
 import sys
@@ -13,7 +15,7 @@ from tabulate import tabulate
 # https://blogs.cfainstitute.org/investor/2013/01/30/rescaled-range-analysis-a-method-for-detecting-persistence-randomness-or-mean-reversion-in-financial-markets/
 
 
-def collect_key_stats(ticker):
+def collect_key_stats(ticker, timeframe):
     """
     This is the initial process of building out the key statistics to be inserted into the fractal calculator.
     Processes:
@@ -36,7 +38,7 @@ def collect_key_stats(ticker):
         Returns dict of scales with number of items in each scale.
         Returns dict of key stats to be used in final rescale range analysis calculation.
     """
-    asset_prices = getHistoricalData(ticker, "1y", True)
+    asset_prices = getHistoricalData(ticker, timeframe, True)
     if (asset_prices):
         prices = list(reversed(extract_data(asset_prices, 'close')))
 
@@ -77,13 +79,13 @@ def collect_key_stats(ticker):
             range_stats[scale]['keyStats']['logRR'] = math.log10(statistics.mean(rescaleRanges)) if (statistics.mean(rescaleRanges) > 0) else 0
             range_stats[scale]['keyStats']['logScale'] = math.log10(scales[scale])
 
-        return scales, range_stats
+        return scales, range_stats, asset_prices
     else:
         print('Prices returned nil')
         sys.exit()
 
 
-def perform_hurst_calculations(x, y):
+def perform_hurst_calculations(x, y, asset_prices):
     """
     This function performs hurst fractal calculations based on key stats returned from collect_key_stats()
     Processes:
@@ -108,7 +110,7 @@ def perform_hurst_calculations(x, y):
             hurstExponent, fractalDimension, r-squared, p-value, standardError
     """
     # Set how you want data to be organized
-    sections = standard_fractal_sections(x, y)
+    sections = standard_fractal_sections(x, y, asset_prices)
 
     results = {}
     for i, section in sections.items():
@@ -131,7 +133,7 @@ def perform_hurst_calculations(x, y):
     return results
 
 
-def fractal_calculator(ticker, output='table'):
+def fractal_calculator(ticker, timeframe, output, sendtweet):
     """
     Main process thread. Will call on collect_key_stats() and perform_hurst_calculations()
 
@@ -149,7 +151,7 @@ def fractal_calculator(ticker, output='table'):
         Returns fractal statistics and can export to csv, output to terminal and tweet
 
     """
-    scales, range_stats = collect_key_stats(ticker)
+    scales, range_stats, asset_prices = collect_key_stats(ticker, timeframe)
 
     # Hurst Exponent Calculations
     fractal_results = {
@@ -165,8 +167,33 @@ def fractal_calculator(ticker, output='table'):
     slope, intercept, r_value, p_value, std_err = stats.linregress(log_scales, log_RRs)
 
     # Results
-    fractal_results['regressionResults'] = perform_hurst_calculations(log_scales, log_RRs)
+    fractal_results['regressionResults'] = perform_hurst_calculations(log_scales, log_RRs, asset_prices)
     outputTable(fractal_results, scales)  # Output will always go to table in terminal as well.
+
+    # Tweet
+    
+    if (sendtweet):
+        tweet_data = {}
+        for scale, data in fractal_results['regressionResults'].items():
+            if ("-" in scale):
+                removeSeries = scale.replace("Series", "")
+                textndate = removeSeries.split('(')
+                dates = textndate[1].replace(')', "").split(' - ')
+                start = datetime.strptime(dates[0], '%Y-%m-%d').strftime('%b %Y')
+                end = datetime.strptime(dates[1], '%Y-%m-%d').strftime('%b %Y')
+                key = textndate[0] + '({} - {})'.format(start, end)
+            else: 
+                key = scale
+
+            tweet_data[key] = data['hurstExponent']
+        
+        headline = "${} {} Hurst Exponents\n".format(ticker, timeframe)
+        tweet = headline + translate_data(tweet_data)
+        send_tweet(tweet)
+
+
+
+    # CSV Output
     if (output == 'csv'):
         exportFractal(fractal_results, scales)
 
