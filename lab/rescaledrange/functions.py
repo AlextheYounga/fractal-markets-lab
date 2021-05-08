@@ -1,6 +1,7 @@
 import json
 import sys
 import statistics
+from ..core.functions import extract_data
 from scipy import stats
 import pandas as pd
 import numpy as np
@@ -354,7 +355,7 @@ def chunked_range(lst, n):
 
 
 # Fractal Analysis Functions
-def standard_fractal_sections(x, y):
+def standard_fractal_sections(x, y, asset_prices):
     """
     This is the classic way of looking at the rescaled range data, breaking the picture into easily understandable chunks
     of 1/2 and 1/3
@@ -372,28 +373,36 @@ def standard_fractal_sections(x, y):
     """
     if len(x) != len(y):
         return "X and Y values contain disproportionate counts"
+    
+
+    dates = extract_data(asset_prices, 'date')
+    prices = extract_data(asset_prices, 'close')
+    count = len(prices)
+
+    halfChunkDates = list(chunks(dates, int(len(dates) / 2)))
+    thirdChunkDates = list(chunks(dates, int(len(dates) / 3)))
 
     half = int(len(x) / 2)
     third = int(len(x) / 3)
 
     fractalScales = {
-        'pastHalfSeries': {
+        'pastHalfSeries ({} - {})'.format(halfChunkDates[0][0], halfChunkDates[0][-1]): {
             'x': list(chunks(x, half))[0],
             'y': list(chunks(y, half))[0]
         },
-        'currentHalfSeries': {
+        'currentHalfSeries ({} - {})'.format(halfChunkDates[1][0], halfChunkDates[1][-1]): {
             'x': list(chunks(x, half))[1],
             'y': list(chunks(y, half))[1]
         },
-        'pastThirdSeries': {
+        'pastThirdSeries ({} - {})'.format(thirdChunkDates[0][0], thirdChunkDates[0][-1]): {
             'x': list(chunks(x, third))[0],
             'y': list(chunks(y, third))[0]
         },
-        'middleThirdSeries': {
+        'middleThirdSeries ({} - {})'.format(thirdChunkDates[1][0], thirdChunkDates[1][-1]): {
             'x': list(chunks(x, third))[1],
             'y': list(chunks(y, third))[1]
         },
-        'currentThirdSeries': {
+        'currentThirdSeries ({} - {})'.format(thirdChunkDates[2][0], thirdChunkDates[2][-1]): {
             'x': list(chunks(x, third))[2],
             'y': list(chunks(y, third))[2]
         },
