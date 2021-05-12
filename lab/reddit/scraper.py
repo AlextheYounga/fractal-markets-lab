@@ -51,6 +51,7 @@ for h in heap:
         target_strings.append(cap)
 
 possible_stocks = {}
+freqs = []
 for string in target_strings:
     if (string):
         # reformat string
@@ -63,7 +64,10 @@ for string in target_strings:
             continue
 
         freq = frequencyInList(target_strings, string)
+        freqs.append(freq)        
         possible_stocks[string] = freq
+
+# top_10 = 
 
 
 
