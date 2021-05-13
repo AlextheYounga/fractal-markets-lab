@@ -77,6 +77,8 @@ def translate_data(dic, keys=None):
         keys = dic.keys()
 
     for k in keys:
-        content = content + "\n{}: {}".format(k.title(), dic[k])
+        content = content + "\n{}: {}".format(
+            (k.title() if k.islower() else k), 
+            dic[k])
         
     return content

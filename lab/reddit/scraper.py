@@ -13,105 +13,117 @@ import sys
 import json
 import os
 import pprint
-from ..fintwit.tweet import send_tweet
+from ..fintwit.tweet import send_tweet, translate_data
 from dotenv import load_dotenv
 load_dotenv()
 
 
-reddit = praw.Reddit(
-    client_id=os.environ.get("REDDIT_CLIENT"),
-    client_secret=os.environ.get("REDDIT_SECRET"),
-    user_agent="Hazlitt Data by u/{}".format(os.environ.get("REDDIT_USERNAME")),
-    username=os.environ.get("REDDIT_USERNAME"),
-    password=os.environ.get("REDDIT_PASSWORD"),
-)
+def scrapeWSB(sendtweet=False):
+    reddit = praw.Reddit(
+        client_id=os.environ.get("REDDIT_CLIENT"),
+        client_secret=os.environ.get("REDDIT_SECRET"),
+        user_agent="Hazlitt Data by u/{}".format(os.environ.get("REDDIT_USERNAME")),
+        username=os.environ.get("REDDIT_USERNAME"),
+        password=os.environ.get("REDDIT_PASSWORD"),
+    )
 
-subreddit = reddit.subreddit("wallstreetbets")
+    subreddit = reddit.subreddit("wallstreetbets")
 
-urls = []
-heap = []
+    urls = []
+    heap = []
 
-for submission in subreddit.hot(limit=10):
-    post_time = datetime.datetime.fromtimestamp(submission.created)
-    print(stylize("r/wallstreetbets: " + submission.title + " " + str(post_time), colored.fg("green")))
-    urls.append(submission.url)
-    heap.append(submission.title)
+    for submission in subreddit.hot(limit=20):
+        post_time = datetime.datetime.fromtimestamp(submission.created)
+        print(stylize("r/wallstreetbets postdate={}: ".format(str(post_time)) + submission.title, colored.fg("green")))
+        urls.append(submission.url)
+        heap.append(submission.title)
 
-    for top_level_comment in submission.comments:
-        if isinstance(top_level_comment, MoreComments):
-            continue
-        heap.append(top_level_comment.body)
+        for top_level_comment in submission.comments:
+            if isinstance(top_level_comment, MoreComments):
+                continue
+            heap.append(top_level_comment.body)
 
-# print(json.dumps(heap, indent=1))
-
-
-target_strings = []
-for h in heap:
-    # Find all strings with $ dollar signs
-    target_strings.append(re.findall(r'[$][A-Za-z][\S]*', str(h)))
-    # Find all capital letter strings, ranging from 1 to 5 characters, preceded and followed by space.
-    capitals = re.findall(r'[\S][A-Z]{1,5}[\S]*', str(h))
-    for cap in capitals:
-        target_strings.append(cap)
-
-blacklist = blacklistWords()
-possible = []
-
-for string in target_strings:
-    if (string):
-        # reformat string
-        string = removeBadCharacters(string)
-
-        if ((not string) or (string in blacklist)):
-            continue
-
-        possible.append(string)
+    # print(json.dumps(heap, indent=1))
 
 
-results = []
-stockfound = []
+    target_strings = []
+    for h in heap:
+        # Find all strings with $ dollar signs
+        target_strings.append(re.findall(r'[$][A-Za-z][\S]*', str(h)))
+        # Find all capital letter strings, ranging from 1 to 5 characters, preceded and followed by space.
+        capitals = re.findall(r'[\S][A-Z]{1,5}[\S]*', str(h))
+        for cap in capitals:
+            target_strings.append(cap)
 
-unique_possibles = list(dict.fromkeys(possible))
-chunked_strings = chunks(unique_possibles, 100)
+    blacklist = blacklistWords()
+    possible = []
 
-apiOnly = [
-    'symbol',
-    'companyName',
-    'close',
-    'changePercent',
-    'ytdChange',
-    'volume'
-]
+    for string in target_strings:
+        if (string):
+            # reformat string
+            string = removeBadCharacters(string)
 
-print(stylize("{} possibilities".format(len(unique_possibles)), colored.fg("yellow")))
+            if ((not string) or (string in blacklist)):
+                continue
 
-for i, chunk in enumerate(chunked_strings):
+            possible.append(string)
 
-    print(stylize("Sending heap to API", colored.fg("yellow")))
-    batch = batchQuote(chunk)
-    time.sleep(1)
 
-    for ticker, stockinfo in batch.items():
+    results = []
+    stockfound = []
 
-        if (stockinfo.get('quote', False)):
-            result = {}
-            stockfound.append(ticker)
-            freq = frequencyInList(possible, ticker)
-            print(stylize("{} stock found".format(ticker), colored.fg("green")))
-            if (freq > 1):
-                result = {
-                    'ticker': ticker,
-                    'frequency': freq,
-                }
-                filteredinfo = {key: stockinfo['quote'][key] for key in apiOnly}
-                result.update(filteredinfo)
-                results.append(result)
+    unique_possibles = list(dict.fromkeys(possible))
+    chunked_strings = chunks(unique_possibles, 100)
 
-# Updating blacklist
-for un in unique_possibles:
-    if (un not in stockfound):
-        blacklist.append(un)
+    apiOnly = [
+        'symbol',
+        'companyName',
+        'close',
+        'changePercent',
+        'ytdChange',
+        'volume'
+    ]
 
-updateBlacklist(blacklist)
+    print(stylize("{} possibilities".format(len(unique_possibles)), colored.fg("yellow")))
 
-printFullTable(sorted(results, key = lambda i: i['frequency'], reverse=True), struct='dictlist')
+    for i, chunk in enumerate(chunked_strings):
+
+        print(stylize("Sending heap to API", colored.fg("yellow")))
+        batch = batchQuote(chunk)
+        time.sleep(1)
+
+        for ticker, stockinfo in batch.items():
+
+            if (stockinfo.get('quote', False)):
+                result = {}
+                stockfound.append(ticker)
+                freq = frequencyInList(possible, ticker)
+                print(stylize("{} stock found".format(ticker), colored.fg("green")))
+                if (freq > 1):
+                    result = {
+                        'ticker': ticker,
+                        'frequency': freq,
+                    }
+                    filteredinfo = {key: stockinfo['quote'][key] for key in apiOnly}
+                    result.update(filteredinfo)
+                    results.append(result)
+
+    # Updating blacklist
+    for un in unique_possibles:
+        if (un not in stockfound):
+            blacklist.append(un)
+
+    updateBlacklist(blacklist)
+
+    sorted_results = sorted(results, key = lambda i: i['frequency'], reverse=True)
+    printFullTable(sorted_results, struct='dictlist')
+
+    if (sendtweet):
+        tweetdata = {}
+        for r in sorted_results[:10]:
+            tweetdata['$' + r['ticker']] = r['frequency']
+
+        headline = "Top mentioned stocks on r/wallstreetbets and times mentioned:\n"
+        tweet = headline + translate_data(tweetdata)
+        send_tweet(tweet)
+        

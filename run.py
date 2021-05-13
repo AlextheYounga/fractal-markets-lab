@@ -282,12 +282,21 @@ def range_controller(args):
     ))
 
 
-def reddit_controller(subroutine, args=[]):
+def reddit_controller(subroutine, args):
     if (subroutine == 'scrape'):
-        import lab.reddit.scraper
-        return
+        opt = {'--tweet': {'type': bool, 'default': False}}
 
-    command_error()
+        if (not args):
+            command_error(opt)
+            return
+
+        from lab.reddit.scraper import scrapeWSB
+
+        params = parse_args(args, required=[], opt=opt)
+
+        print(scrapeWSB(
+            sendtweet=params['tweet'] if ('tweet' in params) else opt['--tweet']['default'],
+        ))
 
 
 def output_controller(subroutine, args):
