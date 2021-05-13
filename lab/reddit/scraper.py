@@ -33,7 +33,7 @@ heap = []
 
 for submission in subreddit.hot(limit=10):
     post_time = datetime.datetime.fromtimestamp(submission.created)
-    print(stylize("r/wallstreetbets: " + submission.title + str(post_time), colored.fg("green")))
+    print(stylize("r/wallstreetbets: " + submission.title + " " + str(post_time), colored.fg("green")))
     urls.append(submission.url)
     heap.append(submission.title)
 

@@ -87,7 +87,7 @@ def parse_args(args, required=[], opt=[]):
         for var, rules in opt.items():
             in_args = [var == arg.split('=')[0] for arg in args]
 
-            if (True in in_args):                
+            if (True in in_args):
                 if (rules['type'] == bool):
                     if ('--' in var):
                         var = var.split('--')[1]
@@ -108,7 +108,7 @@ def parse_args(args, required=[], opt=[]):
                     else:
                         print(stylize(var+' must be of type '+str(rules['type']), colored.fg('red')))
                         sys.exit()
-                    
+
                 params[var] = argvalue
 
     return params
@@ -237,7 +237,7 @@ def hurst_controller(args):
         'timeframe': {'type': str, 'default': '1y'},
         'output': {'type': str, 'default': 'table'},
         '--tweet': {'type': bool, 'default': False}
-        }
+    }
 
     if (not args):
         command_error(required, opt)
@@ -282,23 +282,12 @@ def range_controller(args):
     ))
 
 
-def reddit_controller(args):
-
-    required = {'ticker': {'pos': 0, 'type': str}}
-    opt = {'--tweet': {'type': bool, 'default': False}}
-
-    if (not args):
-        command_error(required, opt)
+def reddit_controller(subroutine, args=[]):
+    if (subroutine == 'scrape'):
+        import lab.reddit.scraper
         return
 
-    from lab.riskrange.lookup import rangeLookup
-
-    params = parse_args(args, required, opt)
-
-    print(rangeLookup(
-        ticker=params['ticker'],
-        sendtweet=params['tweet'] if ('tweet' in params) else opt['--tweet']['default'],
-    ))
+    command_error()
 
 
 def output_controller(subroutine, args):
@@ -404,7 +393,7 @@ def vix_controller(args):
         '--debug': {'type': bool, 'default': False},
         '--dummy-data': {'type': bool, 'default': False},
         '--tweet': {'type': bool, 'default': False},
-        }
+    }
 
     if (not args):
         command_error(required, opt)
