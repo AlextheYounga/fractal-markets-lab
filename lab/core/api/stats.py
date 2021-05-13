@@ -58,19 +58,47 @@ def getPriceTarget(ticker, sandbox=False):
     return priceTarget
 
 
-def getQuoteData(ticker, sandbox=False):
+def getQuoteData(ticker, filterResults=[], sandbox=False):
+    """
+    Fetches company quote from stock ticker.
+
+    Parameters
+    ----------
+    ticker          :string
+    filterResults   :list
+    sandbox         :bool
+                    Sets the IEX environment to sandbox mode to make limitless API calls for testing.
+
+    Returns
+    -------
+    dict object of IEX results
+    """
+    domain = 'cloud.iexapis.com'
     key = os.environ.get("IEX_TOKEN")
     if (sandbox):
-        os.environ['IEX_API_VERSION'] = 'iexcloud-sandbox'
+        domain = 'sandbox.iexapis.com'
         key = os.environ.get("IEX_SANDBOX_TOKEN")
+    if (filterResults):
+        filters = ",".join(filterResults) if (len(filterResults) > 1) else filterResults[0]
     try:
-        stock = Stock(ticker, token=key)
-        quote = stock.get_quote()
+        
+        url = 'https://{}/stable/stock/{}/quote?token={}'.format(
+            domain,
+            ticker,
+            key
+        )
+        if (filterResults):
+            url = 'https://{}/stable/stock/{}/quote?filter={}&token={}'.format(
+                domain,
+                ticker,
+                filters,
+                key
+            )
+        quote = requests.get(url).json()
     except:
         #print("Unexpected error:", sys.exc_info()[0])
-        return {}
-    if (sandbox):
-        os.environ['IEX_API_VERSION'] = 'v1'
+        return None
+
     return quote
 
 
