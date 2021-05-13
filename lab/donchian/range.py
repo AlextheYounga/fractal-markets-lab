@@ -27,7 +27,7 @@ def calculate(ticker, days=30, sendtweet=False):
     printTabs(donchian_range)
 
     if (sendtweet):
-        headline = "${} 3week Donchian Range:".format(ticker)
+        headline = "${} {}Day Donchian Range:".format(ticker, days)
         tweet = headline + translate_data(donchian_range)
         send_tweet(tweet)
 

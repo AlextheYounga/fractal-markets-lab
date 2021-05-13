@@ -155,6 +155,14 @@ def interdayReturns(prices):
     return int_returns
 
 
+def frequencyInList(lst, x):
+    count = 0
+    for ele in lst:
+        if (ele == x):
+            count = count + 1
+    return count
+
+
 def zipfolder(path, filename):
     def zipdir(path, ziph):
         # ziph is zipfile handle

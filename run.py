@@ -22,6 +22,7 @@ def list_commands():
         ['news:scrape [query=insert+string]', 'Searches a query and searches first 10 articles for stocks mentioned in article'],
         ['hurst [<ticker>] [timeframe=1y]', 'Runs a rescaled range analysis on a ticker. Output defaults to table.'],
         ['range [<ticker>] [tweet]', 'Runs a volatility range analysis on a ticker.'],
+        ['reddit:scrape', 'Scrapes r/wallstreetbets for most talked-about stocks.'],
         ['historicalprices:get [<ticker>]', 'Fetches historical prices for a ticker and saves them to db.'],
         ['inflation:calculate [update]', 'Inflation index using etfs'],
         ['inflation:graph [update]', 'Graph inflation index using etfs'],
@@ -86,7 +87,7 @@ def parse_args(args, required=[], opt=[]):
         for var, rules in opt.items():
             in_args = [var == arg.split('=')[0] for arg in args]
 
-            if (True in in_args):                
+            if (True in in_args):
                 if (rules['type'] == bool):
                     if ('--' in var):
                         var = var.split('--')[1]
@@ -107,7 +108,7 @@ def parse_args(args, required=[], opt=[]):
                     else:
                         print(stylize(var+' must be of type '+str(rules['type']), colored.fg('red')))
                         sys.exit()
-                    
+
                 params[var] = argvalue
 
     return params
@@ -236,13 +237,13 @@ def hurst_controller(args):
         'timeframe': {'type': str, 'default': '1y'},
         'output': {'type': str, 'default': 'table'},
         '--tweet': {'type': bool, 'default': False}
-        }
+    }
 
     if (not args):
         command_error(required, opt)
         return
 
-    from lab.rescaledrange.fractal_calculator import fractal_calculator
+    from lab.hurst.fractal_calculator import fractal_calculator
     params = parse_args(args, required, opt)
 
     print(fractal_calculator(
@@ -279,6 +280,23 @@ def range_controller(args):
         ticker=params['ticker'],
         sendtweet=params['tweet'] if ('tweet' in params) else opt['--tweet']['default'],
     ))
+
+
+def reddit_controller(subroutine, args):
+    if (subroutine == 'scrape'):
+        opt = {'--tweet': {'type': bool, 'default': False}}
+
+        if (not args):
+            command_error(opt)
+            return
+
+        from lab.reddit.scraper import scrapeWSB
+
+        params = parse_args(args, required=[], opt=opt)
+
+        print(scrapeWSB(
+            sendtweet=params['tweet'] if ('tweet' in params) else opt['--tweet']['default'],
+        ))
 
 
 def output_controller(subroutine, args):
@@ -384,7 +402,7 @@ def vix_controller(args):
         '--debug': {'type': bool, 'default': False},
         '--dummy-data': {'type': bool, 'default': False},
         '--tweet': {'type': bool, 'default': False},
-        }
+    }
 
     if (not args):
         command_error(required, opt)
