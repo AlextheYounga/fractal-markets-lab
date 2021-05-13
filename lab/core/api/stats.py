@@ -81,6 +81,7 @@ def getQuoteData(ticker, filterResults=[], sandbox=False):
     if (filterResults):
         filters = ",".join(filterResults) if (len(filterResults) > 1) else filterResults[0]
     try:
+        
         url = 'https://{}/stable/stock/{}/quote?token={}'.format(
             domain,
             ticker,

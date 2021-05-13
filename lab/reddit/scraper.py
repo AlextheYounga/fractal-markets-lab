@@ -2,8 +2,11 @@ import praw
 from praw.models import MoreComments
 import colored
 from colored import stylize
-from ..core.functions import frequencyInList
-from ..core.api.stats import getQuoteData
+from ..core.functions import frequencyInList, chunks
+from ..core.output import printFullTable
+from ..core.api.batch import batchQuote
+from .functions import *
+import time
 import datetime
 import re
 import sys
@@ -28,7 +31,7 @@ subreddit = reddit.subreddit("wallstreetbets")
 urls = []
 heap = []
 
-for submission in subreddit.hot(limit=2):
+for submission in subreddit.hot(limit=10):
     post_time = datetime.datetime.fromtimestamp(submission.created)
     print(stylize("r/wallstreetbets: " + submission.title + str(post_time), colored.fg("green")))
     urls.append(submission.url)
@@ -41,6 +44,7 @@ for submission in subreddit.hot(limit=2):
 
 # print(json.dumps(heap, indent=1))
 
+
 target_strings = []
 for h in heap:
     # Find all strings with $ dollar signs
@@ -50,44 +54,64 @@ for h in heap:
     for cap in capitals:
         target_strings.append(cap)
 
-possible_stocks = {}
-freqs = []
+blacklist = blacklistWords()
+possible = []
+
 for string in target_strings:
     if (string):
         # reformat string
-        string = str(string)
-        if ('$' in string):
-            string = string.split('$')[1]
-        string = string.strip()
+        string = removeBadCharacters(string)
 
-        if ((not string) or (string in possible_stocks.keys())):
+        if ((not string) or (string in blacklist)):
             continue
 
-        freq = frequencyInList(target_strings, string)
-        freqs.append(freq)        
-        possible_stocks[string] = freq
-
-# top_10 = 
+        possible.append(string)
 
 
+results = []
+stockfound = []
 
-        
-results = {}
-# print(stylize("Searching {}...".format(string), colored.fg("yellow")))
-# stock = getQuoteData(string, filterResults=[
-#     'symbol',
-#     'companyName',
-#     'close',
-#     'changePercent',
-#     'ytdChange',
-#     'volume'
-# ])
-# if (stock):
-#     print(stylize("{} stock found".format(string), colored.fg("green")))
-#     results[string] = {
-#         'stock': stock,
-#         'frequency': freq
-#     }
+unique_possibles = list(dict.fromkeys(possible))
+chunked_strings = chunks(unique_possibles, 100)
 
+apiOnly = [
+    'symbol',
+    'companyName',
+    'close',
+    'changePercent',
+    'ytdChange',
+    'volume'
+]
 
-print(json.dumps(results, indent=1))
+print(stylize("{} possibilities".format(len(unique_possibles)), colored.fg("yellow")))
+
+for i, chunk in enumerate(chunked_strings):
+
+    print(stylize("Sending heap to API", colored.fg("yellow")))
+    batch = batchQuote(chunk)
+    time.sleep(1)
+
+    for ticker, stockinfo in batch.items():
+
+        if (stockinfo.get('quote', False)):
+            result = {}
+            stockfound.append(ticker)
+            freq = frequencyInList(possible, ticker)
+            print(stylize("{} stock found".format(ticker), colored.fg("green")))
+            if (freq > 1):
+                result = {
+                    'ticker': ticker,
+                    'frequency': freq,
+                }
+                filteredinfo = {key: stockinfo['quote'][key] for key in apiOnly}
+                result.update(filteredinfo)
+                results.append(result)
+
+# Updating blacklist
+for un in unique_possibles:
+    if (un not in stockfound):
+        blacklist.append(un)
+
+updateBlacklist(blacklist)
+
+printFullTable(sorted(results, key = lambda i: i['frequency'], reverse=True), struct='dictlist')

@@ -4,7 +4,7 @@ lab/graveyard/
 lab/riskrange/output/*
 lab/COMMANDS.txt
 lab/correlations/output/*
-lab/rescaledrange/output/*
+lab/hurst/output/*
 lab/macro/output/*
 lab/trend/output/*
 lab/donchian/output/*

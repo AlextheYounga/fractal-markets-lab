@@ -22,6 +22,7 @@ def list_commands():
         ['news:scrape [query=insert+string]', 'Searches a query and searches first 10 articles for stocks mentioned in article'],
         ['hurst [<ticker>] [timeframe=1y]', 'Runs a rescaled range analysis on a ticker. Output defaults to table.'],
         ['range [<ticker>] [tweet]', 'Runs a volatility range analysis on a ticker.'],
+        ['reddit:scrape', 'Scrapes r/wallstreetbets for most talked-about stocks.'],
         ['historicalprices:get [<ticker>]', 'Fetches historical prices for a ticker and saves them to db.'],
         ['inflation:calculate [update]', 'Inflation index using etfs'],
         ['inflation:graph [update]', 'Graph inflation index using etfs'],
@@ -242,7 +243,7 @@ def hurst_controller(args):
         command_error(required, opt)
         return
 
-    from lab.rescaledrange.fractal_calculator import fractal_calculator
+    from lab.hurst.fractal_calculator import fractal_calculator
     params = parse_args(args, required, opt)
 
     print(fractal_calculator(
@@ -263,6 +264,25 @@ def rdb_controller(subroutine, args=[]):
 
 
 def range_controller(args):
+
+    required = {'ticker': {'pos': 0, 'type': str}}
+    opt = {'--tweet': {'type': bool, 'default': False}}
+
+    if (not args):
+        command_error(required, opt)
+        return
+
+    from lab.riskrange.lookup import rangeLookup
+
+    params = parse_args(args, required, opt)
+
+    print(rangeLookup(
+        ticker=params['ticker'],
+        sendtweet=params['tweet'] if ('tweet' in params) else opt['--tweet']['default'],
+    ))
+
+
+def reddit_controller(args):
 
     required = {'ticker': {'pos': 0, 'type': str}}
     opt = {'--tweet': {'type': bool, 'default': False}}
