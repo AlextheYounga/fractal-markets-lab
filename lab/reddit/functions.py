@@ -1,5 +1,8 @@
 import re
+import sys
 import os
+from ..core.functions import frequencyInList, wordVariator
+
 
 def removeBadCharacters(word):
     if (isinstance(word, list)):
@@ -37,3 +40,54 @@ def updateBlacklist(lst):
     with open(txtfile, 'w') as f:
         for item in lst:
             f.write("%s\n" % item)
+
+
+def sentimentScanner(thoughts):
+    feels = {
+        'bullish': [
+            'buy',
+            'hold',
+            'hodl',
+            'moon',
+            'long',
+            'calls'
+            'bull',
+            'bought',
+            'positive',
+        ],
+        'bearish': [
+            'short',
+            'sell',
+            'puts',
+            'bear',
+            'sold',
+            'against',
+            'negative',
+        ]
+    }
+
+    for side, terms in feels.items():
+        for term in wordVariator(terms):
+            if (term in thoughts):
+                return side
+
+    return False
+
+
+def sentimentCalculation(terms):
+    count = len(terms)
+    sides = ['bullish', 'bearish']
+    feels = []
+
+    for feel in sides:
+        feels.append(frequencyInList(terms, feel))
+    
+    result = sides[feels.index(max(feels))]
+    percent = round(max(feels) / count * 100)
+
+    if (percent == 50):
+        return 'neutral 50%'
+    
+    return "{} {}%".format(result, percent)
+
+
