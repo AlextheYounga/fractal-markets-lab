@@ -32,7 +32,7 @@ def scrapeWSB(sendtweet=False):
     urls = []
     heap = []
 
-    for submission in subreddit.hot(limit=20):
+    for submission in subreddit.hot(limit=50):
         post_time = datetime.datetime.fromtimestamp(submission.created)
         print(stylize("r/wallstreetbets postdate={}: ".format(str(post_time)) + submission.title, colored.fg("green")))
         urls.append(submission.url)
@@ -45,29 +45,39 @@ def scrapeWSB(sendtweet=False):
 
     # print(json.dumps(heap, indent=1))
 
-
     target_strings = []
+    sentiment_index = {}
     for h in heap:
-        # Find all strings with $ dollar signs
-        target_strings.append(re.findall(r'[$][A-Za-z][\S]*', str(h)))
-        # Find all capital letter strings, ranging from 1 to 5 characters, preceded and followed by space.
-        capitals = re.findall(r'[\S][A-Z]{1,5}[\S]*', str(h))
-        for cap in capitals:
-            target_strings.append(cap)
+
+        # Find all capital letter strings, ranging from 1 to 5 characters, with optional dollar signs
+        # preceded and followed by space. Collect 3 words before and after capital letter to check context.
+        sentiments = re.findall(r'(?:\S+\s+){0,3}[\S][$]?[A-Z]{1,5}[\s]*(?:\S+\b\s*){0,3}', str(h))
+
+        for thoughts in sentiments:
+            # Find all capital letter strings, ranging from 1 to 5 characters, with optional dollar
+            # signs preceded and followed by space.
+            tickers = re.findall(r'[\S][$]?[A-Z]{1,5}[\S]*', str(thoughts))
+
+            for tick in tickers:
+                tformat = removeBadCharacters(tick)
+                feel = sentimentScanner(thoughts)
+                if (feel):
+                    if (sentiment_index.get(tformat, False)):
+                        sentiment_index[tformat].append(feel)
+                    else:
+                        sentiment_index[tformat] = [feel]
+
+                target_strings.append(tformat)
 
     blacklist = blacklistWords()
     possible = []
 
     for string in target_strings:
         if (string):
-            # reformat string
-            string = removeBadCharacters(string)
-
             if ((not string) or (string in blacklist)):
                 continue
 
             possible.append(string)
-
 
     results = []
     stockfound = []
@@ -98,11 +108,14 @@ def scrapeWSB(sendtweet=False):
                 result = {}
                 stockfound.append(ticker)
                 freq = frequencyInList(possible, ticker)
+                sentiment = sentimentCalculation(sentiment_index[ticker]) if sentiment_index.get(ticker, False) else 'unknown'
+
                 print(stylize("{} stock found".format(ticker), colored.fg("green")))
                 if (freq > 1):
                     result = {
                         'ticker': ticker,
                         'frequency': freq,
+                        'sentiment': sentiment,
                     }
                     filteredinfo = {key: stockinfo['quote'][key] for key in apiOnly}
                     result.update(filteredinfo)
@@ -115,7 +128,7 @@ def scrapeWSB(sendtweet=False):
 
     updateBlacklist(blacklist)
 
-    sorted_results = sorted(results, key = lambda i: i['frequency'], reverse=True)
+    sorted_results = sorted(results, key=lambda i: i['frequency'], reverse=True)
     printFullTable(sorted_results, struct='dictlist')
 
     if (sendtweet):
@@ -126,4 +139,4 @@ def scrapeWSB(sendtweet=False):
         headline = "Top mentioned stocks on r/wallstreetbets and times mentioned:\n"
         tweet = headline + translate_data(tweetdata)
         send_tweet(tweet)
-        
+

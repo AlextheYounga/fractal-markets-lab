@@ -286,10 +286,6 @@ def reddit_controller(subroutine, args):
     if (subroutine == 'scrape'):
         opt = {'--tweet': {'type': bool, 'default': False}}
 
-        if (not args):
-            command_error(opt)
-            return
-
         from lab.reddit.scraper import scrapeWSB
 
         params = parse_args(args, required=[], opt=opt)
