@@ -18,33 +18,22 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def scrapeWSB(sendtweet=False):
-    reddit = praw.Reddit(
-        client_id=os.environ.get("REDDIT_CLIENT"),
-        client_secret=os.environ.get("REDDIT_SECRET"),
-        user_agent="Hazlitt Data by u/{}".format(os.environ.get("REDDIT_USERNAME")),
-        username=os.environ.get("REDDIT_USERNAME"),
-        password=os.environ.get("REDDIT_PASSWORD"),
-    )
+def scanHeap(heap):
+    """
+    This function takes a list of text blobs and scans all words for potential stocks based on a regex formula. 
+    The function will cross-reference every potential stock with IEX to determine whether or not it is an actual stock.
+    Strings that do not pass the test will be sent to the blacklist to prevent future lookups.
 
-    subreddit = reddit.subreddit("wallstreetbets")
+    Parameters
+    ----------
+    heap     : list
+               list of text blobs taken from reddit
 
-    urls = []
-    heap = []
-
-    for submission in subreddit.hot(limit=50):
-        post_time = datetime.datetime.fromtimestamp(submission.created)
-        print(stylize("r/wallstreetbets postdate={}: ".format(str(post_time)) + submission.title, colored.fg("green")))
-        urls.append(submission.url)
-        heap.append(submission.title)
-
-        for top_level_comment in submission.comments:
-            if isinstance(top_level_comment, MoreComments):
-                continue
-            heap.append(top_level_comment.body)
-
-    # print(json.dumps(heap, indent=1))
-
+    Returns
+    -------
+    dict
+        list of results confirmed to be stocks
+    """
     target_strings = []
     sentiment_index = {}
     for h in heap:
@@ -127,7 +116,51 @@ def scrapeWSB(sendtweet=False):
             blacklist.append(un)
 
     updateBlacklist(blacklist)
+    return results
 
+
+def scrapeWSB(sendtweet=False):
+    """
+    This function uses the PRAW Reddit API to search the hottest posts on wallstreet bets.
+    It will send a list of text blobs to the scanHeap() function.
+    Handles tweeting functionality. 
+
+    Parameters
+    ----------
+    sendtweet  : bool
+               whether or not to tweet results
+
+    Returns
+    -------
+    dict
+        list of most-talked-about stocks on wallstreetbets
+    """
+
+    reddit = praw.Reddit(
+        client_id=os.environ.get("REDDIT_CLIENT"),
+        client_secret=os.environ.get("REDDIT_SECRET"),
+        user_agent="Hazlitt Data by u/{}".format(os.environ.get("REDDIT_USERNAME")),
+        username=os.environ.get("REDDIT_USERNAME"),
+        password=os.environ.get("REDDIT_PASSWORD"),
+    )
+
+    subreddit = reddit.subreddit("wallstreetbets")
+
+    urls = []
+    heap = []
+
+    for submission in subreddit.hot(limit=50):
+        post_time = datetime.datetime.fromtimestamp(submission.created)
+        print(stylize("r/wallstreetbets postdate={}: ".format(str(post_time)) + submission.title, colored.fg("green")))
+        urls.append(submission.url)
+        heap.append(submission.title)
+
+        for top_level_comment in submission.comments:
+            if isinstance(top_level_comment, MoreComments):
+                continue
+            heap.append(top_level_comment.body)
+
+    results = scanHeap(heap)
     sorted_results = sorted(results, key=lambda i: i['frequency'], reverse=True)
     printFullTable(sorted_results, struct='dictlist')
 
@@ -139,4 +172,3 @@ def scrapeWSB(sendtweet=False):
         headline = "Top mentioned stocks on r/wallstreetbets and times mentioned:\n"
         tweet = headline + translate_data(tweetdata)
         send_tweet(tweet)
-

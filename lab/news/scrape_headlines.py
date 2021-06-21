@@ -3,8 +3,9 @@ from django.apps import apps
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, date
-from ..core.api.batch import quoteStatsBatchRequest
-from ..core.functions import dataSanityCheck
+from .functions import *
+from ..core.api.batch import batchQuote
+from ..core.functions import dataSanityCheck, frequencyInList, chunks
 from ..core.output import printStockResults
 from ..fintwit.tweet import send_tweet
 import colored
@@ -14,37 +15,6 @@ import sys
 import json
 import os
 django.setup()
-
-
-def blacklist_urls(link):
-    urls = ['www.nasdaq.com']
-    skip = False
-    for b in urls:
-        if b in link:
-            skip = True
-
-    return skip
-
-
-def blacklist_stocks(tickers):
-    pruned = []
-    blacklist = [
-        'AAPL',
-        'APPL',
-        'AMZN',
-        'MSFT',
-        'DIS',
-        'NFLX',
-        'KO',
-        'TSLA',
-        'GOOG',
-    ]
-    for t in tickers:
-        if (t in blacklist):
-            continue
-        pruned.append(t)
-
-    return pruned
 
 
 def exchanges():
@@ -63,66 +33,135 @@ def exchanges():
     ]
 
 
-def clean_tickers(tickers):
-    Stock = apps.get_model('database', 'Stock')
-    db_tickers = Stock.objects.all().values_list('ticker', flat=True)
-    cleaned = []
+def scanHeap(heap):
+    """
+    This function takes a list of text blobs and scans all words for potential stocks based on a regex formula. 
+    The function will cross-reference every potential stock with IEX to determine whether or not it is an actual stock.
+    Strings that do not pass the test will be sent to the blacklist to prevent future lookups.
 
-    def checkLowerCase(t):
-        for c in t: #Checking for lowercase letters
-            if (c.islower()):
-                return True
-        return False
-    
-    for t in tickers:
-        if(' ' not in t):
-            if ('.' not in t):
-                if (t != ''):      
-                    if (checkLowerCase(t) == False):
-                        if (t in db_tickers):
-                            if (':' in t):
-                                t = t.split(':')[1]
-                            if (t not in cleaned):
-                                cleaned.append(t)
-    pruned = blacklist_stocks(cleaned)
+    Parameters
+    ----------
+    heap     : list
+               list of text blobs taken from reddit
 
-    return pruned
+    Returns
+    -------
+    dict
+        list of results confirmed to be stocks
+    """
+    target_strings = []
+    sentiment_index = {}
+    for h in heap:
+        # TODO: Make news scraper use this reddit scraping formula.
+
+        # Find all capital letter strings, ranging from 1 to 5 characters, with optional dollar
+        # signs preceded and followed by space.
+        tickers = re.findall(r'[\S][$]?[A-Z]{1,5}[\S]*', str(h))
+
+        for tick in tickers:
+            tformat = removeBadCharacters(tick)
+            target_strings.append(tformat)
+
+    blacklist = blacklistWords()
+    possible = []
+
+    for string in target_strings:
+        if (string):
+            if ((not string) or (string in blacklist)):
+                continue
+
+            possible.append(string)
+
+    results = []
+    stockfound = []
+
+    unique_possibles = list(dict.fromkeys(possible))
+    chunked_strings = chunks(unique_possibles, 100)
+
+    apiOnly = [
+        'symbol',
+        'companyName',
+        'close',
+        'changePercent',
+        'ytdChange',
+        'volume'
+    ]
+
+    print(stylize("{} possibilities".format(len(unique_possibles)), colored.fg("yellow")))
+
+    for i, chunk in enumerate(chunked_strings):
+
+        print(stylize("Sending heap to API", colored.fg("yellow")))
+        batch = batchQuote(chunk)
+        time.sleep(1)
+
+        for ticker, stockinfo in batch.items():
+
+            if (stockinfo.get('quote', False)):
+                result = {}
+                stockfound.append(ticker)
+                freq = frequencyInList(possible, ticker)            
+
+                print(stylize("{} stock found".format(ticker), colored.fg("green")))
+                if (freq > 1):
+                    result = {
+                        'ticker': ticker,
+                        'frequency': freq,
+                    }
+                    filteredinfo = {key: stockinfo['quote'][key] for key in apiOnly}
+                    result.update(filteredinfo)
+                    results.append(result)
+
+    # Updating blacklist
+    for un in unique_possibles:
+        if (un not in stockfound):
+            blacklist.append(un)
+
+    updateBlacklist(blacklist)
+    return results
 
 
 def scrape_news(query):
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
     tickers = []
+    heap = []
 
     try:
         url = 'https://www.bing.com/news/search?q={}'.format(query)
         results = requests.get(url, headers=headers)
     except:
         print(stylize("Unexpected error:", colored.fg("red")))
-        print(stylize(sys.exc_info()[0], colored.fg("red")))        
+        print(stylize(sys.exc_info()[0], colored.fg("red")))
 
     soup = BeautifulSoup(results.text, 'html.parser')
     links = soup.find_all("a", {"class": "title"})
 
     for link in links:
-        if (blacklist_urls(link['href'])):
+        if (link in blacklistUrls()):
             continue
 
         print(stylize("Searching... "+link['href'], colored.fg("yellow")))
 
         page = requests.get(link['href'], headers=headers)
         soup = BeautifulSoup(page.text, 'html.parser')
-        all_links = soup.find_all("a", href=True)
-
-        for l in all_links:
-            for exc in exchanges():
-                searchstr = exc+':'
-                if (searchstr in l.text):
-                    tickers.append(l.text.split(':')[1])
-                if ((l.get('href', False)) and ('quote' in l['href'])):
-                    tickers.append(l.text)
-
+        heap.append(soup.text)
         time.sleep(1)
 
-    if (tickers):
-        tickers = clean_tickers(tickers)
-        printStockResults(tickers)
+    results = scanHeap(heap)    
+
+
+    #     all_links = soup.find_all("a", href=True)
+
+    #     for l in all_links:
+    #         for exc in exchanges():
+    #             searchstr = exc+':'
+    #             if (searchstr in l.text):
+    #                 tickers.append(l.text.split(':')[1])
+    #             if ((l.get('href', False)) and ('quote' in l['href'])):
+    #                 tickers.append(l.text)
+
+    #     time.sleep(1)
+
+    # if (tickers):
+    #     tickers = clean_tickers(tickers)
+    #     printStockResults(tickers)
