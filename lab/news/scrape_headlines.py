@@ -6,7 +6,7 @@ from datetime import datetime, date
 from .functions import *
 from ..core.api.batch import batchQuote
 from ..core.functions import dataSanityCheck, frequencyInList, chunks
-from ..core.output import printStockResults
+from ..core.output import printFullTable
 from ..fintwit.tweet import send_tweet
 import colored
 from colored import stylize
@@ -50,17 +50,28 @@ def scanHeap(heap):
         list of results confirmed to be stocks
     """
     target_strings = []
-    sentiment_index = {}
     for h in heap:
-        # TODO: Make news scraper use this reddit scraping formula.
-
+        exchange_tickers = []
         # Find all capital letter strings, ranging from 1 to 5 characters, with optional dollar
         # signs preceded and followed by space.
-        tickers = re.findall(r'[\S][$]?[A-Z]{1,5}[\S]*', str(h))
+        tickerlike = re.findall(r'[\S][$][A-Z]{1,5}[\S]*', str(h))
+        for exchange in exchanges():
+            # TODO: This regex is not working. Needs welded.
+            exchangelike = re.findall(r'[\S]'+exchange+'[$]?[A-Z]{1,5}[\S]', str(h))
+            exchange_tickers.append(exchangelike)
+
+        print(json.dumps(exchange_tickers, indent=1))
+        sys.exit()
+        tickers = tickerlike + exchange_tickers
 
         for tick in tickers:
-            tformat = removeBadCharacters(tick)
-            target_strings.append(tformat)
+            if (type(tick) != list):                
+                if (len(tick) > 5):
+                    tformat = cleanExchangeTicker(tick)
+
+                tformat = removeBadCharacters(tick)  
+                if (tformat != False):                                  
+                    target_strings.append(tformat)
 
     blacklist = blacklistWords()
     possible = []
@@ -100,7 +111,7 @@ def scanHeap(heap):
             if (stockinfo.get('quote', False)):
                 result = {}
                 stockfound.append(ticker)
-                freq = frequencyInList(possible, ticker)            
+                freq = frequencyInList(possible, ticker)
 
                 print(stylize("{} stock found".format(ticker), colored.fg("green")))
                 if (freq > 1):
@@ -136,19 +147,17 @@ def scrape_news(query):
     soup = BeautifulSoup(results.text, 'html.parser')
     links = soup.find_all("a", {"class": "title"})
 
-    for link in links:
-        if (link in blacklistUrls()):
-            continue
+    for link in cleanLinks(links):
+        print(stylize("Searching... "+link, colored.fg("yellow")))
 
-        print(stylize("Searching... "+link['href'], colored.fg("yellow")))
-
-        page = requests.get(link['href'], headers=headers)
+        page = requests.get(link, headers=headers)
         soup = BeautifulSoup(page.text, 'html.parser')
         heap.append(soup.text)
         time.sleep(1)
 
-    results = scanHeap(heap)    
-
+    results = scanHeap(heap)
+    sorted_results = sorted(results, key=lambda i: i['frequency'], reverse=True)
+    printFullTable(sorted_results, struct='dictlist')
 
     #     all_links = soup.find_all("a", href=True)
 

@@ -29,6 +29,7 @@ for i, chunk in enumerate(chunked_tickers):
                     ticker=quote['symbol'],
                     defaults={
                         'name': quote.get('companyName'),
+                        'lastPrice': quote.get('lastPrice')
                     }
                 )
                 print('saved {}'.format(quote['symbol']))

@@ -7,10 +7,8 @@ import re
 django.setup()
 
 
-def clean_tickers(tickers):
-    Stock = apps.get_model('database', 'Stock')
-    db_tickers = Stock.objects.all().values_list('ticker', flat=True)
-    cleaned = []
+def cleanExchangeTicker(exchange):
+    tickers = []
 
     def checkLowerCase(t):
         for c in t:  # Checking for lowercase letters
@@ -18,18 +16,16 @@ def clean_tickers(tickers):
                 return True
         return False
 
-    for t in tickers:
-        if(' ' not in t):
-            if ('.' not in t):
-                if (t != ''):
-                    if (checkLowerCase(t) == False):
-                        if (t in db_tickers):
-                            if (':' in t):
-                                t = t.split(':')[1]
-                            if (t not in cleaned):
-                                cleaned.append(t)
+    if(' ' not in exchange):
+        if ('.' not in exchange):
+            if (exchange != ''):
+                if (checkLowerCase(exchange) == False):
+                    if (':' in exchange):
+                        exchange = exchange.split(':')[1]
+                        if (exchange not in tickers):
+                            tickers.append(exchange)
 
-    return cleaned
+    return tickers
 
 
 def blacklistWords():
@@ -57,7 +53,19 @@ def blacklistUrls():
 
     txtfile.close()
 
-    return list(dict.fromkeys(blacklist))
+    return blacklist
+
+
+def cleanLinks(links):
+    whitelist = []
+    blacklist = blacklistUrls()
+    for bl in blacklist:
+        for link in links:
+            if (bl in link['href']):
+                continue
+            whitelist.append(link['href'])
+
+    return whitelist
 
 
 def updateBlacklist(lst):
