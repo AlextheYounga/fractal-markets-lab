@@ -17,20 +17,19 @@ import os
 django.setup()
 
 
-def exchanges():
-    return [
-        'NYSE',
-        'NASDAQ',
-        'LSE',
-        'TSX',
-        'NSE',
-        'ASX',
-        'BSE',
-        'TYO',
-        'SSE',
-        'OTC',
-        'OTCMKTS'
-    ]
+EXCHANGES = [
+    'NYSE',
+    'NASDAQ',
+    'LSE',
+    'TSX',
+    'NSE',
+    'ASX',
+    'BSE',
+    'TYO',
+    'SSE',
+    'OTC',
+    'OTCMKTS'
+]
 
 
 def scanHeap(heap):
@@ -55,22 +54,20 @@ def scanHeap(heap):
         # Find all capital letter strings, ranging from 1 to 5 characters, with optional dollar
         # signs preceded and followed by space.
         tickerlike = re.findall(r'[\S][$][A-Z]{1,5}[\S]*', str(h))
-        for exchange in exchanges():
-            # TODO: This regex is not working. Needs welded.
-            exchangelike = re.findall(r'[\S]'+exchange+'[$]?[A-Z]{1,5}[\S]', str(h))
-            exchange_tickers.append(exchangelike)
+        for exchange in EXCHANGES:
+            exchangelike = re.findall(r''+exchange+'(?:\S+\s+)[A-Z]{1,5}', str(h))
+            if (len(exchangelike) > 0):
+                exchange_tickers = exchange_tickers + exchangelike
 
-        print(json.dumps(exchange_tickers, indent=1))
-        sys.exit()
         tickers = tickerlike + exchange_tickers
 
         for tick in tickers:
-            if (type(tick) != list):                
+            if (type(tick) != list):
                 if (len(tick) > 5):
-                    tformat = cleanExchangeTicker(tick)
+                    tick = cleanExchangeTicker(tick)
 
-                tformat = removeBadCharacters(tick)  
-                if (tformat != False):                                  
+                tformat = removeBadCharacters(tick)
+                if (tformat != False):
                     target_strings.append(tformat)
 
     blacklist = blacklistWords()
@@ -114,14 +111,14 @@ def scanHeap(heap):
                 freq = frequencyInList(possible, ticker)
 
                 print(stylize("{} stock found".format(ticker), colored.fg("green")))
-                if (freq > 1):
-                    result = {
-                        'ticker': ticker,
-                        'frequency': freq,
-                    }
-                    filteredinfo = {key: stockinfo['quote'][key] for key in apiOnly}
-                    result.update(filteredinfo)
-                    results.append(result)
+
+                result = {
+                    'ticker': ticker,
+                    'frequency': freq,
+                }
+                filteredinfo = {key: stockinfo['quote'][key] for key in apiOnly}
+                result.update(filteredinfo)
+                results.append(result)
 
     # Updating blacklist
     for un in unique_possibles:
@@ -133,6 +130,7 @@ def scanHeap(heap):
 
 
 def scrape_news(query):
+    print(stylize("Searching {}".format(query), colored.fg("green")))
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
     tickers = []
     heap = []
@@ -156,21 +154,8 @@ def scrape_news(query):
         time.sleep(1)
 
     results = scanHeap(heap)
-    sorted_results = sorted(results, key=lambda i: i['frequency'], reverse=True)
-    printFullTable(sorted_results, struct='dictlist')
-
-    #     all_links = soup.find_all("a", href=True)
-
-    #     for l in all_links:
-    #         for exc in exchanges():
-    #             searchstr = exc+':'
-    #             if (searchstr in l.text):
-    #                 tickers.append(l.text.split(':')[1])
-    #             if ((l.get('href', False)) and ('quote' in l['href'])):
-    #                 tickers.append(l.text)
-
-    #     time.sleep(1)
-
-    # if (tickers):
-    #     tickers = clean_tickers(tickers)
-    #     printStockResults(tickers)
+    if (results):
+        sorted_results = sorted(results, key=lambda i: i['frequency'], reverse=True)
+        printFullTable(sorted_results, struct='dictlist')
+    else:
+        return print(stylize("No results found", colored.fg("red")))

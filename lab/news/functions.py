@@ -7,25 +7,12 @@ import re
 django.setup()
 
 
-def cleanExchangeTicker(exchange):
-    tickers = []
-
-    def checkLowerCase(t):
-        for c in t:  # Checking for lowercase letters
-            if (c.islower()):
-                return True
+def cleanExchangeTicker(exchange):    
+    if (exchange != ''):
+        if (':' in exchange):
+            ticker = exchange.split(':')[1]
+            return ticker.strip()
         return False
-
-    if(' ' not in exchange):
-        if ('.' not in exchange):
-            if (exchange != ''):
-                if (checkLowerCase(exchange) == False):
-                    if (':' in exchange):
-                        exchange = exchange.split(':')[1]
-                        if (exchange not in tickers):
-                            tickers.append(exchange)
-
-    return tickers
 
 
 def blacklistWords():

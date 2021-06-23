@@ -14,7 +14,6 @@ def extract_data_pd(data, key):
     df = pd.DataFrame(data, columns=data[0].keys())
     return df[key].tolist()
 
-
 def burrow(data, key):
     values = []
     if len(key) == 2:
