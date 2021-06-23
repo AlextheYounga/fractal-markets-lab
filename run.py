@@ -196,7 +196,7 @@ def macro_controller(subroutine, args=[]):
 
 def news_controller(subroutine, args=[]):
     if (subroutine == 'scrape'):
-        opt = {'query': {'type': str, 'default': 'best+stocks+to+buy'}, }
+        opt = {'query': {'type': str, 'default': 'best+stocks+to+buy+right+now'}, }
 
         from lab.news.scrape_headlines import scrape_news
 
