@@ -53,7 +53,7 @@ def lookupFinancials(ticker):
             'longTermDebtToEquity': longTermDebtToEquity,
         }
         # Save to rdb
-        rdb_save_stock(ticker, data)
+        # rdb_save_stock(ticker, data)
 
         for k, v in data.items():
             print(k +': '+str(v))

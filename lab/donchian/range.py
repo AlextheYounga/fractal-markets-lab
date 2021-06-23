@@ -23,7 +23,7 @@ def calculate(ticker, days=30, sendtweet=False):
         'donchianLow': min(list(reversed(lows))[:days])
     }
 
-    rdb_save_output(donchian_range)
+    #rdb_save_output(donchian_range)
     printTabs(donchian_range)
 
     if (sendtweet):
