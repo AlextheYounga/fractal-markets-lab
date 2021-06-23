@@ -89,7 +89,7 @@ def scanHeap(heap):
     apiOnly = [
         'symbol',
         'companyName',
-        'close',
+        'latestPrice',
         'changePercent',
         'ytdChange',
         'volume'
