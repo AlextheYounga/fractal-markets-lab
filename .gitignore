@@ -1,5 +1,6 @@
 *.DS_Store
 lab/exports/*
+lab/cache/ez/*
 lab/graveyard/
 lab/riskrange/output/*
 lab/COMMANDS.txt

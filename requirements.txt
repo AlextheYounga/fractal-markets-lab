@@ -21,3 +21,4 @@ pytrends
 python-dateutil
 progressbar2
 praw
+cryptography
