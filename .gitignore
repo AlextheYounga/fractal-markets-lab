@@ -11,8 +11,7 @@ lab/donchian/output/*
 lab/news/output/*
 lab/volume/output/*
 lab/donchian/news/*
-lab/fintwit/user.py
-lab/fintwit/notes.*
+lab/fintwit
 .vscode
 
 # Byte-compiled / optimized / DLL files

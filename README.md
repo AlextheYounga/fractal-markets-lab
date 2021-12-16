@@ -15,6 +15,14 @@ IEX_TOKEN=pk_somevalue
 IEX_SANDBOX_TOKEN=Tpk_somevalue
 IEX_URL=https://cloud.iexapis.com/v1/
 IEX_SANDBOX_URL=https://sandbox.iexapis.com/v1/
+METALS_API_KEY=somevalue
+GOLDAPI_KEY=somevalue
+MPLBACKEND=somevalue
+TDAMER_KEY=somevalue
+REDDIT_CLIENT=somevalue
+REDDIT_SECRET=somevalue
+REDDIT_USERNAME=somevalue
+REDDIT_PASSWORD=somevalue
 ```
 
 Run this command to view available commands. All commands must be prepended with python run.py.
