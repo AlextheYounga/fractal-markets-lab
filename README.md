@@ -15,11 +15,6 @@ IEX_TOKEN=pk_somevalue
 IEX_SANDBOX_TOKEN=Tpk_somevalue
 IEX_URL=https://cloud.iexapis.com/v1/
 IEX_SANDBOX_URL=https://sandbox.iexapis.com/v1/
-TWITTER_API_KEY='somevalue'
-TWITTER_SECRET_KEY='somevalue'
-TWITTER_ACCESS_KEY='somevalue'
-TWITTER_ACCESS_SECRET='somevalue'
-TWITTER_BEARER_TOKEN='somevalue'
 ```
 
 Run this command to view available commands. All commands must be prepended with python run.py.
